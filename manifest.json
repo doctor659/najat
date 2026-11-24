@@ -1,0 +1,13 @@
+{
+  "name": "النجاة في الصحراء",
+  "short_name": "النجاة",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#140F09",
+  "theme_color": "#140F09",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [{ "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }]
+}
