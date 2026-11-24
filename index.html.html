@@ -11,7 +11,7 @@
 :root{--ink:#1B140C;--panel:#2A1F14;--panel2:#3A2B1B;--gold:#F0C068;--gold2:#C8913F;--sand:#F3E3C3;--muted:#BFA987;--water:#45C3D6;--red:#E0634A;--green:#6FCF97;
 --display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;--body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;background:#140F09;color:var(--sand);font-family:var(--body);font-size:15px}
+html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none;margin:0;height:100%;overflow:hidden;background:#140F09;color:var(--sand);font-family:var(--body);font-size:15px}
 #app{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto}
 /* HUD */
 #hud{position:relative;z-index:5;background:linear-gradient(180deg,rgba(20,14,8,.96),rgba(20,14,8,.82));border-bottom:2px solid var(--gold2);padding:calc(8px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px))}
@@ -145,7 +145,7 @@ function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.i
 /* ================= DATA LAYER ================= */
 let api;
 if(!DEMO){
-  const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{global:{fetch:(u,o={})=>{if(o.signal||!window.AbortController)return fetch(u,o);const c=new AbortController(),tm=setTimeout(()=>c.abort(),20000);return fetch(u,Object.assign({},o,{signal:c.signal})).finally(()=>clearTimeout(tm))}}});
   const chk=r=>{if(r.error)throw r.error;return r.data};
   api={
     onAuth(cb){let last;db.auth.onAuthStateChange((e,s)=>{const id=s?s.user.id:null;if(id===last&&e!=='SIGNED_IN')return;last=id;setTimeout(()=>cb(s?s.user:null),0)})},
@@ -209,7 +209,7 @@ $('authGo').onclick=async()=>{const email=$('email').value.trim(),pass=$('pass')
     else await api.signIn(email,pass)}
   catch(e){$('authErr').textContent=/Invalid login/i.test(e.message||'')?'الإيميل أو الباسورد غلط.':(e.message||'حصل خطأ، جرّب تاني.')}
   finally{$('authGo').disabled=false}};
-api.onAuth(async u=>{ME=u;if(!u){$('auth').hidden=false;closeSheet();return}
+api.onAuth(async u=>{ME=u;if(!u){C=null;$('auth').hidden=false;closeSheet();return}
   $('auth').hidden=true;
   $('banner').textContent='⏳ جاري تحميل مدينتك…';
   try{const d=await Promise.race([api.load(u.id),new Promise((_,r)=>setTimeout(()=>r(new Error('السيرفر اتأخر في الرد')),15000))]);PRO=d.profile;C=d.city;HEROES=d.heroes;TROOPS=d.troops}
@@ -306,7 +306,7 @@ function monster(m,x,y,s,t){const k=MIMG[m.type],bob=Math.sin(t/420+m.x*1.7)*s*.
   if(ok(k)){const im=IMG[k],w=s*(m.type==='worm'||m.type==='bandit'?1.8:1.6)*(1+m.lvl*.025),h=w*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,x-w/2,y+s*.7-h+bob,w,h)}
   badge(x+s*.8,y-s*.75,String(m.lvl),'#7A2A1A')}
 const FX=[];
-function drawWorld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14';ctx.fillRect(0,0,W,H);if(!TERR||(!TERR.art&&ok('world_ground')))buildTerrain();ctx.drawImage(TERR,camW.x,camW.y,MAP*ts,MAP*ts);
+function drawWorld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14';ctx.fillRect(0,0,W,H);if(!TERR||(!TERR.art&&ok('world_ground')))buildTerrain();{const SS=MAP*T,sx=Math.max(0,-camW.x/z),sy=Math.max(0,-camW.y/z),sw=Math.min(SS-sx,W/z+2),sh=Math.min(SS-sy,H/z+2);if(sw>0&&sh>0)ctx.drawImage(TERR,sx,sy,sw,sh,camW.x+sx*z,camW.y+sy*z,sw*z,sh*z)}
   const sx=wx=>camW.x+wx*ts,sy=wy=>camW.y+wy*ts,vis=(x,y)=>x>-80&&x<W+80&&y>-80&&y<H+80;
   for(const m of MONSTERS){if(!alive(m))continue;const x=sx(m.x+.5),y=sy(m.y+.5);if(!vis(x,y))continue;monster(m,x,y,ts*.62,t);HITS.push({x,y,r:ts*.55,m})}
   for(const c of CITIES){const x=sx(c.x+.5),y=sy(c.y+.5);if(!vis(x,y))continue;const me=c.id===ME.id;fort(x,y,ts*.34,me,c.lvl,t);badge(x+ts*.42,y-ts*.32,String(c.lvl),me?'#8A5A1C':'#1F4F8F');nameTag(x,y+ts*.42,c.name,me);HITS.push({x,y,r:ts*.5,c})}
@@ -322,16 +322,18 @@ function homeWorld(){const z=camW.z,ts=T*z;camW.x=W/2-(C.map_x+.5)*ts;camW.y=H/2
 
 /* ---------- LOOP & INPUT ---------- */
 let last=performance.now();
-function loop(t){const dt=Math.min(64,t-last);last=t;if(C){VIEW==='city'?drawCity(t,dt):drawWorld(t,dt)}else{ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}requestAnimationFrame(loop)}
+let lastErr=-1e9;function loop(t){requestAnimationFrame(loop);const dt=Math.min(64,Math.max(0,t-last));last=t;try{if(C&&ME){VIEW==='city'?drawCity(t,dt):drawWorld(t,dt)}else{ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}}catch(e){if(t-lastErr>8000){lastErr=t;console.error(e);toast('⚠️ '+(e.message||e))}}}
 requestAnimationFrame(loop);
 let drag=null;const pts=new Map();
-cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;drag={x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false,pinch:pts.size===2?dist():0,z0:cam.z}});
+cv.addEventListener('pointerdown',e=>{if(e.isPrimary)pts.clear();try{cv.setPointerCapture(e.pointerId)}catch(_){}pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;drag={x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false,pinch:pts.size===2?dist():0,z0:cam.z}});
 function dist(){const v=[...pts.values()];return v.length<2?0:Math.hypot(v[0][0]-v[1][0],v[0][1]-v[1][1])}
 cv.addEventListener('pointermove',e=>{if(!drag)return;pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;
   if(pts.size===2&&drag.pinch){drag.moved=true;zoomTo(cam,drag.z0*dist()/drag.pinch);return}
   const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>7)drag.moved=true;if(drag.moved){cam.x=drag.cx+dx;cam.y=drag.cy+dy;clampCam()}});
 cv.addEventListener('pointerup',e=>{pts.delete(e.pointerId);if(drag&&!drag.moved){const r=cv.getBoundingClientRect();tap(e.clientX-r.left,e.clientY-r.top)}if(!pts.size)drag=null});
-cv.addEventListener('pointercancel',e=>{pts.delete(e.pointerId);drag=null});
+cv.addEventListener('pointercancel',e=>{pts.clear();drag=null});document.addEventListener('visibilitychange',()=>{pts.clear();drag=null});
+['gesturestart','gesturechange'].forEach(n=>document.addEventListener(n,e=>e.preventDefault()));
+window.addEventListener('error',e=>toast('⚠️ '+(e.message||'خطأ')));window.addEventListener('unhandledrejection',e=>toast('⚠️ '+((e.reason&&e.reason.message)||e.reason||'خطأ')));
 cv.addEventListener('wheel',e=>{e.preventDefault();const cam=VIEW==='city'?camC:camW;zoomTo(cam,cam.z*(e.deltaY<0?1.1:.9))},{passive:false});
 function zoomTo(cam,z){z=Math.max(VIEW==='city'?.85:.45,Math.min(VIEW==='city'?2.6:1.8,z));if(VIEW==='world'){const k=z/cam.z;cam.x=W/2-(W/2-cam.x)*k;cam.y=H/2-(H/2-cam.y)*k}else{cam.x*=z/cam.z;cam.y*=z/cam.z}cam.z=z;clampCam()}
 function clampCam(){if(VIEW==='city'){const mx=Math.max(90,(600*CZ-W)/2+90),my=Math.max(90,(900*CZ-H)/2+90);camC.x=Math.max(-mx,Math.min(mx,camC.x));camC.y=Math.max(-my,Math.min(my,camC.y))}else{const S=MAP*T*camW.z;camW.x=Math.max(W-S-120,Math.min(120,camW.x));camW.y=Math.max(H-S-120,Math.min(120,camW.y))}}
@@ -392,7 +394,7 @@ function panelShop(){openSheet(`<h2>بئر المياه</h2><p class="sub">جا�
   document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{if(await saveCity({gallons:Number(C.gallons)+Number(b.dataset.buy)}))toast('اتضاف 💧 '+fmt(+b.dataset.buy)+' جالون')})}
 function panelChat(){openSheet(`<h2>شات السيرفر</h2><div class="chat"><div class="msgs" id="msgs"></div><form class="send" id="sendF"><input id="msgIn" maxlength="300" placeholder="اكتب رسالة…" autocomplete="off"><button class="btn">ابعت</button></form></div>`);
   const load=async()=>{try{const d=await api.chat(PRO.server_id,ME.id),box=$('msgs');if(!box)return;const end=box.scrollHeight-box.scrollTop-box.clientHeight<40;box.innerHTML=d.map(m=>`<div class="msg ${m.mine?'mine':''}"><b>${esc(m.name)}</b>${esc(m.body)}</div>`).join('')||'<div class="sub">مفيش رسايل لسه. ابدأ إنت.</div>';if(end)box.scrollTop=box.scrollHeight}catch(e){}};
-  $('sendF').onsubmit=async e=>{e.preventDefault();const b=$('msgIn').value.trim();if(!b)return;$('msgIn').value='';try{await api.send(PRO.server_id,ME.id,b)}catch(e){toast('الرسالة ماتبعتتش')}load()};load();chatTimer=setInterval(load,4000)}
+  $('sendF').onsubmit=async e=>{e.preventDefault();const b=$('msgIn').value.trim();if(!b)return;$('msgIn').value='';try{await api.send(PRO.server_id,ME.id,b)}catch(e){toast('الرسالة ماتبعتتش')}load()};load();clearInterval(chatTimer);chatTimer=setInterval(load,4000)}
 })();
 </script>
 </body>
