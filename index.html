@@ -111,6 +111,10 @@ th .ri{width:26px;height:26px}
 .rshop:active{transform:translateY(2px);box-shadow:none}
 .resbar span{position:relative;cursor:pointer;overflow:visible!important}
 .resbar span::after{content:"+";position:absolute;top:-7px;left:-5px;width:17px;height:17px;border-radius:50%;background:#3FA866;color:#fff;font-size:14px;font-weight:800;line-height:17px;text-align:center;box-shadow:0 1px 0 #1F6B3A}
+.rep{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(240,192,104,.25);border-inline-start:4px solid var(--green)}.rep.l{border-inline-start-color:var(--red)}
+.rh{display:flex;justify-content:space-between;gap:8px;align-items:center}.rh b{color:#FFF3D6;font-size:14px}.rd{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.9}
+.rbadge{position:absolute;top:-5px;left:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:var(--red);color:#fff!important;font-size:11px!important;font-weight:800;line-height:19px;text-align:center;box-shadow:0 0 0 2px #140F09}
+#nav button,.zoom button{position:relative}
 .err{color:#FF9E88;font-size:13.5px;min-height:1em;text-align:center}
 </style>
 </head>
@@ -124,11 +128,11 @@ th .ri{width:26px;height:26px}
     <div class="resbar"><span><img class="ri" data-art="icon_wood" alt="خشب"> <b id="r-wood">0</b></span><span><img class="ri" data-art="icon_meat" alt="لحم"> <b id="r-meat">0</b></span><span><img class="ri" data-art="icon_coal" alt="فحم"> <b id="r-coal">0</b></span><span>⛓️ <b id="r-iron">0</b></span></div>
   </header>
   <main id="stage"><canvas id="cv"></canvas><div id="banner">مدينتك</div>
-    <div class="zoom" id="zoomBtns" hidden><button data-act="zin" aria-label="تكبير">+</button><button data-act="zout" aria-label="تصغير">−</button><button data-act="home" aria-label="مدينتي">⌂</button></div>
+    <div class="zoom" id="zoomBtns" hidden><button data-act="zin" aria-label="تكبير">+</button><button data-act="zout" aria-label="تصغير">−</button><button data-act="home" aria-label="مدينتي">⌂</button><button data-act="reports" aria-label="التقارير">📜<span class="rbadge" hidden>0</span></button></div>
   </main>
   <nav id="nav">
     <button data-view="city" class="on">🏰<span>المدينة</span></button>
-    <button data-view="world">🗺️<span>العالم</span></button>
+    <button data-view="world">🗺️<span>العالم</span><span class="rbadge" hidden>0</span></button>
     <button data-panel="heroes">⚔️<span>الأبطال</span></button>
     <button data-panel="army">🛡️<span>الجيش</span></button>
     <button data-panel="chat">💬<span>الشات</span></button>
@@ -181,7 +185,10 @@ if(!DEMO){
     async setHero(uid,k,level,xp){return chk(await db.from('heroes').update({level,xp}).eq('player_id',uid).eq('hero_key',k).select().single())},
     async cities(sid){return chk(await db.from('cities').select('player_id,keep_level,map_x,map_y,profiles(name)').eq('server_id',sid)).map(c=>({id:c.player_id,lvl:c.keep_level,x:c.map_x,y:c.map_y,name:c.profiles?c.profiles.name:'؟'}))},
     async chat(sid,uid){return chk(await db.from('chat_messages').select('id,body,player_id,profiles(name)').eq('server_id',sid).order('id',{ascending:false}).limit(50)).reverse().map(m=>({mine:m.player_id===uid,name:m.profiles?m.profiles.name:'؟',body:m.body}))},
-    async send(sid,uid,body){chk(await db.from('chat_messages').insert({server_id:sid,player_id:uid,body}))}
+    async send(sid,uid,body){chk(await db.from('chat_messages').insert({server_id:sid,player_id:uid,body}))},
+    async attack(t){return chk(await db.rpc('attack_city',{target:t}))},
+    async scout(t){return chk(await db.rpc('scout_city',{target:t}))},
+    async battles(){return chk(await db.from('battles').select('*').order('id',{ascending:false}).limit(30))}
   };
 }else{
   let S=LS.get('najat_demo',null),cb=()=>{};const save=()=>LS.set('najat_demo',S);
@@ -199,7 +206,13 @@ if(!DEMO){
     async setHero(u,k,level,xp){const h=S.heroes.find(x=>x.hero_key===k);h.level=level;h.xp=xp;save();return {...h}},
     async cities(){return [{id:'me',lvl:S.city.keep_level,x:S.city.map_x,y:S.city.map_y,name:S.profile.name},...BOTS.map((b,i)=>({id:'b'+i,name:b[0],lvl:b[1],x:b[2],y:b[3]}))]},
     async chat(){return S.chat.map(m=>({mine:!!m.me,name:m.n,body:m.b}))},
-    async send(sid,u,body){S.chat.push({n:S.profile.name,b:body,me:true});S.chat=S.chat.slice(-50);save()}
+    async send(sid,u,body){S.chat.push({n:S.profile.name,b:body,me:true});S.chat=S.chat.slice(-50);save()},
+    async scout(t){const bt=BOTS[+t.slice(1)];return {power:bt[1]*900,loot:{wood:bt[1]*4000,meat:bt[1]*4000,coal:bt[1]*800,iron:bt[1]*400}}},
+    async attack(t){const bt=BOTS[+t.slice(1)],r=await this.scout(t),P=power(),won=P*(0.85+Math.random()*.3)>(r.power*1.1+bt[1]*200)*(0.85+Math.random()*.3);let lost=0;
+      S.troops.forEach(x=>{const l=Math.floor(x.amount*(won?.15:.4));lost+=l;x.amount-=l});if(won)for(const k in r.loot)S.city[k]=Number(S.city[k])+r.loot[k];
+      const b={id:Date.now(),attacker_id:'me',defender_id:t,attacker_name:S.profile.name,defender_name:bt[0],attacker_power:Math.round(P),defender_power:r.power,attacker_won:won,attacker_lost:lost,defender_lost:Math.floor(r.power/12*(won?.3:.1)),loot:won?r.loot:{wood:0,meat:0,coal:0,iron:0},created_at:new Date().toISOString()};
+      S.battles=[b,...(S.battles||[])].slice(0,30);save();return {...b,won}},
+    async battles(){return S.battles||[]}
   };
 }
 
@@ -238,7 +251,7 @@ api.onAuth(async u=>{gotAuth=true;ME=u;if(!u){C=null;$('auth').hidden=false;clos
   try{const d=await Promise.race([api.load(u.id),new Promise((_,r)=>setTimeout(()=>r(new Error('السيرفر اتأخر في الرد')),15000))]);PRO=d.profile;C=d.city;HEROES=d.heroes;TROOPS=d.troops}
   catch(e){$('auth').hidden=false;setMode('in');$('authErr').textContent='ماقدرتش أحمّل مدينتك ('+(e.message||e)+'). ادخل تاني.';try{await api.signOut()}catch(_){}return}
   if(!TROOPS.length){for(const c of Object.keys(CLS)){try{TROOPS.push(await api.setTroop(ME.id,c,1,300))}catch(e){}}toast('هدية البداية: 900 جندي T1')}
-  KILLED=LS.get('najat_k_'+ME.id,{});hud();refreshWorld()});
+  KILLED=LS.get('najat_k_'+ME.id,{});hud();notified=null;refreshWorld();loadReports()});
 setMode('in');
 
 /* ================= CANVAS ================= */
@@ -318,7 +331,7 @@ function genMonsters(){const R=rng(1234+(PRO?PRO.server_id:1)),occ=new Set(CITIE
   for(let i=0;MONSTERS.length<70&&i<400;i++){const x=1+Math.floor(R()*38),y=1+Math.floor(R()*38),l=1+Math.floor(R()*10);
     if(occ.has(x+','+y)||CITIES.some(c=>Math.abs(c.x-x)+Math.abs(c.y-y)<2)||OASES.some(o=>Math.hypot(o[0]-x-.5,o[1]-y-.5)<1.6))continue;occ.add(x+','+y);
     MONSTERS.push({id:'m'+i,x,y,lvl:l,type:l<=3?'scorpion':l<=6?'wolf':l<=8?'bandit':'worm'})}}
-async function refreshWorld(){try{CITIES=await api.cities(PRO.server_id)}catch(e){CITIES=[{id:ME.id,lvl:C.keep_level,x:C.map_x,y:C.map_y,name:PRO.name}]}if(!TERR)buildTerrain();genMonsters()}
+async function refreshWorld(){const n0=CITIES.length;try{CITIES=await api.cities(PRO.server_id)}catch(e){if(!CITIES.length)CITIES=[{id:ME.id,lvl:C.keep_level,x:C.map_x,y:C.map_y,name:PRO.name}]}if(!TERR)buildTerrain();if(!MONSTERS.length||CITIES.length!==n0)genMonsters()}
 const alive=m=>!KILLED[m.id]||KILLED[m.id]<Date.now();
 function fort(x,y,s,me,lvl,t){ctx.fillStyle=me?'rgba(255,200,80,.32)':'rgba(80,150,255,.28)';ctx.beginPath();ctx.ellipse(x,y+s*.6,s*1.9,s*.75,0,0,7);ctx.fill();ctx.strokeStyle=me?'#F0C068':'#7FB2FF';ctx.lineWidth=2;ctx.stroke();
   if(ok('keep')){const im=IMG.keep,w=s*(3.1+Math.min(lvl,30)*.03),h=w*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,x-w/2,y+s*.95-h,w,h)}}
@@ -337,7 +350,7 @@ function drawWorld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14';c
     ctx.setLineDash([8,6]);ctx.lineDashOffset=-t/40;ctx.strokeStyle='rgba(240,192,104,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);
     const x=ax+(bx-ax)*k,y=ay+(by-ay)*k;ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x,y+10,14,5,0,0,7);ctx.fill();ctx.fillStyle='#C0392B';ctx.beginPath();ctx.arc(x,y,12,0,7);ctx.fill();ctx.strokeStyle='#F7D58A';ctx.lineWidth=2.5;ctx.stroke();
     ctx.strokeStyle='#FFF3D6';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(x-5,y+5);ctx.lineTo(x+5,y-5);ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y+5);ctx.stroke();
-    if(k>=1&&!mr.done){mr.done=true;MARCHES.splice(i,1);for(let j=0;j<26;j++)FX.push({x:bx,y:by,vx:Math.cos(j)*(2+Math.random()*3),vy:Math.sin(j)*(2+Math.random()*3),l:1});resolveBattle(mr.m)}}
+    if(k>=1&&!mr.done){mr.done=true;MARCHES.splice(i,1);for(let j=0;j<26;j++)FX.push({x:bx,y:by,vx:Math.cos(j)*(2+Math.random()*3),vy:Math.sin(j)*(2+Math.random()*3),l:1});(mr.onArrive||(()=>resolveBattle(mr.m)))()}}
   for(let i=FX.length-1;i>=0;i--){const p=FX[i];p.x+=p.vx*dt/16;p.y+=p.vy*dt/16;p.l-=dt/700;if(p.l<=0){FX.splice(i,1);continue}ctx.fillStyle=`rgba(255,${150+Math.random()*80|0},60,${p.l})`;ctx.beginPath();ctx.arc(p.x,p.y,5*p.l+2,0,7);ctx.fill()}
   const nt=night(t);if(nt>0){ctx.fillStyle=`rgba(12,22,58,${nt*.35})`;ctx.fillRect(0,0,W,H)}
   $('banner').textContent='🗺️ السيرفر 1 · '+MONSTERS.filter(alive).length+' وحش · '+CITIES.length+' مدينة'}
@@ -363,7 +376,7 @@ function clampCam(){if(VIEW==='city'){const mx=Math.max(90,(600*CZ-W)/2+90),my=M
 function tap(x,y){let best=null,bd=1e9;for(const h of HITS){const d=Math.hypot(h.x-x,h.y-y);if(d<h.r&&d<bd){bd=d;best=h}}if(!best)return;
   if(best.b){TAPPED[best.b.id]=performance.now();openBuilding(best.b)}else if(best.m)openMonster(best.m);else if(best.c)openCity(best.c)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,cam=camW;
-  if(a==='zin')zoomTo(cam,cam.z*1.2);if(a==='zout')zoomTo(cam,cam.z/1.2);if(a==='home')homeWorld()});
+  if(a==='zin')zoomTo(cam,cam.z*1.2);if(a==='zout')zoomTo(cam,cam.z/1.2);if(a==='home')homeWorld();if(a==='reports')panelReports()});
 const openRes=k=>{if(!(C&&ME))return;panelShop('res');if(k)setTimeout(()=>{const e=document.getElementById('sh-'+k);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},80)};
 $('rShop').onclick=()=>openRes();document.querySelectorAll('.resbar span').forEach((sp,i)=>sp.onclick=()=>openRes(['wood','meat','coal','iron'][i]));
 document.querySelector('.gal').onclick=()=>{if(C&&ME)panelShop('gal')};
@@ -385,7 +398,42 @@ function openBuilding(b){if(b.act){openPanel(b.act);return}
   <div class="row"><button class="btn wide" id="upGo" ${L>=max||UPG[b.id]?'disabled':''}>${L>=max?(isKeep?'أقصى ليفل':'طوّر القلعة الأول'):'⬆️ طوّر (مجاناً في البيتا)'}</button></div>`);
   $('upGo').onclick=async()=>{UPG[b.id]=performance.now();closeSheet();await new Promise(r=>setTimeout(r,2200));const ok=await saveCity(isKeep?{keep_level:L+1}:{[RB[b.res].col]:L+1});delete UPG[b.id];
     if(ok){const i=UNLOCK.indexOf(C.keep_level);toast(isKeep&&i>=0?`القلعة ليفل ${C.keep_level} · اتفتح جيش T${i+1} 🎉`:`${b.name} وصلت ليفل ${L+1}`)}}}
-function openCity(c){const me=c.id===ME.id;openSheet(`<h2>${esc(c.name)}</h2><p class="sub">${me?'دي مدينتك.':'مدينة لاعب على السيرفر.'}</p><div class="card"><div class="kv"><span>ليفل القلعة</span><b>${c.lvl}</b></div><div class="kv"><span>المكان</span><b>(${c.x}, ${c.y})</b></div></div>${me?'':'<p class="sub" style="margin-top:10px">مهاجمة اللاعيبة جاية في التحديث الجاي ⚔️</p>'}`)}
+function openCity(c){const me=c.id===ME.id;
+  openSheet(`${artImg('keep')}<h2>${esc(c.name)}</h2><p class="sub">${me?'دي مدينتك.':'مدينة لاعب على السيرفر.'}</p><div class="card"><div class="kv"><span>ليفل القلعة</span><b>${c.lvl}</b></div><div class="kv"><span>المكان</span><b>(${c.x}, ${c.y})</b></div>
+  ${me?`<div class="kv"><span>قوة جيشك</span><b>${fmt(power())}</b></div>`:`<div class="kv"><span>🔭 قوة جيشه</span><b id="scP">⏳</b></div><div class="kv"><span>قوة جيشك</span><b>${fmt(power())}</b></div><div class="kv"><span>فرصة الفوز</span><b id="scC">⏳</b></div><div class="kv"><span>تنهب لو كسبت</span><b id="scL">⏳</b></div>`}</div>
+  ${me?'':`<div class="row"><button class="btn red wide" id="pvp">⚔️ هجوم على ${esc(c.name)}</button></div><p class="sub" style="margin-top:8px">لو كسبت هتنهب 20% من موارده. والمدافع عنده ميزة الأسوار، وهو كمان يقدر يرد عليك 😈</p>`}`);
+  if(me)return;
+  api.scout(c.id).then(r=>{if(!$('scP'))return;const P=power(),D=r.power*1.1+c.lvl*200,ch=P/Math.max(D,1),cc=$('scC');$('scP').textContent=fmt(r.power);
+    cc.textContent=ch>=1.15?'عالية':ch>=.9?'متوسطة':'ضعيفة';cc.className=ch>=1.15?'win':ch>=.9?'':'lose';$('scL').innerHTML=['wood','meat','coal','iron'].map(k=>`${rIco(k,16)} ${fmt(r.loot[k])}`).join(' ')})
+   .catch(()=>{if($('scP')){$('scP').textContent='؟';$('scC').textContent='؟';$('scL').textContent='؟'}});
+  $('pvp').onclick=async()=>{if(MARCHES.length){toast('فيه مسيرة لسه في الطريق');return}if(power()<=0){toast('درّب جنود الأول');return}
+    const btn=$('pvp');btn.disabled=true;btn.textContent='⏳ الجيش بيتجهز…';let res;
+    try{res=await api.attack(c.id)}catch(e){toast('⚠️ '+(e.message||'الهجوم ماتمش'));btn.disabled=false;btn.textContent='⚔️ هجوم على '+c.name;return}
+    closeSheet();const d=Math.hypot(c.x-C.map_x,c.y-C.map_y);
+    MARCHES.push({m:{x:c.x,y:c.y},fx:C.map_x,fy:C.map_y,t0:performance.now(),dur:Math.min(6000,1500+d*250),onArrive:()=>pvpReport(res,c)});toast('🐪 الجيش اتحرك ناحية '+c.name+'…');
+    try{const dd=await api.load(ME.id);C=dd.city;TROOPS=dd.troops;HEROES=dd.heroes;hud()}catch(e){}
+    loadReports()}}
+function pvpReport(r,c){const L=r.loot||{};
+  openSheet(`<div class="result">${artImg('keep')}<div class="big ${r.won?'win':'lose'}">${r.won?'انتصار! 🏆':'هزيمة 💀'}</div><p class="sub">هجومك على ${esc(c.name)}</p><div class="card">
+  <div class="kv"><span>قوتك</span><b>${fmt(r.attacker_power)}</b></div><div class="kv"><span>قوته</span><b>${fmt(r.defender_power)}</b></div>
+  ${r.won?`<div class="kv"><span>نهبت</span><b>${['wood','meat','coal','iron'].map(k=>rIco(k,16)+' '+fmt(L[k]||0)).join(' ')}</b></div>`:'<div class="kv"><span>النصيحة</span><b>زوّد جيشك أو طوّر الأبطال</b></div>'}
+  <div class="kv"><span>جنودك اللي اتصابوا</span><b class="lose">${fmt(r.attacker_lost)}</b></div><div class="kv"><span>جنوده اللي اتصابوا</span><b class="win">${fmt(r.defender_lost)}</b></div></div>
+  <div class="row"><button class="btn wide" id="okB">تمام</button></div></div>`);$('okB').onclick=closeSheet;hud()}
+let REPORTS=[],notified=null;
+const ago=t=>{const s=Math.max(0,(Date.now()-new Date(t))/1000);return s<60?'دلوقتي':s<3600?'من '+Math.floor(s/60)+' دقيقة':s<86400?'من '+Math.floor(s/3600)+' ساعة':'من '+Math.floor(s/86400)+' يوم'};
+async function loadReports(){if(!ME||!C)return;let list;try{list=await api.battles(ME.id)}catch(e){return}if(!ME)return;REPORTS=list||[];
+  const rk='najat_read_'+ME.id,read=LS.get(rk,0);if(notified===null)notified=read;
+  const fresh=REPORTS.filter(b=>b.defender_id===ME.id&&b.id>notified);
+  if(fresh.length){const b=fresh[0];toast(fresh.length>1?`⚔️ مدينتك اتهاجمت ${fresh.length} مرات! شوف التقارير 📜`:`⚔️ ${b.attacker_name} هاجم مدينتك! ${b.attacker_won?'ونهب من مواردك 😡':'ودافعت بنجاح 🛡️'}`);
+    try{const d=await api.load(ME.id);C=d.city;TROOPS=d.troops;hud()}catch(e){}}
+  notified=Math.max(notified,0,...REPORTS.map(b=>b.id));
+  const n=REPORTS.filter(b=>b.defender_id===ME.id&&b.id>read).length;document.querySelectorAll('.rbadge').forEach(x=>{x.textContent=n;x.hidden=!n})}
+setInterval(loadReports,10000);
+setInterval(()=>{if(VIEW==='world'&&C&&ME)refreshWorld()},15000);
+function panelReports(){if(!ME)return;LS.set('najat_read_'+ME.id,Math.max(0,...REPORTS.map(b=>b.id)));document.querySelectorAll('.rbadge').forEach(x=>x.hidden=true);
+  openSheet(`<h2>📜 تقارير المعارك</h2><p class="sub">آخر 30 معركة ليك، هجوم ودفاع.</p>${REPORTS.length?REPORTS.map(b=>{const atk=b.attacker_id===ME.id,won=atk?b.attacker_won:!b.attacker_won,L=b.loot||{};
+    return `<div class="rep ${won?'w':'l'}"><div class="rh"><b>${atk?'⚔️ هجمت على '+esc(b.defender_name):'🛡️ '+esc(b.attacker_name)+' هاجمك'}</b><span class="${won?'win':'lose'}">${won?'انتصار':'هزيمة'}</span></div>
+    <div class="rd">${b.attacker_won?`${atk?'نهبت':'اتنهب منك'}: ${['wood','meat','coal','iron'].map(k=>rIco(k,14)+' '+fmt(L[k]||0)).join(' ')}<br>`:''}جنودك اللي اتصابوا: ${fmt(atk?b.attacker_lost:b.defender_lost)} · جنوده: ${fmt(atk?b.defender_lost:b.attacker_lost)} · ${ago(b.created_at)}</div></div>`}).join(''):'<div class="card sub">مفيش معارك لسه. روح الخريطة ودوس على مدينة لاعب تهاجمها ⚔️</div>'}`)}
 function openMonster(m){const P=power(),M=mPow(m.lvl),ch=P/M,win=ch>=1.1?'عالية':ch>=.95?'متوسطة':'ضعيفة',col=ch>=1.1?'win':ch>=.95?'':'lose';
   openSheet(`${artImg(MIMG[m.type])}<h2>${MT[m.type].n}</h2><p class="sub">ليفل ${m.lvl} · المكان (${m.x}, ${m.y})</p>
   <div class="card"><div class="kv"><span>قوة الوحش</span><b>${fmt(M)}</b></div><div class="kv"><span>قوة جيشك</span><b>${fmt(P)}</b></div><div class="kv"><span>فرصة الفوز</span><b class="${col}">${win}</b></div>
