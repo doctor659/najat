@@ -11,7 +11,7 @@
 :root{--ink:#1B140C;--panel:#2A1F14;--panel2:#3A2B1B;--gold:#F0C068;--gold2:#C8913F;--sand:#F3E3C3;--muted:#BFA987;--water:#45C3D6;--red:#E0634A;--green:#6FCF97;
 --display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;--body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;background:#140F09;color:var(--sand);font-family:var(--body);font-size:15px}
+html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none;margin:0;height:100%;overflow:hidden;background:#140F09;color:var(--sand);font-family:var(--body);font-size:15px}
 #app{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto}
 /* HUD */
 #hud{position:relative;z-index:5;background:linear-gradient(180deg,rgba(20,14,8,.96),rgba(20,14,8,.82));border-bottom:2px solid var(--gold2);padding:calc(8px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px))}
@@ -89,6 +89,23 @@ input,select{font:inherit;width:100%;padding:10px 12px;border-radius:11px;border
 .logo{font-family:var(--display);font-weight:700;font-size:46px;line-height:1.05;text-align:center;background:linear-gradient(180deg,#FFF4CF,#F0C068 50%,#B7791F);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 #4a2a08) drop-shadow(0 10px 22px rgba(0,0,0,.7))}
 .abox{background:linear-gradient(180deg,rgba(58,43,27,.86),rgba(30,21,12,.92))!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 th .ri{width:26px;height:26px}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:10px -4px 2px;padding:2px 4px 6px;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;font:inherit;font-weight:700;font-size:13.5px;padding:7px 14px;border-radius:99px;border:1.5px solid #6B5238;background:#241A10;color:var(--muted);cursor:pointer}
+.tabs button.on{background:linear-gradient(180deg,#F7D58A,#D49A3E);color:#2B1A08;border-color:#F7D58A}
+.gbal{display:inline-flex;align-items:center;gap:6px;background:rgba(15,76,87,.55);border:1px solid var(--water);border-radius:99px;padding:4px 6px 4px 12px;font-size:14px;margin-top:2px;cursor:pointer}.gbal b{color:#BFF2FA}
+.gbal .plus{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--water);color:#06323A;font-weight:800}
+.shead{display:flex;align-items:center;gap:8px;font-family:var(--display);color:var(--gold);font-size:18px;margin:16px 0 0}.shead small{font-family:var(--body);color:var(--muted);font-size:12.5px;margin-inline-start:auto}
+.grid.g2{grid-template-columns:repeat(2,1fr)}.grid.g3{grid-template-columns:repeat(3,1fr);gap:8px}
+.item{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(240,192,104,.3);border-radius:14px;padding:10px 7px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+.item .ii{height:44px;display:flex;align-items:center;justify-content:center;font-size:32px}.item .il{font-weight:700;font-size:13px;color:#FFF3D6}
+.btn.sm{padding:8px 4px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.btn.confirm{background:linear-gradient(180deg,#8FE3A8,#3FA866)!important;box-shadow:0 3px 0 #1F6B3A!important;color:#0B2614!important}
+.hthumb{width:30px;height:30px;border-radius:8px;object-fit:cover;object-position:top;border:1px solid var(--gold2)}
+.deal{position:relative;margin-top:18px;padding:16px 12px 12px;border-radius:16px;border:1.5px solid var(--gold);background:radial-gradient(ellipse at top,rgba(240,192,104,.24),rgba(36,26,16,.6))}
+.deal h3{font-family:var(--display);color:var(--gold);margin:0;font-size:22px}.dl{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.dl span{display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.32);border-radius:99px;padding:3px 10px;font-size:12.5px;font-weight:700}
+.dtag{position:absolute;top:-11px;left:14px;background:var(--red);color:#fff;font-weight:700;font-size:12px;padding:2px 10px;border-radius:99px}
+.gal{cursor:pointer}
 .err{color:#FF9E88;font-size:13.5px;min-height:1em;text-align:center}
 </style>
 </head>
@@ -145,10 +162,10 @@ function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.i
 /* ================= DATA LAYER ================= */
 let api;
 if(!DEMO){
-  const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,lock:async(n,t,fn)=>await fn()},global:{fetch:(u,o={})=>{if(o.signal||!window.AbortController)return fetch(u,o);const c=new AbortController(),tm=setTimeout(()=>c.abort(),20000);return fetch(u,Object.assign({},o,{signal:c.signal})).finally(()=>clearTimeout(tm))}}});
   const chk=r=>{if(r.error)throw r.error;return r.data};
   api={
-    onAuth(cb){db.auth.onAuthStateChange((_e,s)=>cb(s?s.user:null))},
+    onAuth(cb){let last;db.auth.onAuthStateChange((e,s)=>{const id=s?s.user.id:null;if(id===last&&e!=='SIGNED_IN')return;last=id;setTimeout(()=>cb(s?s.user:null),0)})},
     async signUp(email,pass,name){const d=chk(await db.auth.signUp({email,password:pass,options:{data:{city_name:name}}}));return !!d.session},
     async signIn(email,pass){chk(await db.auth.signInWithPassword({email,password:pass}))},
     async signOut(){await db.auth.signOut()},
@@ -209,9 +226,12 @@ $('authGo').onclick=async()=>{const email=$('email').value.trim(),pass=$('pass')
     else await api.signIn(email,pass)}
   catch(e){$('authErr').textContent=/Invalid login/i.test(e.message||'')?'الإيميل أو الباسورد غلط.':(e.message||'حصل خطأ، جرّب تاني.')}
   finally{$('authGo').disabled=false}};
-api.onAuth(async u=>{ME=u;if(!u){$('auth').hidden=false;closeSheet();return}
+let gotAuth=false;setTimeout(()=>{if(!gotAuth){$('auth').hidden=false;$('authErr').textContent='اللعبة اتأخرت. اقفل كل تابات اللعبة التانية في Safari وادخل من هنا.'}},12000);
+api.onAuth(async u=>{gotAuth=true;ME=u;if(!u){C=null;$('auth').hidden=false;closeSheet();return}
   $('auth').hidden=true;
-  try{const d=await api.load(u.id);PRO=d.profile;C=d.city;HEROES=d.heroes;TROOPS=d.troops}catch(e){toast('مش لاقي مدينتك: '+(e.message||e));return}
+  $('banner').textContent='⏳ جاري تحميل مدينتك…';
+  try{const d=await Promise.race([api.load(u.id),new Promise((_,r)=>setTimeout(()=>r(new Error('السيرفر اتأخر في الرد')),15000))]);PRO=d.profile;C=d.city;HEROES=d.heroes;TROOPS=d.troops}
+  catch(e){$('auth').hidden=false;setMode('in');$('authErr').textContent='ماقدرتش أحمّل مدينتك ('+(e.message||e)+'). ادخل تاني.';try{await api.signOut()}catch(_){}return}
   if(!TROOPS.length){for(const c of Object.keys(CLS)){try{TROOPS.push(await api.setTroop(ME.id,c,1,300))}catch(e){}}toast('هدية البداية: 900 جندي T1')}
   KILLED=LS.get('najat_k_'+ME.id,{});hud();refreshWorld()});
 setMode('in');
@@ -304,7 +324,7 @@ function monster(m,x,y,s,t){const k=MIMG[m.type],bob=Math.sin(t/420+m.x*1.7)*s*.
   if(ok(k)){const im=IMG[k],w=s*(m.type==='worm'||m.type==='bandit'?1.8:1.6)*(1+m.lvl*.025),h=w*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,x-w/2,y+s*.7-h+bob,w,h)}
   badge(x+s*.8,y-s*.75,String(m.lvl),'#7A2A1A')}
 const FX=[];
-function drawWorld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14';ctx.fillRect(0,0,W,H);if(!TERR||(!TERR.art&&ok('world_ground')))buildTerrain();ctx.drawImage(TERR,camW.x,camW.y,MAP*ts,MAP*ts);
+function drawWorld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14';ctx.fillRect(0,0,W,H);if(!TERR||(!TERR.art&&ok('world_ground')))buildTerrain();{const SS=MAP*T,sx=Math.max(0,-camW.x/z),sy=Math.max(0,-camW.y/z),sw=Math.min(SS-sx,W/z+2),sh=Math.min(SS-sy,H/z+2);if(sw>0&&sh>0)ctx.drawImage(TERR,sx,sy,sw,sh,camW.x+sx*z,camW.y+sy*z,sw*z,sh*z)}
   const sx=wx=>camW.x+wx*ts,sy=wy=>camW.y+wy*ts,vis=(x,y)=>x>-80&&x<W+80&&y>-80&&y<H+80;
   for(const m of MONSTERS){if(!alive(m))continue;const x=sx(m.x+.5),y=sy(m.y+.5);if(!vis(x,y))continue;monster(m,x,y,ts*.62,t);HITS.push({x,y,r:ts*.55,m})}
   for(const c of CITIES){const x=sx(c.x+.5),y=sy(c.y+.5);if(!vis(x,y))continue;const me=c.id===ME.id;fort(x,y,ts*.34,me,c.lvl,t);badge(x+ts*.42,y-ts*.32,String(c.lvl),me?'#8A5A1C':'#1F4F8F');nameTag(x,y+ts*.42,c.name,me);HITS.push({x,y,r:ts*.5,c})}
@@ -320,16 +340,18 @@ function homeWorld(){const z=camW.z,ts=T*z;camW.x=W/2-(C.map_x+.5)*ts;camW.y=H/2
 
 /* ---------- LOOP & INPUT ---------- */
 let last=performance.now();
-function loop(t){const dt=Math.min(64,t-last);last=t;if(C){VIEW==='city'?drawCity(t,dt):drawWorld(t,dt)}else{ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}requestAnimationFrame(loop)}
+let lastErr=-1e9;function loop(t){requestAnimationFrame(loop);const dt=Math.min(64,Math.max(0,t-last));last=t;try{if(C&&ME){VIEW==='city'?drawCity(t,dt):drawWorld(t,dt)}else{ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}}catch(e){if(t-lastErr>8000){lastErr=t;console.error(e);toast('⚠️ '+(e.message||e))}}}
 requestAnimationFrame(loop);
 let drag=null;const pts=new Map();
-cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;drag={x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false,pinch:pts.size===2?dist():0,z0:cam.z}});
+cv.addEventListener('pointerdown',e=>{if(e.isPrimary)pts.clear();try{cv.setPointerCapture(e.pointerId)}catch(_){}pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;drag={x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false,pinch:pts.size===2?dist():0,z0:cam.z}});
 function dist(){const v=[...pts.values()];return v.length<2?0:Math.hypot(v[0][0]-v[1][0],v[0][1]-v[1][1])}
 cv.addEventListener('pointermove',e=>{if(!drag)return;pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;
   if(pts.size===2&&drag.pinch){drag.moved=true;zoomTo(cam,drag.z0*dist()/drag.pinch);return}
   const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>7)drag.moved=true;if(drag.moved){cam.x=drag.cx+dx;cam.y=drag.cy+dy;clampCam()}});
 cv.addEventListener('pointerup',e=>{pts.delete(e.pointerId);if(drag&&!drag.moved){const r=cv.getBoundingClientRect();tap(e.clientX-r.left,e.clientY-r.top)}if(!pts.size)drag=null});
-cv.addEventListener('pointercancel',e=>{pts.delete(e.pointerId);drag=null});
+cv.addEventListener('pointercancel',e=>{pts.clear();drag=null});document.addEventListener('visibilitychange',()=>{pts.clear();drag=null});
+['gesturestart','gesturechange'].forEach(n=>document.addEventListener(n,e=>e.preventDefault()));
+window.addEventListener('error',e=>toast('⚠️ '+(e.message||'خطأ')));window.addEventListener('unhandledrejection',e=>toast('⚠️ '+((e.reason&&e.reason.message)||e.reason||'خطأ')));
 cv.addEventListener('wheel',e=>{e.preventDefault();const cam=VIEW==='city'?camC:camW;zoomTo(cam,cam.z*(e.deltaY<0?1.1:.9))},{passive:false});
 function zoomTo(cam,z){z=Math.max(VIEW==='city'?.85:.45,Math.min(VIEW==='city'?2.6:1.8,z));if(VIEW==='world'){const k=z/cam.z;cam.x=W/2-(W/2-cam.x)*k;cam.y=H/2-(H/2-cam.y)*k}else{cam.x*=z/cam.z;cam.y*=z/cam.z}cam.z=z;clampCam()}
 function clampCam(){if(VIEW==='city'){const mx=Math.max(90,(600*CZ-W)/2+90),my=Math.max(90,(900*CZ-H)/2+90);camC.x=Math.max(-mx,Math.min(mx,camC.x));camC.y=Math.max(-my,Math.min(my,camC.y))}else{const S=MAP*T*camW.z;camW.x=Math.max(W-S-120,Math.min(120,camW.x));camW.y=Math.max(H-S-120,Math.min(120,camW.y))}}
@@ -337,6 +359,7 @@ function tap(x,y){let best=null,bd=1e9;for(const h of HITS){const d=Math.hypot(h
   if(best.b){TAPPED[best.b.id]=performance.now();openBuilding(best.b)}else if(best.m)openMonster(best.m);else if(best.c)openCity(best.c)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,cam=camW;
   if(a==='zin')zoomTo(cam,cam.z*1.2);if(a==='zout')zoomTo(cam,cam.z/1.2);if(a==='home')homeWorld()});
+document.querySelector('.gal').onclick=()=>{if(C&&ME)panelShop('gal')};
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(!C)return;if(b.dataset.view){VIEW=b.dataset.view;document.querySelectorAll('#nav button[data-view]').forEach(x=>x.classList.toggle('on',x===b));$('zoomBtns').hidden=VIEW!=='world';closeSheet();if(VIEW==='world'){refreshWorld().then(()=>{if(!camW.init){camW.init=1;homeWorld()}})}}
   else openPanel(b.dataset.panel)});
 
@@ -386,11 +409,44 @@ function panelArmy(){const open=tiersOpen();openSheet(`<h2>الثكنة</h2><p c
     if(await saveCity({meat:Math.floor(cur('meat')-c.meat),wood:Math.floor(cur('wood')-c.wood),iron:Math.floor(cur('iron')-c.iron)})){const old=TROOPS.find(x=>x.troop_class===cls&&x.tier===tier);
       try{const r=await api.setTroop(ME.id,cls,tier,(old?old.amount:0)+n);TROOPS=TROOPS.filter(x=>x!==old).concat(r);toast(`اتدرّب ${fmt(n)} ${CLS[cls]} T${tier} 🛡️`)}catch(e){toast('ماتحفظش')}}panelArmy()}}
 const PK=[1,5,10,25,50,75,100];
-function panelShop(){openSheet(`<h2>بئر المياه</h2><p class="sub">جالون المياه هو العملة الرسمية. 1,000 جالون = $1، وكل $25 بتزوّد مكافأة 10%.</p><div class="grid">${PK.map(p=>{const base=p*1000,bon=Math.floor(p/25)*10,tot=base*(1+bon/100);return `<div class="pk">${bon?`<span class="bonus">+${bon}% هدية</span>`:''}<div class="amt">${ico('icon_water',30)} ${fmt(tot)}</div><div class="price">$${p}</div><button class="btn wide" data-buy="${tot}">اشترِ</button></div>`}).join('')}</div><p class="sub" style="margin-top:12px">بيتا: الشراء تجريبي ومن غير دفع.</p>`);
-  document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{if(await saveCity({gallons:Number(C.gallons)+Number(b.dataset.buy)}))toast('اتضاف 💧 '+fmt(+b.dataset.buy)+' جالون')})}
+let shopTab=null,busy=false;
+const RES_PK={wood:[[10000,100],[50000,450],[200000,1600],[1000000,7000]],meat:[[10000,100],[50000,450],[200000,1600],[1000000,7000]],coal:[[2000,100],[10000,450],[40000,1600],[200000,7000]],iron:[[1000,100],[5000,450],[20000,1600],[100000,7000]]};
+const RNAME={wood:'خشب',meat:'لحم',coal:'فحم',iron:'حديد'};
+const XP_PK=[[1000,150],[10000,1200],[50000,5000]];
+const BUNDLES=[{id:'start',n:'حزمة البداية',d:'أحسن قيمة للاعب الجديد',price:2000,res:{wood:100000,meat:100000,coal:20000,iron:10000},xp:5000,tag:'الأفضل 🔥'},
+ {id:'war',n:'حزمة الحرب',d:'موارد وجنود جاهزين للهجوم',price:6000,res:{wood:300000,meat:300000,coal:60000,iron:30000},troops:3000,tag:'خصم 40%'},
+ {id:'king',n:'خزنة الملك',d:'كل حاجة بالكوم: موارد وخبرة وجيش',price:25000,res:{wood:2000000,meat:2000000,coal:400000,iron:200000},xp:50000,troops:15000,tag:'فخم 👑'}];
+const rIco=(k,s)=>k==='iron'&&!ART.icon_iron?`<span style="font-size:${Math.round(s*.85)}px;line-height:1">⛓️</span>`:ico('icon_'+k,s);
+const card=(icon,label,price,key)=>`<div class="item"><div class="ii">${icon}</div><div class="il">${label}</div><button class="btn wide sm" data-buy="${key}" data-price="${price}">${ico('icon_water',16)} ${fmt(price)}</button></div>`;
+function panelShop(tab){if(tab)shopTab=tab;if(!shopTab)shopTab=Number(C.gallons)>0?'res':'gal';
+  const TB=[['gal','💧 شحن'],['deal','👑 عروض'],['res','الموارد'],['hero','الأبطال'],['army','الجيش']];let body='';
+  if(shopTab==='gal')body=`<p class="sub">1,000 جالون = $1، وكل $25 بتزوّد 10% هدية. (بيتا: الشحن تجريبي من غير دفع)</p><div class="grid">${PK.map(p=>{const bon=Math.floor(p/25)*10,tot=p*1000*(1+bon/100);return `<div class="pk">${bon?`<span class="bonus">+${bon}% هدية</span>`:''}<div class="amt">${ico('icon_water',30)} ${fmt(tot)}</div><div class="price">$${p}</div><button class="btn wide" data-gal="${tot}">اشحن</button></div>`}).join('')}</div>`;
+  if(shopTab==='res')body=Object.keys(RES_PK).map(k=>`<div class="shead">${rIco(k,26)} ${RNAME[k]} <small>عندك ${fmt(cur(k))}</small></div><div class="grid g2">${RES_PK[k].map(([a,p])=>card(rIco(k,42),fmt(a)+' '+RNAME[k],p,`res:${k}:${a}`)).join('')}</div>`).join('');
+  if(shopTab==='hero')body=`<p class="sub">كتب الخبرة بترفع ليفل البطل على طول.</p>`+['hayat','sarab','turbin'].map(h=>{const s=HEROES.find(x=>x.hero_key===h)||{level:1};return `<div class="shead"><img class="hthumb" src="${ART[HIMG[h]]}" alt=""> ${HN[h].n} <small>Lv ${s.level}</small></div><div class="grid g3">${XP_PK.map(([a,p])=>card('📜',fmt(a)+' XP',p,`xp:${h}:${a}`)).join('')}</div>`}).join('');
+  if(shopTab==='army'){const t=tiersOpen();body=`<p class="sub">جنود جاهزين فوراً من أعلى مستوى مفتوح عندك (T${t}). كل ما تطوّر القلعة يتفتح مستوى أقوى.</p>`+Object.keys(CLS).map(c=>`<div class="shead">${ico(CI[c],26)} ${CLS[c]} T${t}</div><div class="grid g3">${[500,2000,10000].map(n=>card(ico(CI[c],40),fmt(n)+' جندي',Math.ceil(n*t*.3),`tr:${c}:${t}:${n}`)).join('')}</div>`).join('')}
+  if(shopTab==='deal')body=BUNDLES.map(b=>`<div class="deal">${b.tag?`<span class="dtag">${b.tag}</span>`:''}<h3>${b.n}</h3><div class="sub" style="margin:0 0 8px">${b.d}</div><div class="dl">${Object.keys(b.res).map(k=>`<span>${rIco(k,20)} ${fmt(b.res[k])}</span>`).join('')}${b.xp?`<span>📜 ${fmt(b.xp)} XP لكل بطل</span>`:''}${b.troops?`<span>${ico('icon_infantry',20)} ${fmt(b.troops)} جندي T${tiersOpen()}</span>`:''}</div><button class="btn wide" data-buy="deal:${b.id}" data-price="${b.price}">${ico('icon_water',20)} ${fmt(b.price)}</button></div>`).join('');
+  openSheet(`<h2>المتجر</h2><div class="gbal" data-stab="gal">رصيدك: ${ico('icon_water',22)} <b>${fmt(C.gallons)}</b> جالون <span class="plus">＋</span></div><div class="tabs">${TB.map(([k,n])=>`<button class="${k===shopTab?'on':''}" data-stab="${k}">${n}</button>`).join('')}</div>${body}`);
+  document.querySelectorAll('[data-stab]').forEach(b=>b.onclick=()=>panelShop(b.dataset.stab));
+  document.querySelectorAll('[data-gal]').forEach(b=>b.onclick=async()=>{b.disabled=true;if(await saveCity({gallons:Number(C.gallons)+Number(b.dataset.gal)})){toast('اتضاف 💧 '+fmt(+b.dataset.gal)+' جالون');panelShop()}else b.disabled=false});
+  document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>buy(b))}
+async function giveXP(keys,amt){for(const k of keys){const h=HEROES.find(x=>x.hero_key===k);if(!h||h.level>=100)continue;let lv=h.level,xp=h.xp+amt;while(lv<100&&xp>=need(lv)){xp-=need(lv);lv++}if(lv>=100)xp=0;
+  try{const r=await api.setHero(ME.id,k,lv,xp);if(r.level>h.level)toast(HN[k].n+' وصلت ليفل '+r.level+' ⬆️');Object.assign(h,r)}catch(e){toast('الخبرة ماتحفظتش')}}}
+async function giveTroops(cls,tier,n){const old=TROOPS.find(x=>x.troop_class===cls&&x.tier===tier);try{const r=await api.setTroop(ME.id,cls,tier,(old?old.amount:0)+n);TROOPS=TROOPS.filter(x=>x!==old).concat(r)}catch(e){toast('الجنود ماتحفظوش')}}
+async function buy(b){const [type,a1,a2,a3]=b.dataset.buy.split(':'),price=+b.dataset.price,deal=type==='deal'?BUNDLES.find(x=>x.id===a1):null;
+  if(Number(C.gallons)<price){toast('الجالونات مش كفاية، اشحن الأول 💧');panelShop('gal');return}
+  if(!b.classList.contains('confirm')){document.querySelectorAll('.btn.confirm').forEach(x=>{x.classList.remove('confirm');x.innerHTML=x.dataset.html});b.dataset.html=b.innerHTML;b.classList.add('confirm');b.textContent='✓ تأكيد الشراء';
+    setTimeout(()=>{if(b.isConnected&&b.classList.contains('confirm')){b.classList.remove('confirm');b.innerHTML=b.dataset.html}},3500);return}
+  if(busy)return;busy=true;b.disabled=true;
+  try{const patch={gallons:Number(C.gallons)-price},add=r=>{for(const k in r)patch[k]=Math.floor(cur(k)+r[k])};
+    if(type==='res')add({[a1]:+a2});if(deal)add(deal.res);
+    if(!(await saveCity(patch)))return;
+    if(type==='xp')await giveXP([a1],+a2);if(deal&&deal.xp)await giveXP(['hayat','sarab','turbin'],deal.xp);
+    if(type==='tr')await giveTroops(a1,+a2,+a3);if(deal&&deal.troops){const t=tiersOpen(),n=Math.floor(deal.troops/3);for(const c of Object.keys(CLS))await giveTroops(c,t,n)}
+    toast('✅ تم الشراء');hud()}
+  finally{busy=false;if(!$('sheet').hidden)panelShop()}}
 function panelChat(){openSheet(`<h2>شات السيرفر</h2><div class="chat"><div class="msgs" id="msgs"></div><form class="send" id="sendF"><input id="msgIn" maxlength="300" placeholder="اكتب رسالة…" autocomplete="off"><button class="btn">ابعت</button></form></div>`);
   const load=async()=>{try{const d=await api.chat(PRO.server_id,ME.id),box=$('msgs');if(!box)return;const end=box.scrollHeight-box.scrollTop-box.clientHeight<40;box.innerHTML=d.map(m=>`<div class="msg ${m.mine?'mine':''}"><b>${esc(m.name)}</b>${esc(m.body)}</div>`).join('')||'<div class="sub">مفيش رسايل لسه. ابدأ إنت.</div>';if(end)box.scrollTop=box.scrollHeight}catch(e){}};
-  $('sendF').onsubmit=async e=>{e.preventDefault();const b=$('msgIn').value.trim();if(!b)return;$('msgIn').value='';try{await api.send(PRO.server_id,ME.id,b)}catch(e){toast('الرسالة ماتبعتتش')}load()};load();chatTimer=setInterval(load,4000)}
+  $('sendF').onsubmit=async e=>{e.preventDefault();const b=$('msgIn').value.trim();if(!b)return;$('msgIn').value='';try{await api.send(PRO.server_id,ME.id,b)}catch(e){toast('الرسالة ماتبعتتش')}load()};load();clearInterval(chatTimer);chatTimer=setInterval(load,4000)}
 })();
 </script>
 </body>
