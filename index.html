@@ -115,6 +115,22 @@ th .ri{width:26px;height:26px}
 .rh{display:flex;justify-content:space-between;gap:8px;align-items:center}.rh b{color:#FFF3D6;font-size:14px}.rd{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.9}
 .rbadge{position:absolute;top:-5px;left:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:var(--red);color:#fff!important;font-size:11px!important;font-weight:800;line-height:19px;text-align:center;box-shadow:0 0 0 2px #140F09}
 #nav button,.zoom button{position:relative}
+.rpt{text-align:center}.rban{font-family:var(--display);font-size:34px;padding:8px;border-radius:14px;margin:2px 0;color:#fff;background:linear-gradient(90deg,transparent,rgba(63,168,102,.6),transparent)}.rpt.l .rban{background:linear-gradient(90deg,transparent,rgba(224,99,74,.6),transparent)}
+.rsub{color:var(--muted);font-size:13.5px}
+.vs{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}.side{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.side b{font-size:14px;color:#FFF3D6;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.side span{font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+.sav{width:78px;height:78px;border-radius:50%;border:3px solid #F0C068;background:#2A1F14 center 12%/cover no-repeat;box-shadow:0 6px 16px rgba(0,0,0,.5)}.sav.en{background-size:86%;background-position:center;border-color:#C0392B}
+.vsx{font-family:var(--display);font-size:26px;color:#F0C068;text-shadow:0 2px 0 #4a2a08}
+.pbar{height:10px;border-radius:99px;background:#C0392B;overflow:hidden;margin-top:12px}.pbar i{display:block;height:100%;background:linear-gradient(90deg,#3FA866,#8FE3A8)}.pnote{font-size:12.5px;color:var(--muted);margin-top:5px}
+.rsec{text-align:start;font-family:var(--display);color:var(--gold);font-size:17px;margin-top:14px}
+.loot{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}.loot div{background:rgba(63,168,102,.14);border:1px solid rgba(111,207,151,.4);border-radius:12px;padding:8px 2px;display:flex;flex-direction:column;align-items:center;gap:3px}.loot b{color:#8FE3A8;font-size:13px;font-variant-numeric:tabular-nums}
+.tgrid,.rgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px;text-align:center}.tgrid div,.rgrid div{background:rgba(0,0,0,.28);border-radius:10px;padding:6px 2px;display:flex;flex-direction:column;gap:2px}
+.tgrid span,.rgrid span{font-size:11px;color:var(--muted)}.tgrid b,.rgrid b{font-size:14px;font-variant-numeric:tabular-nums;color:#FFF3D6}.tgrid b.lose,.rgrid b.lose{color:var(--red)}.tgrid b.win{color:var(--green)}
+.tip{text-align:start;margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(240,192,104,.12);border:1px dashed rgba(240,192,104,.5);font-size:13px}
+.rep .rh{display:flex;align-items:center;gap:10px;justify-content:flex-start}.ricon{font-size:24px}.rt{flex:1;min-width:0;display:flex;flex-direction:column}.rt small{color:var(--muted);font-size:11.5px}
+.rres{font-weight:800;font-size:13px;padding:2px 10px;border-radius:99px;background:rgba(0,0,0,.3)}
+.rloot{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;font-size:12px;color:var(--muted)}.rloot em{font-style:normal;display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,.28);border-radius:99px;padding:2px 8px;color:#FFF3D6;font-weight:700}
+.qn{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.qn .btn{flex:1;min-width:56px}
 .err{color:#FF9E88;font-size:13.5px;min-height:1em;text-align:center}
 </style>
 </head>
@@ -348,10 +364,9 @@ function drawWorld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14';c
   for(const c of CITIES){const x=sx(c.x+.5),y=sy(c.y+.5);if(!vis(x,y))continue;const me=c.id===ME.id;fort(x,y,ts*.34,me,c.lvl,t);badge(x+ts*.42,y-ts*.32,String(c.lvl),me?'#8A5A1C':'#1F4F8F');nameTag(x,y+ts*.42,c.name,me);HITS.push({x,y,r:ts*.5,c})}
   for(let i=MARCHES.length-1;i>=0;i--){const mr=MARCHES[i],k=Math.min(1,(t-mr.t0)/mr.dur),ax=sx(mr.fx+.5),ay=sy(mr.fy+.5),bx=sx(mr.m.x+.5),by=sy(mr.m.y+.5);
     ctx.setLineDash([8,6]);ctx.lineDashOffset=-t/40;ctx.strokeStyle='rgba(240,192,104,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);
-    const x=ax+(bx-ax)*k,y=ay+(by-ay)*k;ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x,y+10,14,5,0,0,7);ctx.fill();ctx.fillStyle='#C0392B';ctx.beginPath();ctx.arc(x,y,12,0,7);ctx.fill();ctx.strokeStyle='#F7D58A';ctx.lineWidth=2.5;ctx.stroke();
-    ctx.strokeStyle='#FFF3D6';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(x-5,y+5);ctx.lineTo(x+5,y-5);ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y+5);ctx.stroke();
+    const x=ax+(bx-ax)*k,y=ay+(by-ay)*k;drawMarch(mr,x,y,bx,by,t);
     if(k>=1&&!mr.done){mr.done=true;MARCHES.splice(i,1);for(let j=0;j<26;j++)FX.push({x:bx,y:by,vx:Math.cos(j)*(2+Math.random()*3),vy:Math.sin(j)*(2+Math.random()*3),l:1});(mr.onArrive||(()=>resolveBattle(mr.m)))()}}
-  for(let i=FX.length-1;i>=0;i--){const p=FX[i];p.x+=p.vx*dt/16;p.y+=p.vy*dt/16;p.l-=dt/700;if(p.l<=0){FX.splice(i,1);continue}ctx.fillStyle=`rgba(255,${150+Math.random()*80|0},60,${p.l})`;ctx.beginPath();ctx.arc(p.x,p.y,5*p.l+2,0,7);ctx.fill()}
+  for(let i=FX.length-1;i>=0;i--){const p=FX[i];p.x+=p.vx*dt/16;p.y+=p.vy*dt/16;p.l-=dt/700;if(p.l<=0){FX.splice(i,1);continue}if(p.dust){ctx.fillStyle=`rgba(225,195,140,${p.l*.5})`;ctx.beginPath();ctx.arc(p.x,p.y,(1-p.l)*14+4,0,7);ctx.fill()}else{ctx.fillStyle=`rgba(255,${150+Math.random()*80|0},60,${p.l})`;ctx.beginPath();ctx.arc(p.x,p.y,5*p.l+2,0,7);ctx.fill()}}
   const nt=night(t);if(nt>0){ctx.fillStyle=`rgba(12,22,58,${nt*.35})`;ctx.fillRect(0,0,W,H)}
   $('banner').textContent='🗺️ السيرفر 1 · '+MONSTERS.filter(alive).length+' وحش · '+CITIES.length+' مدينة'}
 function homeWorld(){const z=camW.z,ts=T*z;camW.x=W/2-(C.map_x+.5)*ts;camW.y=H/2-(C.map_y+.5)*ts}
@@ -386,7 +401,8 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(!C)return;
 /* ================= PANELS ================= */
 let chatTimer=null;
 function openSheet(html){$('sheetBody').innerHTML=html;$('sheet').hidden=false;$('shade').hidden=false;$('sheet').scrollTop=0}
-function closeSheet(){$('sheet').hidden=true;$('shade').hidden=true;clearInterval(chatTimer)}
+document.addEventListener('focusout',()=>setTimeout(()=>{if(!document.activeElement||document.activeElement===document.body)window.scrollTo(0,0)},60));
+function closeSheet(){window.scrollTo(0,0);$('sheet').hidden=true;$('shade').hidden=true;clearInterval(chatTimer)}
 $('sheetX').onclick=closeSheet;$('shade').onclick=closeSheet;
 function openPanel(p){if(p==='heroes')panelHeroes();if(p==='army')panelArmy();if(p==='shop')panelShop();if(p==='chat')panelChat()}
 const DESC={keep:'قلب مدينتك. كل ليفل بيرفع الحد الأقصى لكل المباني، وبيفتح جيوش جديدة.'};
@@ -406,19 +422,14 @@ function openCity(c){const me=c.id===ME.id;
   api.scout(c.id).then(r=>{if(!$('scP'))return;const P=power(),D=r.power*1.1+c.lvl*200,ch=P/Math.max(D,1),cc=$('scC');$('scP').textContent=fmt(r.power);
     cc.textContent=ch>=1.15?'عالية':ch>=.9?'متوسطة':'ضعيفة';cc.className=ch>=1.15?'win':ch>=.9?'':'lose';$('scL').innerHTML=['wood','meat','coal','iron'].map(k=>`${rIco(k,16)} ${fmt(r.loot[k])}`).join(' ')})
    .catch(()=>{if($('scP')){$('scP').textContent='؟';$('scC').textContent='؟';$('scL').textContent='؟'}});
-  $('pvp').onclick=async()=>{if(MARCHES.length){toast('فيه مسيرة لسه في الطريق');return}if(power()<=0){toast('درّب جنود الأول');return}
+  $('pvp').onclick=async()=>{if(MARCHES.some(x=>x.m.x===c.x&&x.m.y===c.y)){toast('فيه مسيرة رايحة للمدينة دي');return}if(MARCHES.length>=3){toast('عندك 3 مسيرات في الطريق، استنى واحدة توصل');return}if(power()<=0){toast('درّب جنود الأول');return}
     const btn=$('pvp');btn.disabled=true;btn.textContent='⏳ الجيش بيتجهز…';let res;
     try{res=await api.attack(c.id)}catch(e){toast('⚠️ '+(e.message||'الهجوم ماتمش'));btn.disabled=false;btn.textContent='⚔️ هجوم على '+c.name;return}
-    closeSheet();const d=Math.hypot(c.x-C.map_x,c.y-C.map_y);
-    MARCHES.push({m:{x:c.x,y:c.y},fx:C.map_x,fy:C.map_y,t0:performance.now(),dur:Math.min(6000,1500+d*250),onArrive:()=>pvpReport(res,c)});toast('🐪 الجيش اتحرك ناحية '+c.name+'…');
+    closeSheet();const sentN=TROOPS.reduce((a,x)=>a+x.amount,0),d=Math.hypot(c.x-C.map_x,c.y-C.map_y);
+    MARCHES.push({hero:['hayat','sarab','turbin'][MARCHES.length%3],n:TROOPS.reduce((s,x)=>s+x.amount,0),m:{x:c.x,y:c.y},fx:C.map_x,fy:C.map_y,t0:performance.now(),dur:Math.min(6000,1500+d*250),onArrive:()=>pvpReport(res,c,sentN)});toast('🐪 الجيش اتحرك ناحية '+c.name+'…');
     try{const dd=await api.load(ME.id);C=dd.city;TROOPS=dd.troops;HEROES=dd.heroes;hud()}catch(e){}
     loadReports()}}
-function pvpReport(r,c){const L=r.loot||{};
-  openSheet(`<div class="result">${artImg('keep')}<div class="big ${r.won?'win':'lose'}">${r.won?'انتصار! 🏆':'هزيمة 💀'}</div><p class="sub">هجومك على ${esc(c.name)}</p><div class="card">
-  <div class="kv"><span>قوتك</span><b>${fmt(r.attacker_power)}</b></div><div class="kv"><span>قوته</span><b>${fmt(r.defender_power)}</b></div>
-  ${r.won?`<div class="kv"><span>نهبت</span><b>${['wood','meat','coal','iron'].map(k=>rIco(k,16)+' '+fmt(L[k]||0)).join(' ')}</b></div>`:'<div class="kv"><span>النصيحة</span><b>زوّد جيشك أو طوّر الأبطال</b></div>'}
-  <div class="kv"><span>جنودك اللي اتصابوا</span><b class="lose">${fmt(r.attacker_lost)}</b></div><div class="kv"><span>جنوده اللي اتصابوا</span><b class="win">${fmt(r.defender_lost)}</b></div></div>
-  <div class="row"><button class="btn wide" id="okB">تمام</button></div></div>`);$('okB').onclick=closeSheet;hud()}
+function pvpReport(r,c,sent){openSheet(reportHTML({won:r.won,sub:'هجومك على '+esc(c.name),myName:PRO.name,myP:r.attacker_power,enName:c.name,enP:r.defender_power,enImg:ART.keep,loot:r.won?r.loot:null,sent:sent||0,lost:r.attacker_lost,enLost:r.defender_lost,defBonus:1}));$('okB').onclick=closeSheet;hud()}
 let REPORTS=[],notified=null;
 const ago=t=>{const s=Math.max(0,(Date.now()-new Date(t))/1000);return s<60?'دلوقتي':s<3600?'من '+Math.floor(s/60)+' دقيقة':s<86400?'من '+Math.floor(s/3600)+' ساعة':'من '+Math.floor(s/86400)+' يوم'};
 async function loadReports(){if(!ME||!C)return;let list;try{list=await api.battles(ME.id)}catch(e){return}if(!ME)return;REPORTS=list||[];
@@ -432,37 +443,60 @@ setInterval(loadReports,10000);
 setInterval(()=>{if(VIEW==='world'&&C&&ME)refreshWorld()},15000);
 function panelReports(){if(!ME)return;LS.set('najat_read_'+ME.id,Math.max(0,...REPORTS.map(b=>b.id)));document.querySelectorAll('.rbadge').forEach(x=>x.hidden=true);
   openSheet(`<h2>📜 تقارير المعارك</h2><p class="sub">آخر 30 معركة ليك، هجوم ودفاع.</p>${REPORTS.length?REPORTS.map(b=>{const atk=b.attacker_id===ME.id,won=atk?b.attacker_won:!b.attacker_won,L=b.loot||{};
-    return `<div class="rep ${won?'w':'l'}"><div class="rh"><b>${atk?'⚔️ هجمت على '+esc(b.defender_name):'🛡️ '+esc(b.attacker_name)+' هاجمك'}</b><span class="${won?'win':'lose'}">${won?'انتصار':'هزيمة'}</span></div>
-    <div class="rd">${b.attacker_won?`${atk?'نهبت':'اتنهب منك'}: ${['wood','meat','coal','iron'].map(k=>rIco(k,14)+' '+fmt(L[k]||0)).join(' ')}<br>`:''}جنودك اللي اتصابوا: ${fmt(atk?b.attacker_lost:b.defender_lost)} · جنوده: ${fmt(atk?b.defender_lost:b.attacker_lost)} · ${ago(b.created_at)}</div></div>`}).join(''):'<div class="card sub">مفيش معارك لسه. روح الخريطة ودوس على مدينة لاعب تهاجمها ⚔️</div>'}`)}
+    return `<div class="rep ${won?'w':'l'}"><div class="rh"><span class="ricon">${atk?'⚔️':'🛡️'}</span><div class="rt"><b>${atk?'هجوم على '+esc(b.defender_name):'دفاع ضد '+esc(b.attacker_name)}</b><small>${ago(b.created_at)}</small></div><span class="rres ${won?'win':'lose'}">${won?'انتصار':'هزيمة'}</span></div>
+    <div class="rgrid"><div><span>قوتك</span><b>${fmt(atk?b.attacker_power:b.defender_power)}</b></div><div><span>قوته</span><b>${fmt(atk?b.defender_power:b.attacker_power)}</b></div><div><span>خسايرك</span><b class="lose">-${fmt(atk?b.attacker_lost:b.defender_lost)}</b></div><div><span>خسايره</span><b>-${fmt(atk?b.defender_lost:b.attacker_lost)}</b></div></div>
+    ${b.attacker_won?`<div class="rloot"><span>${atk?'نهبت:':'اتنهب منك:'}</span>${['wood','meat','coal','iron'].map(k=>`<em>${rIco(k,16)} ${atk?'+':'-'}${fmt(L[k]||0)}</em>`).join('')}</div>`:''}</div>`}).join(''):'<div class="card sub">مفيش معارك لسه. روح الخريطة ودوس على مدينة لاعب تهاجمها ⚔️</div>'}`)}
 function openMonster(m){const P=power(),M=mPow(m.lvl),ch=P/M,win=ch>=1.1?'عالية':ch>=.95?'متوسطة':'ضعيفة',col=ch>=1.1?'win':ch>=.95?'':'lose';
   openSheet(`${artImg(MIMG[m.type])}<h2>${MT[m.type].n}</h2><p class="sub">ليفل ${m.lvl} · المكان (${m.x}, ${m.y})</p>
   <div class="card"><div class="kv"><span>قوة الوحش</span><b>${fmt(M)}</b></div><div class="kv"><span>قوة جيشك</span><b>${fmt(P)}</b></div><div class="kv"><span>فرصة الفوز</span><b class="${col}">${win}</b></div>
   <div class="kv"><span>الجايزة</span><b>🪵${fmt(300*m.lvl)} 🍖${fmt(300*m.lvl)} ⚫${fmt(120*m.lvl)} ⛓️${fmt(60*m.lvl)} · XP ${fmt(150*m.lvl)}</b></div></div>
   <div class="row"><button class="btn red wide" id="atk">⚔️ هجوم</button></div>`);
-  $('atk').onclick=()=>{if(MARCHES.length){toast('فيه مسيرة لسه في الطريق');return}if(P<=0){toast('درّب جنود الأول');return}closeSheet();const d=Math.hypot(m.x-C.map_x,m.y-C.map_y);MARCHES.push({m,fx:C.map_x,fy:C.map_y,t0:performance.now(),dur:Math.min(6000,1500+d*250)});toast('🐪 الجيش اتحرك…')}}
+  $('atk').onclick=()=>{if(MARCHES.some(x=>x.m===m)){toast('فيه مسيرة رايحة للوحش ده');return}if(MARCHES.length>=3){toast('عندك 3 مسيرات في الطريق، استنى واحدة توصل');return}if(P<=0){toast('درّب جنود الأول');return}closeSheet();const d=Math.hypot(m.x-C.map_x,m.y-C.map_y);MARCHES.push({hero:['hayat','sarab','turbin'][MARCHES.length%3],n:TROOPS.reduce((s,x)=>s+x.amount,0),m,fx:C.map_x,fy:C.map_y,t0:performance.now(),dur:Math.min(6000,1500+d*250)});toast('🐪 الجيش اتحرك…')}}
 async function resolveBattle(m){const P=power(),M=mPow(m.lvl),win=P*(.9+Math.random()*.2)>=M*(.9+Math.random()*.2),pct=win?.05:.2;let lost=0;
   for(const t of TROOPS){const l=Math.floor(t.amount*pct);if(l>0){t.amount-=l;lost+=l;try{await api.setTroop(ME.id,t.troop_class,t.tier,t.amount)}catch(e){}}}
   let ups=[];if(win){const L=m.lvl;await saveCity({wood:Math.floor(cur('wood')+300*L),meat:Math.floor(cur('meat')+300*L),coal:Math.floor(cur('coal')+120*L),iron:Math.floor(cur('iron')+60*L)});
     for(const h of HEROES){let lv=h.level,xp=h.xp+150*L;while(lv<100&&xp>=need(lv)){xp-=need(lv);lv++}if(lv>=100)xp=0;try{const r=await api.setHero(ME.id,h.hero_key,lv,xp);if(r.level>h.level)ups.push(HN[h.hero_key].n+' → '+r.level);Object.assign(h,r)}catch(e){}}
     KILLED[m.id]=Date.now()+10*60e3;LS.set('najat_k_'+ME.id,KILLED)}
-  openSheet(`<div class="result">${artImg(MIMG[m.type])}<div class="big ${win?'win':'lose'}">${win?'انتصار! 🏆':'هزيمة 💀'}</div><p class="sub">${MT[m.type].n} · ليفل ${m.lvl}</p>
-  <div class="card">${win?`<div class="kv"><span>غنيمة</span><b>🪵${fmt(300*m.lvl)} 🍖${fmt(300*m.lvl)} ⚫${fmt(120*m.lvl)} ⛓️${fmt(60*m.lvl)}</b></div><div class="kv"><span>خبرة لكل بطل</span><b>+${fmt(150*m.lvl)} XP</b></div>${ups.length?`<div class="kv"><span>ليفل أب</span><b>${ups.join(' · ')}</b></div>`:''}`:'<div class="kv"><span>النصيحة</span><b>درّب جنود أقوى أو طوّر الأبطال</b></div>'}
-  <div class="kv"><span>جنود خسرتهم</span><b>${fmt(lost)}</b></div></div><div class="row"><button class="btn wide" id="okB">تمام</button></div></div>`);$('okB').onclick=closeSheet;hud()}
+  const sent=TROOPS.reduce((a,x)=>a+x.amount,0)+lost;openSheet(reportHTML({won:win,sub:MT[m.type].n+' · ليفل '+m.lvl,myName:PRO.name,myP:P,enName:MT[m.type].n,enP:M,enImg:ART[MIMG[m.type]],loot:win?{wood:300*m.lvl,meat:300*m.lvl,coal:120*m.lvl,iron:60*m.lvl}:null,xp:win?150*m.lvl:0,ups,sent,lost,enLost:null}));$('okB').onclick=closeSheet;hud()}
 const HN={hayat:{n:'حياة',g:'بطلة',cls:'مشاة',c:'#9C4A1A',d:'تقف في الصف الأول وتحمي الجيش.',a:[40,90,60],w:'sword'},sarab:{n:'سراب',g:'بطلة',cls:'رماح',c:'#4E5394',d:'سريعة كالسراب. تخترق خطوط العدو.',a:[70,60,55],w:'spear'},turbin:{n:'توربين',g:'بطل',cls:'رماة',c:'#2E7D4F',d:'يرمي من بعيد. أعلى ضرر في الجيش.',a:[95,40,50],w:'bow'}};
 const HIMG={hayat:'hero_hayat',sarab:'hero_sarab',turbin:'hero_turbin'},HCLS={hayat:'infantry',sarab:'lancer',turbin:'marksman'};
 function panelHeroes(){openSheet(`<h2>الأبطال</h2><p class="sub">كل بطل يوصل لليفل 100. حارب الوحوش في خريطة العالم علشان تكسب XP.</p><div class="grid">${['hayat','sarab','turbin'].map(k=>{const s=HEROES.find(h=>h.hero_key===k)||{level:1,xp:0},h=HN[k],L=s.level,nx=need(L),g=1+(L-1)*.05;
   return `<article class="hero"><div class="art" style="background-image:url('${ART[HIMG[k]]}')"><span class="cls">${ico(CI[HCLS[k]],18)} ${h.cls}</span><span class="lvb">Lv ${L}</span></div><div class="body"><h3>${h.n}</h3><div class="sub" style="margin:0">${h.g} ${h.cls} · ${h.d}</div>
   <div class="stats"><div>هجوم<b>${fmt(h.a[0]*g)}</b></div><div>دفاع<b>${fmt(h.a[1]*g)}</b></div><div>صحة<b>${fmt(h.a[2]*g*10)}</b></div></div><div class="bar w"><i style="width:${L>=100?100:s.xp/nx*100}%"></i></div><div class="sub" style="margin:4px 0 0;font-size:12px">${L>=100?'أقصى ليفل':'XP '+fmt(s.xp)+' / '+fmt(nx)}</div></div></article>`}).join('')}</div>`)}
 const cost=(tier,n)=>({meat:5*tier*n,wood:3*tier*n,iron:Math.ceil(tier*n/2)});
-function panelArmy(){const open=tiersOpen();openSheet(`<h2>الثكنة</h2><p class="sub">3 أنواع × 9 مستويات. المستوى بيتفتح مع ليفل القلعة. قوة جيشك: <b style="color:var(--gold)">${fmt(power())}</b></p>
+function reportHTML(o){const tot=Math.max(1,o.myP+o.enP),pct=Math.round(o.myP/tot*100),diff=o.enP>0?Math.round((o.myP-o.enP)/o.enP*100):100,L=o.loot;
+  return `<div class="rpt ${o.won?'w':'l'}"><div class="rban">${o.won?'🏆 انتصار':'💀 هزيمة'}</div><div class="rsub">${o.sub}</div>
+  <div class="vs"><div class="side"><div class="sav" style="background-image:url('${ART[HIMG[o.hero||'hayat']]}')"></div><b>${esc(o.myName)}</b><span>${fmt(o.myP)}</span></div><div class="vsx">VS</div><div class="side"><div class="sav en" style="background-image:url('${o.enImg}')"></div><b>${esc(o.enName)}</b><span>${fmt(o.enP)}</span></div></div>
+  <div class="pbar"><i style="width:${pct}%"></i></div><div class="pnote">${diff>=0?`قوتك كانت أعلى بـ ${diff}%`:`قوتك كانت أقل بـ ${-diff}%`}${o.defBonus?' · والمدافع عنده ميزة الأسوار':''}</div>
+  ${o.won&&L?`<div class="rsec">🎁 الغنيمة</div><div class="loot">${['wood','meat','coal','iron'].map(k=>`<div>${rIco(k,30)}<b>+${fmt(L[k]||0)}</b></div>`).join('')}</div>`:''}
+  ${o.xp?`<div class="rsec">📜 خبرة الأبطال</div><div class="tip" style="margin-top:6px;border-style:solid">+${fmt(o.xp)} XP لكل بطل${o.ups&&o.ups.length?'<br>⬆️ '+o.ups.join(' · '):''}</div>`:''}
+  <div class="rsec">🛡️ الجنود</div><div class="tgrid"><div><span>رايحين</span><b>${fmt(o.sent)}</b></div><div><span>اتصابوا</span><b class="lose">-${fmt(o.lost)}</b></div><div><span>راجعين</span><b class="win">${fmt(Math.max(0,o.sent-o.lost))}</b></div><div><span>العدو اتصاب</span><b>${o.enLost==null?'—':fmt(o.enLost)}</b></div></div>
+  ${o.won?'':`<div class="tip">💡 ${diff<0?'محتاج تزوّد قوتك '+(-diff)+'% على الأقل.':'الحظ ماكانش في صفك المرة دي.'} درّب جنود أعلى مستوى من الثكنة أو طوّر الأبطال.</div>`}
+  <div class="row"><button class="btn wide" id="okB">تمام</button></div></div>`}
+function drawMarch(mr,x,y,bx,by,t){const pr=.5+.5*Math.sin(t/200);ctx.strokeStyle=`rgba(224,99,74,${.45+.45*pr})`;ctx.lineWidth=2.5;ctx.beginPath();ctx.ellipse(bx,by+8,26+pr*6,11+pr*3,0,0,7);ctx.stroke();
+  if(Math.random()<.45)FX.push({x:x+(Math.random()-.5)*16,y:y+12,vx:(Math.random()-.5)*.5,vy:-.15,l:.7,dust:1});
+  ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(x,y+16,22,7,0,0,7);ctx.fill();
+  const bob=Math.sin(t/110)*1.5,cy=y-6+bob,R=17,px=x+R-1,w=Math.sin(t/160)*3;
+  ctx.strokeStyle='#5A3D22';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(px,cy+R-2);ctx.lineTo(px,cy-R-22);ctx.stroke();
+  ctx.fillStyle='#A3241A';ctx.beginPath();ctx.moveTo(px,cy-R-22);ctx.quadraticCurveTo(px+10,cy-R-20+w,px+21,cy-R-18+w);ctx.lineTo(px+19,cy-R-5+w);ctx.quadraticCurveTo(px+9,cy-R-7+w,px,cy-R-9);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#F0C068';ctx.beginPath();ctx.arc(px+9,cy-R-14+w*.6,2.6,0,7);ctx.fill();
+  const hk=mr.hero||'hayat',ik=HIMG[hk];ctx.save();ctx.beginPath();ctx.arc(x,cy,R,0,7);ctx.closePath();ctx.fillStyle='#3A2B1B';ctx.fill();if(ok(ik)){const im=IMG[ik],s=R*2.4;ctx.clip();ctx.drawImage(im,x-s/2,cy-R*1.1,s,s*im.naturalHeight/im.naturalWidth)}ctx.restore();
+  const g=ctx.createLinearGradient(0,cy-R,0,cy+R);g.addColorStop(0,'#FFE7A3');g.addColorStop(1,'#B7791F');ctx.strokeStyle=g;ctx.lineWidth=3.5;ctx.beginPath();ctx.arc(x,cy,R,0,7);ctx.stroke();
+  const txt='⚔️ '+fmt(mr.n||0);ctx.font='800 11px Tahoma';ctx.textAlign='center';ctx.textBaseline='middle';const tw=ctx.measureText(txt).width+12;ctx.fillStyle='rgba(122,26,16,.92)';rr(x-tw/2,cy+R+3,tw,16,8);ctx.fill();ctx.strokeStyle='#F0C068';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle='#FFF3D6';ctx.fillText(txt,x,cy+R+11.5);ctx.textBaseline='alphabetic'}
+const TR=LS.get('najat_tr',{cls:'infantry',tier:0,n:100});
+function panelArmy(){const open=tiersOpen(),tier=TR.tier&&TR.tier<=open?TR.tier:open;
+  openSheet(`<h2>الثكنة</h2><p class="sub">3 أنواع × 9 مستويات. المستوى بيتفتح مع ليفل القلعة. قوة جيشك: <b style="color:var(--gold)">${fmt(power())}</b></p>
   <div class="tbl"><table><thead><tr><th>النوع</th>${UNLOCK.map((u,i)=>`<th>T${i+1}<br><small class="${C.keep_level>=u?'':'off'}">قلعة ${u}</small></th>`).join('')}</tr></thead><tbody>${Object.keys(CLS).map(c=>'<tr><th>'+ico(CI[c],22)+'<br>'+CLS[c]+'</th>'+UNLOCK.map((u,i)=>{const r=TROOPS.find(x=>x.troop_class===c&&x.tier===i+1);return `<td class="${C.keep_level>=u?'':'off'}">${C.keep_level>=u?fmt(r?r.amount:0):'🔒'}</td>`}).join('')+'</tr>').join('')}</tbody></table></div>
-  <div class="card"><b style="color:var(--gold)">تدريب جنود</b><div class="train" style="margin-top:8px"><div><label for="tC">النوع</label><select id="tC">${Object.keys(CLS).map(c=>`<option value="${c}">${CLS[c]}</option>`).join('')}</select></div><div><label for="tT">المستوى</label><select id="tT">${Array.from({length:open},(_,i)=>`<option value="${i+1}" ${i+1===open?'selected':''}>T${i+1}</option>`).join('')}</select></div><div><label for="tN">العدد</label><input id="tN" type="number" min="1" max="10000" value="100"></div></div>
+  <div class="card"><b style="color:var(--gold)">تدريب جنود</b><div class="train" style="margin-top:8px"><div><label for="tC">النوع</label><select id="tC">${Object.keys(CLS).map(c=>`<option value="${c}" ${c===TR.cls?'selected':''}>${CLS[c]}</option>`).join('')}</select></div><div><label for="tT">المستوى</label><select id="tT">${Array.from({length:open},(_,i)=>`<option value="${i+1}" ${i+1===tier?'selected':''}>T${i+1}</option>`).join('')}</select></div><div><label for="tN">العدد (لحد 50,000)</label><input id="tN" type="number" inputmode="numeric" min="1" max="50000" value="${TR.n}"></div></div>
+  <div class="qn">${[100,1000,10000,50000].map(v=>`<button class="btn alt sm" data-qn="${v}">${fmt(v)}</button>`).join('')}<button class="btn alt sm" data-qn="max">الأقصى</button></div>
   <div class="sub" id="tCost" style="margin:8px 0 0"></div><div class="row"><button class="btn wide" id="tGo">🛡️ درّب</button></div></div>`);
-  const sc=()=>{const c=cost(+$('tT').value,Math.max(1,+$('tN').value||1));$('tCost').textContent=`التكلفة: 🍖 ${fmt(c.meat)} · 🪵 ${fmt(c.wood)} · ⛓️ ${fmt(c.iron)}`};$('tT').onchange=sc;$('tN').oninput=sc;sc();
-  $('tGo').onclick=async()=>{const cls=$('tC').value,tier=+$('tT').value,n=Math.min(10000,Math.max(1,Math.floor(+$('tN').value||0))),c=cost(tier,n);
-    for(const k of ['meat','wood','iron'])if(cur(k)<c[k]){toast('الموارد مش كفاية');return}$('tGo').disabled=true;
-    if(await saveCity({meat:Math.floor(cur('meat')-c.meat),wood:Math.floor(cur('wood')-c.wood),iron:Math.floor(cur('iron')-c.iron)})){const old=TROOPS.find(x=>x.troop_class===cls&&x.tier===tier);
-      try{const r=await api.setTroop(ME.id,cls,tier,(old?old.amount:0)+n);TROOPS=TROOPS.filter(x=>x!==old).concat(r);toast(`اتدرّب ${fmt(n)} ${CLS[cls]} T${tier} 🛡️`)}catch(e){toast('ماتحفظش')}}panelArmy()}}
+  const getN=()=>Math.min(50000,Math.max(1,Math.floor(+$('tN').value||0))),remember=()=>{TR.cls=$('tC').value;TR.tier=+$('tT').value;TR.n=getN();LS.set('najat_tr',TR)};
+  const sc=()=>{const c=cost(+$('tT').value,getN()),enough=['meat','wood','iron'].every(k=>cur(k)>=c[k]);$('tCost').innerHTML=`التكلفة: ${rIco('meat',16)} ${fmt(c.meat)} · ${rIco('wood',16)} ${fmt(c.wood)} · ${rIco('iron',16)} ${fmt(c.iron)}${enough?'':' <span class="lose">· الموارد مش كفاية</span>'}`};
+  $('tC').onchange=()=>{remember();sc()};$('tT').onchange=()=>{remember();sc()};$('tN').oninput=sc;$('tN').onchange=()=>{$('tN').value=getN();remember();sc()};
+  document.querySelectorAll('[data-qn]').forEach(b=>b.onclick=()=>{let v=b.dataset.qn;if(v==='max'){const t=+$('tT').value;v=Math.floor(Math.min(cur('meat')/(5*t),cur('wood')/(3*t),cur('iron')/(t/2)));v=Math.max(1,Math.min(50000,v))}$('tN').value=v;remember();sc()});
+  sc();
+  $('tGo').onclick=async()=>{remember();const cls=TR.cls,t=TR.tier,n=TR.n,c=cost(t,n);for(const k of ['meat','wood','iron'])if(cur(k)<c[k]){toast('الموارد مش كفاية، اشتري من 🛒 متجر الموارد');return}$('tGo').disabled=true;
+    if(await saveCity({meat:Math.floor(cur('meat')-c.meat),wood:Math.floor(cur('wood')-c.wood),iron:Math.floor(cur('iron')-c.iron)})){await giveTroops(cls,t,n);toast(`اتدرّب ${fmt(n)} ${CLS[cls]} T${t} 🛡️`)}panelArmy()}}
 const PK=[1,5,10,25,50,75,100];
 let shopTab=null,busy=false;
 const RES_PK={wood:[[10000,100],[50000,450],[200000,1600],[1000000,7000]],meat:[[10000,100],[50000,450],[200000,1600],[1000000,7000]],coal:[[2000,100],[10000,450],[40000,1600],[200000,7000]],iron:[[1000,100],[5000,450],[20000,1600],[100000,7000]]};
