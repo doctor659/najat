@@ -106,6 +106,11 @@ th .ri{width:26px;height:26px}
 .dl span{display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.32);border-radius:99px;padding:3px 10px;font-size:12.5px;font-weight:700}
 .dtag{position:absolute;top:-11px;left:14px;background:var(--red);color:#fff;font-weight:700;font-size:12px;padding:2px 10px;border-radius:99px}
 .gal{cursor:pointer}
+.hbtns{display:flex;align-items:center;gap:8px;flex:none}
+.rshop{font:inherit;font-weight:700;font-size:13px;border:1.5px solid #FBE3A8;border-radius:12px;padding:6px 10px;background:linear-gradient(180deg,#F7D58A,#D49A3E);color:#2B1A08;box-shadow:0 2px 0 #8A5A1C;cursor:pointer;white-space:nowrap}
+.rshop:active{transform:translateY(2px);box-shadow:none}
+.resbar span{position:relative;cursor:pointer;overflow:visible!important}
+.resbar span::after{content:"+";position:absolute;top:-7px;left:-5px;width:17px;height:17px;border-radius:50%;background:#3FA866;color:#fff;font-size:14px;font-weight:800;line-height:17px;text-align:center;box-shadow:0 1px 0 #1F6B3A}
 .err{color:#FF9E88;font-size:13.5px;min-height:1em;text-align:center}
 </style>
 </head>
@@ -114,7 +119,7 @@ th .ri{width:26px;height:26px}
   <header id="hud">
     <div class="hrow">
       <div class="me"><div class="av" id="hAv">ر</div><div style="min-width:0"><b id="hName">النجاة في الصحراء</b><small id="hPow">القوة 0</small></div></div>
-      <div class="gal"><img class="ri" data-art="icon_water" alt="جالون"> <span id="hGal">0</span></div>
+      <div class="hbtns"><button class="rshop" id="rShop">🛒 متجر الموارد</button><div class="gal"><img class="ri" data-art="icon_water" alt="جالون"> <span id="hGal">0</span></div></div>
     </div>
     <div class="resbar"><span><img class="ri" data-art="icon_wood" alt="خشب"> <b id="r-wood">0</b></span><span><img class="ri" data-art="icon_meat" alt="لحم"> <b id="r-meat">0</b></span><span><img class="ri" data-art="icon_coal" alt="فحم"> <b id="r-coal">0</b></span><span>⛓️ <b id="r-iron">0</b></span></div>
   </header>
@@ -359,6 +364,8 @@ function tap(x,y){let best=null,bd=1e9;for(const h of HITS){const d=Math.hypot(h
   if(best.b){TAPPED[best.b.id]=performance.now();openBuilding(best.b)}else if(best.m)openMonster(best.m);else if(best.c)openCity(best.c)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,cam=camW;
   if(a==='zin')zoomTo(cam,cam.z*1.2);if(a==='zout')zoomTo(cam,cam.z/1.2);if(a==='home')homeWorld()});
+const openRes=k=>{if(!(C&&ME))return;panelShop('res');if(k)setTimeout(()=>{const e=document.getElementById('sh-'+k);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},80)};
+$('rShop').onclick=()=>openRes();document.querySelectorAll('.resbar span').forEach((sp,i)=>sp.onclick=()=>openRes(['wood','meat','coal','iron'][i]));
 document.querySelector('.gal').onclick=()=>{if(C&&ME)panelShop('gal')};
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(!C)return;if(b.dataset.view){VIEW=b.dataset.view;document.querySelectorAll('#nav button[data-view]').forEach(x=>x.classList.toggle('on',x===b));$('zoomBtns').hidden=VIEW!=='world';closeSheet();if(VIEW==='world'){refreshWorld().then(()=>{if(!camW.init){camW.init=1;homeWorld()}})}}
   else openPanel(b.dataset.panel)});
@@ -421,7 +428,7 @@ const card=(icon,label,price,key)=>`<div class="item"><div class="ii">${icon}</d
 function panelShop(tab){if(tab)shopTab=tab;if(!shopTab)shopTab=Number(C.gallons)>0?'res':'gal';
   const TB=[['gal','💧 شحن'],['deal','👑 عروض'],['res','الموارد'],['hero','الأبطال'],['army','الجيش']];let body='';
   if(shopTab==='gal')body=`<p class="sub">1,000 جالون = $1، وكل $25 بتزوّد 10% هدية. (بيتا: الشحن تجريبي من غير دفع)</p><div class="grid">${PK.map(p=>{const bon=Math.floor(p/25)*10,tot=p*1000*(1+bon/100);return `<div class="pk">${bon?`<span class="bonus">+${bon}% هدية</span>`:''}<div class="amt">${ico('icon_water',30)} ${fmt(tot)}</div><div class="price">$${p}</div><button class="btn wide" data-gal="${tot}">اشحن</button></div>`}).join('')}</div>`;
-  if(shopTab==='res')body=Object.keys(RES_PK).map(k=>`<div class="shead">${rIco(k,26)} ${RNAME[k]} <small>عندك ${fmt(cur(k))}</small></div><div class="grid g2">${RES_PK[k].map(([a,p])=>card(rIco(k,42),fmt(a)+' '+RNAME[k],p,`res:${k}:${a}`)).join('')}</div>`).join('');
+  if(shopTab==='res')body=Object.keys(RES_PK).map(k=>`<div class="shead" id="sh-${k}">${rIco(k,26)} ${RNAME[k]} <small>عندك ${fmt(cur(k))}</small></div><div class="grid g2">${RES_PK[k].map(([a,p])=>card(rIco(k,42),fmt(a)+' '+RNAME[k],p,`res:${k}:${a}`)).join('')}</div>`).join('');
   if(shopTab==='hero')body=`<p class="sub">كتب الخبرة بترفع ليفل البطل على طول.</p>`+['hayat','sarab','turbin'].map(h=>{const s=HEROES.find(x=>x.hero_key===h)||{level:1};return `<div class="shead"><img class="hthumb" src="${ART[HIMG[h]]}" alt=""> ${HN[h].n} <small>Lv ${s.level}</small></div><div class="grid g3">${XP_PK.map(([a,p])=>card('📜',fmt(a)+' XP',p,`xp:${h}:${a}`)).join('')}</div>`}).join('');
   if(shopTab==='army'){const t=tiersOpen();body=`<p class="sub">جنود جاهزين فوراً من أعلى مستوى مفتوح عندك (T${t}). كل ما تطوّر القلعة يتفتح مستوى أقوى.</p>`+Object.keys(CLS).map(c=>`<div class="shead">${ico(CI[c],26)} ${CLS[c]} T${t}</div><div class="grid g3">${[500,2000,10000].map(n=>card(ico(CI[c],40),fmt(n)+' جندي',Math.ceil(n*t*.3),`tr:${c}:${t}:${n}`)).join('')}</div>`).join('')}
   if(shopTab==='deal')body=BUNDLES.map(b=>`<div class="deal">${b.tag?`<span class="dtag">${b.tag}</span>`:''}<h3>${b.n}</h3><div class="sub" style="margin:0 0 8px">${b.d}</div><div class="dl">${Object.keys(b.res).map(k=>`<span>${rIco(k,20)} ${fmt(b.res[k])}</span>`).join('')}${b.xp?`<span>📜 ${fmt(b.xp)} XP لكل بطل</span>`:''}${b.troops?`<span>${ico('icon_infantry',20)} ${fmt(b.troops)} جندي T${tiersOpen()}</span>`:''}</div><button class="btn wide" data-buy="deal:${b.id}" data-price="${b.price}">${ico('icon_water',20)} ${fmt(b.price)}</button></div>`).join('');
