@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>النجاة في الصحراء</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --bg:#F3E6CC;--surface:#FFF8EA;--sunk:#E9D6AE;--fg:#2B1D0E;--muted:#7A6447;
+  --sand:#C8913F;--water:#127C8C;--water-soft:#D3EEF0;--line:#D9BE8C;--ok:#2E7D4F;--warn:#B5442E;
+  --inf:#9C4A1A;--lan:#5A5F9E;--mar:#2E7D4F;--me:#C8913F;--other:#5A5F9E;
+  --display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;--body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#141A2E;--surface:#1D2540;--sunk:#111729;--fg:#F2E6CF;--muted:#A99C85;
+  --sand:#E2B062;--water:#4CC3D2;--water-soft:#163A47;--line:#33406A;--ok:#5FC48A;--warn:#E37A62;
+  --inf:#E08A55;--lan:#9CA2E8;--mar:#6FCF97;--me:#E2B062;--other:#9CA2E8;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:1040px;margin:0 auto;padding-block:16px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-family:var(--display);color:var(--sand);margin:0;font-size:clamp(26px,5vw,38px);line-height:1.15}
+h2{font-family:var(--display);font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 14px;font-size:13.5px}
+.beta{display:inline-block;font-size:11px;font-weight:700;border:1.5px solid var(--sand);color:var(--sand);padding:1px 8px;border-radius:99px;margin-inline-start:8px;vertical-align:middle}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:9px 16px;cursor:pointer;background:var(--sand);color:#2B1D0E}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--fg)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,select:focus-visible,nav.tabs button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
+input,select{font:inherit;width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg)}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+.auth{max-width:420px;margin:8vh auto 0;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.auth .sw{display:flex;gap:6px}
+.auth .sw button{flex:1}
+.err{color:var(--warn);font-size:13.5px;min-height:1em}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.who{font-size:13px;color:var(--muted)}
+.gallons{display:flex;align-items:center;gap:10px;background:var(--water-soft);border:1.5px solid var(--water);border-radius:14px;padding:6px 14px}
+.gallons b{font-family:var(--display);font-size:22px;color:var(--water);font-variant-numeric:tabular-nums}
+.res{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.r{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.r .k{font-size:12px;color:var(--muted)}.r .v{font-family:var(--display);font-size:20px;font-variant-numeric:tabular-nums}.r .p{font-size:12px;color:var(--ok);font-variant-numeric:tabular-nums}
+nav.tabs{display:flex;gap:4px;margin:18px 0 14px;border-bottom:2px solid var(--line);overflow-x:auto}
+nav.tabs button{font:inherit;font-weight:700;background:none;border:0;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--sand)}
+.keep{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;background:var(--surface);border:2px solid var(--sand);border-radius:16px;padding:16px}
+.keep .lvl{font-family:var(--display);font-size:40px;color:var(--sand);line-height:1;text-align:center;min-width:70px}
+.keep .lvl small{display:block;font-size:12px;color:var(--muted);font-family:var(--body)}
+.bar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--sand);border-radius:99px;transition:width .3s}.bar.w i{background:var(--water)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card .t{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.card h3{margin:0;font-size:16px}.card .lv{font-family:var(--display);color:var(--sand);font-variant-numeric:tabular-nums}.card .d{font-size:13px;color:var(--muted)}
+.tbl{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;min-width:520px;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line);font-size:13.5px}
+.tbl th{color:var(--muted);font-weight:500}.on{color:var(--ok);font-weight:700}.off{color:var(--muted)}
+.train{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;margin-top:12px}
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.hero .art{height:130px;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 40%,var(--bg)))}
+.hero .art svg{width:78px;height:78px}
+.hero .cls{position:absolute;top:10px;inset-inline-start:10px;background:var(--surface);color:var(--fg);font-size:12px;font-weight:700;padding:2px 10px;border-radius:99px}
+.hero .lvb{position:absolute;bottom:10px;inset-inline-end:10px;background:rgba(0,0,0,.55);color:#FFF4DE;font-family:var(--display);font-size:18px;padding:2px 12px;border-radius:10px}
+.hero .body{padding:14px;display:flex;flex-direction:column;gap:8px}.hero h3{font-family:var(--display);font-size:24px;margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}.stats div{background:var(--sunk);border-radius:8px;padding:6px 4px;font-size:11.5px;color:var(--muted)}.stats b{display:block;color:var(--fg);font-size:15px;font-variant-numeric:tabular-nums}
+.xp{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.pk{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px;position:relative;min-width:0}
+.pk.best{border-color:var(--water)}.pk .bonus{position:absolute;top:-10px;inset-inline-end:12px;background:var(--water);color:#fff;font-weight:700;font-size:12px;padding:2px 10px;border-radius:99px}
+.pk .amt{font-family:var(--display);font-size:26px;color:var(--water);font-variant-numeric:tabular-nums}.pk .base{font-size:12.5px;color:var(--muted)}.pk .price{font-size:20px;font-weight:700}
+.map{position:relative;width:100%;max-width:560px;aspect-ratio:1;margin:0 auto;background:repeating-linear-gradient(0deg,transparent 0 calc(10% - 1px),color-mix(in srgb,var(--line) 60%,transparent) calc(10% - 1px) 10%),repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),color-mix(in srgb,var(--line) 60%,transparent) calc(10% - 1px) 10%),var(--sunk);border:2px solid var(--line);border-radius:14px;overflow:hidden}
+.city{position:absolute;transform:translate(50%,-50%);width:26px;height:26px;border-radius:8px;border:2px solid var(--surface);background:var(--other);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.city.me{background:var(--me);color:#2B1D0E;width:32px;height:32px;z-index:2}
+.info{max-width:560px;margin:12px auto 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+.chat{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;height:min(60vh,520px)}
+.msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.msg{background:var(--sunk);border-radius:10px;padding:6px 10px;max-width:85%;align-self:flex-start;overflow-wrap:anywhere}
+.msg.mine{align-self:flex-end;background:var(--water-soft)}
+.msg b{font-size:12px;color:var(--sand);display:block}
+.send{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:12px;font-weight:700;font-size:14px;max-width:calc(100% - 32px);text-align:center;z-index:9}
+.note{margin-top:14px;font-size:13px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:10px 14px}
+@media (max-width:640px){.res{grid-template-columns:repeat(2,minmax(0,1fr))}.keep{grid-template-columns:auto 1fr}.keep .btn{grid-column:1/-1}.train{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="authView" class="auth" hidden>
+  <h1>النجاة في الصحراء <span class="beta">بيتا</span></h1>
+  <div class="sw"><button class="btn" id="swIn">دخول</button><button class="btn ghost" id="swUp">حساب جديد</button></div>
+  <div><label for="email">الإيميل</label><input id="email" type="email" autocomplete="email" placeholder="name@email.com"></div>
+  <div><label for="pass">الباسورد (6 حروف على الأقل)</label><input id="pass" type="password" autocomplete="current-password"></div>
+  <div id="cityWrap" hidden><label for="cityName">اسم مدينتك</label><input id="cityName" maxlength="20" placeholder="مثلاً: واحة النخيل"></div>
+  <button class="btn" id="authGo">دخول</button>
+  <div class="err" id="authErr"></div>
+</section>
+
+<section id="gameView" hidden>
+  <header class="top">
+    <div><h1>النجاة في الصحراء <span class="beta">بيتا</span></h1><div class="who" id="who"></div></div>
+    <div class="row" style="align-items:center"><div class="gallons"><div><b id="gal">0</b><div class="who">جالون مياه</div></div></div><button class="btn ghost" id="logout">خروج</button></div>
+  </header>
+  <section class="res" aria-label="الموارد">
+    <div class="r"><div class="k">خشب</div><div class="v" id="rv-wood">0</div><div class="p" id="rp-wood"></div></div>
+    <div class="r"><div class="k">لحم</div><div class="v" id="rv-meat">0</div><div class="p" id="rp-meat"></div></div>
+    <div class="r"><div class="k">فحم · طاقة</div><div class="v" id="rv-coal">0</div><div class="p" id="rp-coal"></div></div>
+    <div class="r"><div class="k">حديد</div><div class="v" id="rv-iron">0</div><div class="p" id="rp-iron"></div></div>
+  </section>
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-p="city">المدينة</button>
+    <button role="tab" aria-selected="false" data-p="army">الجيش</button>
+    <button role="tab" aria-selected="false" data-p="heroes">الأبطال</button>
+    <button role="tab" aria-selected="false" data-p="map">الخريطة</button>
+    <button role="tab" aria-selected="false" data-p="chat">الشات</button>
+    <button role="tab" aria-selected="false" data-p="shop">متجر المياه</button>
+  </nav>
+
+  <section id="p-city">
+    <h2>مدينتك</h2><p class="sub">التطوير مجاني في البيتا. أي مبنى مايقدرش يعدّي ليفل القلعة.</p>
+    <div class="keep"><div class="lvl" id="keepLvl">1<small>من 30</small></div><div><b style="font-size:18px">القلعة</b><div class="d" style="color:var(--muted);font-size:13px">المبنى الرئيسي. كل ما يكبر بيفتح جيوش جديدة.</div><div class="bar"><i id="keepBar"></i></div></div><button class="btn" id="keepUp">طوّر القلعة</button></div>
+    <div class="grid" id="blds"></div>
+  </section>
+
+  <section id="p-army" hidden>
+    <h2>الجيش</h2><p class="sub">3 أنواع × 9 مستويات. المستوى بيتفتح مع ليفل القلعة. التدريب فوري في البيتا.</p>
+    <div class="tbl"><table><thead><tr id="tH"></tr></thead><tbody id="tB"></tbody></table></div>
+    <div class="card" style="margin-top:14px"><h3>تدريب جنود</h3>
+      <div class="train">
+        <div><label for="tClass">النوع</label><select id="tClass"><option value="infantry">مشاة</option><option value="lancer">رماح</option><option value="marksman">رماة</option></select></div>
+        <div><label for="tTier">المستوى</label><select id="tTier"></select></div>
+        <div><label for="tAmt">العدد</label><input id="tAmt" type="number" min="1" max="10000" value="100"></div>
+        <button class="btn" id="trainGo">درّب</button>
+      </div>
+      <div class="d" id="tCost"></div>
+    </div>
+  </section>
+
+  <section id="p-heroes" hidden><h2>الأبطال</h2><p class="sub">كل بطل يوصل لليفل 100 بنقاط الخبرة (XP).</p><div class="grid" id="heroes"></div></section>
+
+  <section id="p-map" hidden><h2>خريطة السيرفر 1</h2><p class="sub">كل لاعب له مدينة على الخريطة. مدينتك باللون الذهبي. اضغط على أي مدينة.</p><div class="map" id="map"></div><div class="info" id="mapInfo">اضغط على مدينة علشان تشوف صاحبها.</div><p class="note">الهجوم والاستطلاع جايين في التحديث الجاي.</p></section>
+
+  <section id="p-chat" hidden><h2>شات السيرفر</h2><p class="sub">كل لاعيبة السيرفر بيشوفوا الرسايل دي.</p><div class="chat"><div class="msgs" id="msgs"></div><form class="send" id="sendForm"><input id="msgIn" maxlength="300" placeholder="اكتب رسالة…" autocomplete="off"><button class="btn">ابعت</button></form></div></section>
+
+  <section id="p-shop" hidden><h2>متجر المياه</h2><p class="sub">1,000 جالون = $1، وكل $25 بتزوّد مكافأة 10%.</p><div class="grid" id="shop"></div><p class="note">بيتا: الشراء تجريبي وبيضيف الجالونات من غير دفع.</p></section>
+</section>
+</div>
+
+<script>
+(function(){
+const SUPABASE_URL='https://otgmcefzzogrwnfkwsiv.supabase.co';
+const SUPABASE_KEY='sb_publishable_5WZWtRqAqiMCF40LgP4pjw_myrmHBcV';
+const SPEED=10;
+const MAP_SIZE=40;
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+const fmt=n=>Math.floor(n).toLocaleString('en-US');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2400)}
+
+let me=null, profile=null, city=null, heroes=[], troops=[], busy=false, chatTimer=null;
+
+let mode='in';
+function setMode(m){mode=m;$('swIn').className='btn'+(m==='in'?'':' ghost');$('swUp').className='btn'+(m==='up'?'':' ghost');$('cityWrap').hidden=m!=='up';$('authGo').textContent=m==='in'?'دخول':'اعمل حساب';$('authErr').textContent=''}
+$('swIn').onclick=()=>setMode('in');$('swUp').onclick=()=>setMode('up');
+$('authGo').onclick=async()=>{
+  const email=$('email').value.trim(),pass=$('pass').value;$('authErr').textContent='';
+  if(!email||pass.length<6){$('authErr').textContent='اكتب الإيميل وباسورد 6 حروف على الأقل.';return}
+  $('authGo').disabled=true;
+  try{
+    if(mode==='up'){
+      const name=$('cityName').value.trim();if(!name){$('authErr').textContent='اكتب اسم مدينتك.';return}
+      const {data,error}=await db.auth.signUp({email,password:pass,options:{data:{city_name:name}}});
+      if(error)throw error;
+      if(!data.session){$('authErr').textContent='اتعمل الحساب. لو جالك إيميل تأكيد، أكّده وبعدين ادخل.';setMode('in');return}
+    }else{
+      const {error}=await db.auth.signInWithPassword({email,password:pass});if(error)throw error;
+    }
+  }catch(e){$('authErr').textContent=e.message&&/Invalid login/i.test(e.message)?'الإيميل أو الباسورد غلط.':(e.message||'حصل خطأ، جرّب تاني.')}
+  finally{$('authGo').disabled=false}
+};
+$('logout').onclick=async()=>{await db.auth.signOut()};
+db.auth.onAuthStateChange((_e,session)=>{me=session?session.user:null;me?startGame():showAuth()});
+function showAuth(){$('gameView').hidden=true;$('authView').hidden=false;clearInterval(chatTimer)}
+
+async function startGame(){
+  $('authView').hidden=true;$('gameView').hidden=false;
+  const [p,c,h,t]=await Promise.all([
+    db.from('profiles').select('*').eq('id',me.id).single(),
+    db.from('cities').select('*').eq('player_id',me.id).single(),
+    db.from('heroes').select('*').eq('player_id',me.id),
+    db.from('troops').select('*').eq('player_id',me.id)]);
+  if(p.error||c.error){toast('مش لاقي مدينتك. اتأكد إن ملف الـ SQL اتشغّل.');console.error(p.error||c.error);return}
+  profile=p.data;city=c.data;heroes=h.data||[];troops=t.data||[];
+  $('who').textContent=`${profile.name} · السيرفر ${profile.server_id} · (${city.map_x}, ${city.map_y})`;
+  drawAll();
+}
+
+const B={wood:{n:'المنشرة',r:'خشب',col:'sawmill_level',base:120},meat:{n:'كوخ الصيادين',r:'لحم',col:'hunters_level',base:120},coal:{n:'منجم الفحم',r:'فحم',col:'coal_mine_level',base:60},iron:{n:'منجم الحديد',r:'حديد',col:'iron_mine_level',base:30}};
+const rate=k=>{const L=city[B[k].col];return B[k].base*L*(1+L*0.08)*SPEED};
+function current(k){const hrs=(Date.now()-new Date(city.res_updated_at).getTime())/3.6e6;return Number(city[k])+rate(k)*Math.max(0,hrs)}
+function drawRes(){if(!city)return;for(const k in B){$('rv-'+k).textContent=fmt(current(k));$('rp-'+k).textContent='+'+fmt(rate(k))+' / ساعة'}$('gal').textContent=fmt(city.gallons)}
+setInterval(drawRes,1000);
+async function saveCity(patch){
+  const now=new Date().toISOString();const upd={res_updated_at:now,...patch};
+  for(const k in B)if(!(k in patch))upd[k]=Math.floor(current(k));
+  const {data,error}=await db.from('cities').update(upd).eq('player_id',me.id).select().single();
+  if(error){toast('ماتحفظش: '+error.message);return false}
+  city=data;drawAll();return true}
+
+const UNLOCK=[1,5,8,10,15,18,20,25,30];
+function drawCity(){
+  $('keepLvl').innerHTML=city.keep_level+'<small>من 30</small>';$('keepBar').style.width=(city.keep_level/30*100)+'%';
+  $('keepUp').disabled=busy||city.keep_level>=30;$('keepUp').textContent=city.keep_level>=30?'أقصى ليفل':'طوّر القلعة';
+  $('blds').innerHTML=Object.keys(B).map(k=>{const L=city[B[k].col];return `<div class="card"><div class="t"><h3>${B[k].n}</h3><span class="lv">ليفل ${L}</span></div><div class="d">بينتج ${B[k].r}: ${fmt(rate(k))} في الساعة</div><div class="bar"><i style="width:${L/30*100}%"></i></div><button class="btn ghost" data-up="${k}" ${busy||L>=city.keep_level?'disabled':''}>${L>=city.keep_level?'طوّر القلعة الأول':'طوّر'}</button></div>`}).join('')}
+$('keepUp').onclick=async()=>{busy=true;drawCity();const L=city.keep_level+1;if(await saveCity({keep_level:L})){const i=UNLOCK.indexOf(L);toast(i>=0?`القلعة ليفل ${L} · اتفتح جيش T${i+1}`:`القلعة وصلت ليفل ${L}`)}busy=false;drawCity()};
+document.addEventListener('click',async e=>{const k=e.target.dataset&&e.target.dataset.up;if(!k)return;busy=true;drawCity();const col=B[k].col;if(await saveCity({[col]:city[col]+1}))toast(B[k].n+' وصلت ليفل '+city[col]);busy=false;drawCity()});
+
+const CLS={infantry:'مشاة',lancer:'رماح',marksman:'رماة'};
+const cost=(tier,n)=>({meat:5*tier*n,wood:3*tier*n,iron:Math.ceil(tier*n/2)});
+function drawArmy(){
+  $('tH').innerHTML='<th>النوع</th>'+UNLOCK.map((u,i)=>`<th>T${i+1}<br><small class="${city.keep_level>=u?'on':'off'}">قلعة ${u}</small></th>`).join('');
+  $('tB').innerHTML=Object.keys(CLS).map(c=>'<tr><th>'+CLS[c]+'</th>'+UNLOCK.map((u,i)=>{const r=troops.find(x=>x.troop_class===c&&x.tier===i+1);return `<td class="${city.keep_level>=u?'':'off'}">${city.keep_level>=u?fmt(r?r.amount:0):'🔒'}</td>`}).join('')+'</tr>').join('');
+  const open=UNLOCK.filter(u=>city.keep_level>=u).length,sel=$('tTier'),cur=+sel.value||open;
+  sel.innerHTML=Array.from({length:open},(_, i)=>`<option value="${i+1}">T${i+1}</option>`).join('');sel.value=Math.min(cur,open);showCost()}
+function showCost(){const c=cost(+$('tTier').value||1,Math.max(1,+$('tAmt').value||1));$('tCost').textContent=`التكلفة: لحم ${fmt(c.meat)} · خشب ${fmt(c.wood)} · حديد ${fmt(c.iron)}`}
+$('tTier').onchange=showCost;$('tAmt').oninput=showCost;
+$('trainGo').onclick=async()=>{
+  const cls=$('tClass').value,tier=+$('tTier').value,n=Math.min(10000,Math.max(1,Math.floor(+$('tAmt').value||0))),c=cost(tier,n);
+  for(const k of ['meat','wood','iron'])if(current(k)<c[k]){toast('الموارد مش كفاية');return}
+  $('trainGo').disabled=true;
+  if(await saveCity({meat:Math.floor(current('meat')-c.meat),wood:Math.floor(current('wood')-c.wood),iron:Math.floor(current('iron')-c.iron)})){
+    const old=troops.find(x=>x.troop_class===cls&&x.tier===tier),amount=(old?old.amount:0)+n;
+    const {data,error}=await db.from('troops').upsert({player_id:me.id,troop_class:cls,tier,amount}).select().single();
+    if(error)toast('ماتحفظش: '+error.message);else{troops=troops.filter(x=>!(x.troop_class===cls&&x.tier===tier)).concat(data);toast(`اتدرّب ${fmt(n)} ${CLS[cls]} T${tier}`)}
+  }
+  $('trainGo').disabled=false;drawArmy()};
+
+const ICON={inf:'<svg viewBox="0 0 64 64" fill="none" stroke="#FFF4DE" stroke-width="4" stroke-linecap="round"><path d="M14 50 46 18M40 12l12 12M18 40l6 6M12 52l6-6"/></svg>',lan:'<svg viewBox="0 0 64 64" fill="none" stroke="#FFF4DE" stroke-width="4" stroke-linecap="round"><path d="M12 52 50 14"/><path d="M50 14 40 16l8 8z" fill="#FFF4DE"/></svg>',mar:'<svg viewBox="0 0 64 64" fill="none" stroke="#FFF4DE" stroke-width="4" stroke-linecap="round"><path d="M20 10c18 8 18 36 0 44"/><path d="M20 10v44"/><path d="M14 32h38M44 26l8 6-8 6"/></svg>'};
+const H={hayat:{n:'حياة',g:'بطلة',cls:'مشاة',ic:'inf',c:'var(--inf)',d:'تقف في الصف الأول وتحمي الجيش.',a:[40,90,60]},sarab:{n:'سراب',g:'بطلة',cls:'رماح',ic:'lan',c:'var(--lan)',d:'سريعة كالسراب. تخترق خطوط العدو.',a:[70,60,55]},turbin:{n:'توربين',g:'بطل',cls:'رماة',ic:'mar',c:'var(--mar)',d:'يرمي من بعيد. أعلى ضرر في الجيش.',a:[95,40,50]}};
+const need=L=>Math.round(100*Math.pow(L,1.5));
+function drawHeroes(){$('heroes').innerHTML=['hayat','sarab','turbin'].map(k=>{const s=heroes.find(h=>h.hero_key===k)||{level:1,xp:0},h=H[k],L=s.level,nx=need(L),g=1+(L-1)*.05;
+  return `<article class="hero" style="--c:${h.c}"><div class="art"><span class="cls">${h.cls}</span>${ICON[h.ic]}<span class="lvb">Lv ${L}</span></div><div class="body"><h3>${h.n}</h3><div class="d" style="font-size:13px;color:var(--muted)">${h.g} ${h.cls} · ${h.d}</div><div class="stats"><div>هجوم<b>${fmt(h.a[0]*g)}</b></div><div>دفاع<b>${fmt(h.a[1]*g)}</b></div><div>صحة<b>${fmt(h.a[2]*g*10)}</b></div></div><div><div class="xp"><span>XP</span><span>${L>=100?'أقصى ليفل':fmt(s.xp)+' / '+fmt(nx)}</span></div><div class="bar w"><i style="width:${L>=100?100:s.xp/nx*100}%"></i></div></div><div class="row"><button class="btn" data-xp="${k}" data-a="500" ${L>=100?'disabled':''}>+500 XP</button><button class="btn ghost" data-xp="${k}" data-a="5000" ${L>=100?'disabled':''}>+5,000 XP</button></div></div></article>`}).join('')}
+document.addEventListener('click',async e=>{const k=e.target.dataset&&e.target.dataset.xp;if(!k)return;const s={...(heroes.find(h=>h.hero_key===k)||{level:1,xp:0})};let up=0;s.xp+=+e.target.dataset.a;while(s.level<100&&s.xp>=need(s.level)){s.xp-=need(s.level);s.level++;up++}if(s.level>=100)s.xp=0;
+  const {data,error}=await db.from('heroes').update({level:s.level,xp:s.xp}).eq('player_id',me.id).eq('hero_key',k).select().single();
+  if(error){toast('ماتحفظش: '+error.message);return}heroes=heroes.filter(h=>h.hero_key!==k).concat(data);drawHeroes();if(up)toast(H[k].n+' وصلت ليفل '+data.level)});
+
+async function drawMap(){const {data,error}=await db.from('cities').select('player_id,keep_level,map_x,map_y,profiles(name)').eq('server_id',profile.server_id);
+  if(error){$('map').textContent='الخريطة مش راضية تحمّل.';return}
+  $('map').innerHTML=data.map(c=>`<button class="city ${c.player_id===me.id?'me':''}" style="right:${(c.map_x+.5)/MAP_SIZE*100}%;top:${(c.map_y+.5)/MAP_SIZE*100}%" data-c='${esc(JSON.stringify({n:c.profiles?c.profiles.name:'؟',l:c.keep_level,x:c.map_x,y:c.map_y,m:c.player_id===me.id}))}' aria-label="${esc(c.profiles?c.profiles.name:'')}">${c.keep_level}</button>`).join('');
+  $('mapInfo').textContent=`${data.length} مدينة على السيرفر. اضغط على أي مدينة.`}
+document.addEventListener('click',e=>{const d=e.target.dataset&&e.target.dataset.c;if(!d)return;const c=JSON.parse(d);$('mapInfo').innerHTML=`<b>${esc(c.n)}</b>${c.m?' (مدينتك)':''} · قلعة ليفل ${c.l} · المكان (${c.x}, ${c.y})`});
+
+async function loadChat(){const {data,error}=await db.from('chat_messages').select('id,body,created_at,player_id,profiles(name)').eq('server_id',profile.server_id).order('id',{ascending:false}).limit(50);
+  if(error)return;const box=$('msgs'),atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<40;
+  box.innerHTML=data.reverse().map(m=>`<div class="msg ${m.player_id===me.id?'mine':''}"><b>${esc(m.profiles?m.profiles.name:'؟')}</b>${esc(m.body)}</div>`).join('')||'<div class="d" style="color:var(--muted)">مفيش رسايل لسه. ابدأ إنت.</div>';
+  if(atEnd)box.scrollTop=box.scrollHeight}
+$('sendForm').onsubmit=async e=>{e.preventDefault();const body=$('msgIn').value.trim();if(!body)return;$('msgIn').value='';
+  const {error}=await db.from('chat_messages').insert({server_id:profile.server_id,player_id:me.id,body});if(error)toast('الرسالة ماتبعتتش');loadChat()};
+
+const PK=[1,5,10,25,50,75,100];
+function drawShop(){$('shop').innerHTML=PK.map(p=>{const base=p*1000,bon=Math.floor(p/25)*10,tot=base*(1+bon/100);return `<div class="pk ${p===100?'best':''}">${bon?`<span class="bonus">+${bon}% مجاناً</span>`:''}<div class="amt">${fmt(tot)}</div><div class="base">جالون مياه${bon?` · ${fmt(base)} + ${fmt(tot-base)} هدية`:''}</div><div class="price">$${p}</div><button class="btn" data-buy="${tot}">اشترِ</button></div>`}).join('')}
+document.addEventListener('click',async e=>{const v=e.target.dataset&&e.target.dataset.buy;if(!v)return;if(await saveCity({gallons:Number(city.gallons)+Number(v)}))toast('تجريبي: اتضاف '+fmt(+v)+' جالون')});
+
+const PANELS=['city','army','heroes','map','chat','shop'];
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));PANELS.forEach(p=>$('p-'+p).hidden=p!==b.dataset.p);
+  clearInterval(chatTimer);if(b.dataset.p==='map')drawMap();if(b.dataset.p==='chat'){loadChat();chatTimer=setInterval(loadChat,4000)}});
+
+function drawAll(){drawRes();drawCity();drawArmy();drawHeroes();drawShop()}
+setMode('in');
+})();
+</script>
+</body>
+</html>
