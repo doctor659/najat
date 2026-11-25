@@ -193,6 +193,12 @@ th .ri{width:26px;height:26px}
 .form3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.fs{border:2px solid rgba(240,192,104,.25);border-radius:14px;padding:8px 4px;text-align:center;cursor:pointer;background:rgba(255,255,255,.04)}
 .fs.front{background:rgba(224,99,74,.12);border-color:rgba(224,99,74,.5)}.fs.sel{border-color:#7FE3F1;box-shadow:0 0 0 3px rgba(127,227,241,.35)}.fs small{display:block;color:var(--muted);font-size:11px}.fs b{display:block;color:#FFF3D6}
 .fs .hp{width:62px;height:62px;border-radius:50%;margin:4px auto;background:#2A1F14 center 12%/cover no-repeat;border:2px solid #C8913F}
+.stars{display:inline-flex;gap:1px;font-size:14px;vertical-align:2px}.stars i{font-style:normal;color:#5A4A35}.stars i.on{color:#FFC94A;text-shadow:0 0 6px rgba(255,201,74,.6)}
+.hdHead{border-radius:16px;min-height:150px;background-size:cover;background-position:right 15%;padding:16px;display:flex;align-items:flex-end}.hdHead .stars{font-size:20px;margin-top:4px}
+.hbonus{margin-top:8px;padding:8px 12px;border-radius:12px;background:rgba(195,155,234,.12);border:1px solid rgba(195,155,234,.4);font-size:13.5px}.hbonus b{color:#E3C8FF}.hbonus small{color:var(--muted)}
+.gear{display:flex;align-items:center;gap:10px;padding:9px 10px;margin-top:7px;border-radius:13px;background:rgba(255,255,255,.05);border:1.5px solid var(--rc)}
+.gear .gi{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:24px;background:radial-gradient(circle,var(--rc),rgba(0,0,0,.4) 75%)}
+.gear .gt{flex:1;min-width:0}.gear b{display:block;color:#FFF3D6;font-size:14px}.gear small{color:var(--muted);font-size:11.5px}
 .err{color:#FF9E88;font-size:13.5px;min-height:1em;text-align:center}
 </style>
 </head>
@@ -272,7 +278,8 @@ if(!DEMO){
     async arenaOpps(){return chk(await db.rpc('arena_opponents'))},
     async arenaFight(t){return chk(await db.rpc('arena_fight',{target:t}))},
     async arenaTop(){return chk(await db.rpc('arena_top'))},
-    async arenaForm(f){chk(await db.rpc('arena_set_formation',{f}))}
+    async arenaForm(f){chk(await db.rpc('arena_set_formation',{f}))},
+    async heroUp(uid,k,patch){return chk(await db.from('heroes').update(patch).eq('player_id',uid).eq('hero_key',k).select().single())}
   };
 }else{
   let S=LS.get('najat_demo',null),cb=()=>{};const save=()=>LS.set('najat_demo',S);
@@ -302,7 +309,8 @@ if(!DEMO){
     async arenaFight(t){const a=S.arena;if(a.fights>=5)throw new Error('خلصت معاركك النهاردة (5)، تعالى بكرة');const o=(await this.arenaOpps()).find(x=>x.id===t),pa=arPow(a.formation,Object.fromEntries(S.heroes.map(h=>[h.hero_key,h.level]))),pd=o.power,won=Math.random()<pa**4/(pa**4+pd**4),delta=won?20:-10;
       a.points=Math.max(0,a.points+delta);won?a.wins++:a.losses++;a.fights++;S.city.gems=Number(S.city.gems||0)+(won?30:5);save();return {won,delta,gems:won?30:5,seed:Math.floor(Math.random()*1e9),my_power:pa,en_power:pd,points:a.points,left:5-a.fights,enemy:{name:o.name,formation:o.formation,heroes:o.heroes}}},
     async arenaTop(){const a=S.arena||{points:1000,wins:0,losses:0};return [{id:'me',name:S.profile.name,points:a.points,wins:a.wins,losses:a.losses},...BOTS.slice(0,8).map((b,i)=>({id:'b'+i,name:b[0],points:1000+b[1]*15-i*7,wins:b[1],losses:2}))].sort((x,y)=>y.points-x.points)},
-    async arenaForm(f){S.arena.formation=f;save()}
+    async arenaForm(f){S.arena.formation=f;save()},
+    async heroUp(u,k,patch){const h=S.heroes.find(x=>x.hero_key===k);Object.assign(h,patch);save();return {...h}}
   };
 }
 
@@ -570,7 +578,7 @@ const avail=x=>Math.max(0,x.amount-reserved(x.troop_class,x.tier));
 const busyHeroes=()=>MARCHES.map(m=>m.hero).filter(Boolean);
 const monMix=m=>MCLS[m.type]?{[MCLS[m.type]]:1}:{infantry:1,lancer:1,marksman:1};
 function factor(comp,mix){mix=mix||{};const tw=comp.reduce((s,x)=>s+x.n*x.t,0),dw=Object.values(mix).reduce((a,b)=>a+b,0);if(!tw||!dw)return 1;const aw={};comp.forEach(x=>aw[x.c]=(aw[x.c]||0)+x.n*x.t);let f=0;for(const a in aw)for(const e in mix)f+=aw[a]/tw*mix[e]/dw*cmult(a,e);return f}
-function marchPower(comp,hero){const base=comp.reduce((s,x)=>s+x.n*x.t*4,0),h=HEROES.find(x=>x.hero_key===hero),hl=h?h.level:0;return Math.round(base*(1+hl/100)+hl*60)}
+function marchPower(comp,hero){const base=comp.reduce((s,x)=>s+x.n*x.t*4,0),h=HEROES.find(x=>x.hero_key===hero),hl=h?h.level:0;return Math.round(base*(1+hl/100)*(h?1+.05*((h.stars||1)-1)+.005*gsum(h.gear):1)+hl*60)}
 let SC=null;const MP={hero:null,sel:{}};
 function openMarch(tg){if(MARCHES.length>=3){toast('عندك 3 مسيرات في الطريق، استنى واحدة توصل');return}
   const rows=TROOPS.filter(x=>avail(x)>0).sort((a,b)=>b.tier-a.tier||a.troop_class.localeCompare(b.troop_class));if(!rows.length){toast('مفيش جنود فاضية. درّب أو استنى المسيرات ترجع');return}
@@ -652,26 +660,26 @@ const SKN={hayat:'🛡️ درع الصحراء',sarab:'💨 ضربة السرا
 const SKD={hayat:'بتحمي الفريق كله: الضرر عليهم أقل 40% لدورين',sarab:'بتضرب أول عدو ضربتين ورا بعض',turbin:'بيرمي على كل الأعداء مرة واحدة'};
 const SLOTN=['أمامي','خلفي','خلفي'];
 let AR=null,AFORM=null,ATAB='fight',ASEL=null;
-const myLv=()=>Object.fromEntries(HEROES.map(h=>[h.hero_key,h.level]));
-const arPow=(form,lv)=>Math.round(Math.max(1,form.reduce((s,k)=>s+({hayat:1,sarab:1.05,turbin:1.1}[k])*(100+(lv[k]||1)*30),0))*(form[0]==='hayat'?1.1:1));
-function mkTeam(form,lv,boost){return form.map((k,i)=>{const s=HST[k],L=lv[k]||1,hp=s.hp+s.hpL*L;return {k,slot:i,L,hp,max:hp,atk:(s.atk+s.atkL*L)*2.5*(boost||1),cd:i,sh:0}})}
+const myLv=()=>Object.fromEntries(HEROES.map(h=>[h.hero_key,{l:h.level,s:h.stars||1,k:h.skill||1,g:gsum(h.gear)}]));
+const arPow=(form,lv)=>Math.round(Math.max(1,form.reduce((s,k)=>{const v=hInfo(lv[k]);return s+({hayat:1,sarab:1.05,turbin:1.1}[k])*(100+v.l*30)*(1+.1*(v.s-1))*(1+.05*(v.k-1))*(1+.01*v.g)},0))*(form[0]==='hayat'?1.1:1));
+function mkTeam(form,lv,boost){return form.map((k,i)=>{const s=HST[k],v=hInfo(lv[k]),L=v.l,m=(1+.1*(v.s-1))*(1+.01*v.g),hp=Math.round((s.hp+s.hpL*L)*m);return {k,slot:i,L,st:v.s,hp,max:hp,atk:(s.atk+s.atkL*L)*2.5*m*(boost||1),sm:1+.15*(v.k-1),cd:i,sh:0}})}
 function simBattle(A,B,seed){const R=rng(seed),T=[A,B],ev=[];
   for(let rd=0;rd<30;rd++){for(let sd=0;sd<2;sd++){for(const h of T[sd]){if(h.hp<=0)continue;const foes=T[1-sd].filter(x=>x.hp>0);if(!foes.length)return {win:sd===0,ev};
         h.cd++;const sk=h.cd>=3;if(sk)h.cd=0;
-        if(h.k==='hayat'&&sk){T[sd].forEach(x=>{if(x.hp>0)x.sh=2});ev.push({t:'buff',s:sd,i:h.slot,name:SKN.hayat});continue}
+        if(h.k==='hayat'&&sk){T[sd].forEach(x=>{if(x.hp>0){x.sh=2;x.shv=Math.max(.3,.6-.05*(h.sm-1)/.15)}});ev.push({t:'buff',s:sd,i:h.slot,name:SKN.hayat});continue}
         const front=foes.slice().sort((a,b)=>a.slot-b.slot)[0],hits=[];
-        if(h.k==='turbin'&&sk)foes.forEach(f=>hits.push([f,h.atk*.7]));
+        if(h.k==='turbin'&&sk)foes.forEach(f=>hits.push([f,h.atk*.7*h.sm]));
         else if(h.k==='turbin')hits.push([foes.slice().sort((a,b)=>a.hp-b.hp)[0],h.atk]);
-        else if(h.k==='sarab'&&sk){hits.push([front,h.atk*1.1]);hits.push([front,h.atk*1.1])}
+        else if(h.k==='sarab'&&sk){hits.push([front,h.atk*1.1*h.sm]);hits.push([front,h.atk*1.1*h.sm])}
         else hits.push([front,h.atk]);
-        ev.push({t:sk?'skill':'atk',s:sd,i:h.slot,name:sk?SKN[h.k]:null,hits:hits.map(([f,d])=>{const dm=Math.round(d*(.85+R()*.3)*(f.sh>0?.6:1));f.hp=Math.max(0,f.hp-dm);return {s:1-sd,i:f.slot,d:dm,hp:f.hp,max:f.max}})})}
+        ev.push({t:sk?'skill':'atk',s:sd,i:h.slot,name:sk?SKN[h.k]:null,hits:hits.map(([f,d])=>{const dm=Math.round(d*(.85+R()*.3)*(f.sh>0?(f.shv||.6):1));f.hp=Math.max(0,f.hp-dm);return {s:1-sd,i:f.slot,d:dm,hp:f.hp,max:f.max}})})}
       T[1-sd].forEach(x=>{if(x.sh>0)x.sh--})}}
   const r=t=>t.reduce((a,x)=>a+x.hp/x.max,0);return {win:r(A)>=r(B),ev}}
 function planBattle(mf,ml,ef,el,seed,want){for(let t=0;t<80;t++){const b=1+Math.max(0,t-20)*.06,A=mkTeam(mf,ml,want?b:1),B=mkTeam(ef,el,want?1:b),r=simBattle(A,B,seed+t);if(r.win===want)return {A0:mkTeam(mf,ml),B0:mkTeam(ef,el),ev:r.ev}}
   const A=mkTeam(mf,ml,want?5:1),B=mkTeam(ef,el,want?1:5);return {A0:mkTeam(mf,ml),B0:mkTeam(ef,el),ev:simBattle(A,B,seed).ev}}
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function playArena(o){const plan=planBattle(o.myForm,o.myLv,o.enForm,o.enLv,o.res.seed||1,!!o.res.won);
-  const unit=(s,h)=>`<div class="au ${h.slot===0?'front':''}" id="au-${s}-${h.slot}"><div class="ap" style="background-image:url('${ART[HIMG[h.k]]}')"></div><div class="ahp"><i style="width:100%"></i></div><b>${HN[h.k].n} <small>Lv ${h.L}</small></b></div>`;
+  const unit=(s,h)=>`<div class="au ${h.slot===0?'front':''}" id="au-${s}-${h.slot}"><div class="ap" style="background-image:url('${ART[HIMG[h.k]]}')"></div><div class="ahp"><i style="width:100%"></i></div><b>${HN[h.k].n} <small>Lv ${h.L}${h.st>1?' · '+h.st+'★':''}</small></b></div>`;
   const row=(s,t)=>[t[1],t[0],t[2]].map(h=>unit(s,h)).join('');
   const ov=document.createElement('div');ov.className='arfx';ov.style.backgroundImage=`url(${ART.arena_bg})`;
   ov.innerHTML=`<div class="arName en">${esc(o.enName)} · ⚡ ${fmt(o.res.en_power||0)}</div><div class="arRow" data-s="1">${row(1,plan.B0)}</div><div class="arMsg" id="arMsg"></div><div class="arRow" data-s="0">${row(0,plan.A0)}</div><div class="arName">${esc(PRO.name)} · ⚡ ${fmt(o.res.my_power||0)}</div><div class="arCtl"><button class="btn alt sm" id="arSpd">⏩ x1</button><button class="btn alt sm" id="arSkip">⏭️ تخطي</button></div>`;
@@ -693,7 +701,7 @@ function playArena(o){const plan=planBattle(o.myForm,o.myLv,o.enForm,o.enLv,o.re
     const box=document.createElement('div');box.className='arRes '+(win?'w':'l');
     box.innerHTML=`<div class="big">${win?'🏆 انتصار':'💀 هزيمة'}</div><div class="sub" style="margin:0">ضد ${esc(o.enName)}</div><div class="arGain"><div><span>نقاط الساحة</span><b class="${r.delta>=0?'win':'lose'}">${r.delta>=0?'+':''}${fmt(r.delta||0)}</b></div><div><span>جواهر</span><b>💎 +${fmt(r.gems||0)}</b></div><div><span>نقاطك دلوقتي</span><b>${fmt(r.points||0)}</b></div></div><button class="btn wide" id="arOk">تمام</button>`;
     ov.appendChild(box);ov.querySelector('.arCtl').remove();box.querySelector('#arOk').onclick=()=>{ov.remove();o.onEnd&&o.onEnd()}})()}
-function heroMini(form,lv){return `<div class="hm">${form.map(k=>`<span style="background-image:url('${ART[HIMG[k]]}')"><i>${lv&&lv[k]||1}</i></span>`).join('')}</div>`}
+function heroMini(form,lv){return `<div class="hm">${form.map(k=>`<span style="background-image:url('${ART[HIMG[k]]}')"><i>${hInfo(lv&&lv[k]).l}</i></span>`).join('')}</div>`}
 async function panelArena(tab){if(tab)ATAB=tab;if(!api.arenaMe)return;
   openSheet('<h2>🏟️ الساحة</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
   try{AR=await api.arenaMe()}catch(e){openSheet('<h2>🏟️ الساحة</h2><div class="card sub">⚠️ شغّل SQL المرحلة 4 (الساحة) في Supabase الأول.</div>');return}
@@ -718,6 +726,42 @@ async function panelArena(tab){if(tab)ATAB=tab;if(!api.arenaMe)return;
       try{res=await api.arenaFight(x.id)}catch(e){toast('⚠️ '+(e.message||'المعركة ماتمتش'));b.disabled=false;b.textContent='⚔️ تحدّي';return}
       closeSheet();const en=res.enemy||{};track('arena');
       playArena({myForm:AFORM,myLv:lv,enName:en.name||x.name,enForm:en.formation||x.formation||['hayat','sarab','turbin'],enLv:en.heroes||x.heroes||{},res,onEnd:async()=>{try{const d=await api.load(ME.id);C=d.city;hud()}catch(e){}panelArena('fight')}})})}}
+const hInfo=v=>typeof v==='number'?{l:v,s:1,k:1,g:0}:v?{l:v.l||1,s:v.s||1,k:v.k||1,g:v.g||0}:{l:1,s:1,k:1,g:0};
+const gsum=g=>g?(g.w||0)+(g.a||0)+(g.j||0):0;
+const hMult=h=>h?(1+.1*((h.stars||1)-1))*(1+.05*((h.skill||1)-1))*(1+.01*gsum(h.gear)):1;
+const GEAR=[{k:'w',n:'السلاح',i:'⚔️',st:'هجوم'},{k:'a',n:'الدرع',i:'🛡️',st:'دفاع'},{k:'j',n:'القلادة',i:'📿',st:'صحة'}];
+const RAR=[['','بدون','#6E5D47'],['c','عادي','#B8B8B8'],['c','عادي','#B8B8B8'],['u','نادر','#6FCF97'],['u','نادر','#6FCF97'],['r','مميز','#56B4F0'],['r','مميز','#56B4F0'],['e','ملحمي','#C39BEA'],['e','ملحمي','#C39BEA'],['l','أسطوري','#FFC94A'],['l','أسطوري','#FFC94A']];
+const starCost=s=>200*s*s,skillCost=k=>({coal:4000*k*k,iron:2000*k*k}),gearCost=l=>({iron:1500*(l+1)*(l+1),coal:800*(l+1)*(l+1)});
+const stars=n=>'<span class="stars">'+[1,2,3,4,5].map(i=>`<i class="${i<=n?'on':''}">★</i>`).join('')+'</span>';
+function heroStats(h){const L=h.level,g=1+(L-1)*.05,m=(1+.1*((h.stars||1)-1)),gr=h.gear||{},a=HN[h.hero_key].a;
+  return {atk:Math.round(a[0]*g*m*(1+.02*(gr.w||0))),def:Math.round(a[1]*g*m*(1+.02*(gr.a||0))),hp:Math.round(a[2]*g*10*m*(1+.02*(gr.j||0)))}}
+function panelHeroes(){openSheet(`<h2>الأبطال</h2><p class="sub">دوس على أي بطل علشان تطوّر نجومه ومهارته ومعداته.</p><div class="grid">${['hayat','sarab','turbin'].map(k=>{const s=HEROES.find(h=>h.hero_key===k)||{hero_key:k,level:1,xp:0},h=HN[k],L=s.level,nx=need(L),st=heroStats(s);
+  return `<article class="hero" data-hero="${k}" style="cursor:pointer"><div class="art" style="background-image:url('${ART[HIMG[k]]}')"><span class="cls">${ico(CI[HCLS[k]],18)} ${h.cls}</span><span class="lvb">Lv ${L}</span></div><div class="body"><h3>${h.n} ${stars(s.stars||1)}</h3><div class="sub" style="margin:0">${SKN[k]} · Lv ${s.skill||1}</div>
+  <div class="stats"><div>هجوم<b>${fmt(st.atk)}</b></div><div>دفاع<b>${fmt(st.def)}</b></div><div>صحة<b>${fmt(st.hp)}</b></div></div><div class="bar w"><i style="width:${L>=100?100:s.xp/nx*100}%"></i></div><div class="sub" style="margin:4px 0 0;font-size:12px">${L>=100?'أقصى ليفل':'XP '+fmt(s.xp)+' / '+fmt(nx)} · <b style="color:var(--gold)">تطوير ←</b></div></div></article>`}).join('')}</div>`);
+  document.querySelectorAll('[data-hero]').forEach(a=>a.onclick=()=>heroDetail(a.dataset.hero))}
+async function heroUp(k,patch,res,gems,label){const h=HEROES.find(x=>x.hero_key===k);if(!h)return;
+  for(const r in res)if(cur(r)<res[r]){toast('الموارد مش كفاية · '+RNAME[r]);return false}
+  if(gems&&Number(C.gems||0)<gems){toast('الجواهر مش كفاية 💎');panelShop('gem');return false}
+  const cp={};for(const r in res)cp[r]=Math.floor(cur(r)-res[r]);if(gems)cp.gems=Number(C.gems)-gems;
+  if(!(await saveCity(cp)))return false;
+  try{const r=await api.heroUp(ME.id,k,patch);Object.assign(h,r);toast('⬆️ '+label);return true}catch(e){toast('⚠️ '+(e.message||'ماتحفظش'));return false}}
+function heroDetail(k){const h=HEROES.find(x=>x.hero_key===k);if(!h)return;if(!('stars' in h)){toast('شغّل SQL المرحلة 5 في Supabase الأول');return}
+  const N=HN[k],st=heroStats(h),S=h.stars||1,K=h.skill||1,G=h.gear||{},L=h.level;
+  const sNeed=S*20,sc=starCost(S),kc=skillCost(K),kNeed=K*15;
+  openSheet(`<div class="hdHead" style="background-image:linear-gradient(90deg,rgba(20,12,4,.9),rgba(20,12,4,.2)),url('${ART[HIMG[k]]}')"><div><h2 style="margin:0">${N.n}</h2><div class="sub" style="margin:0;color:#E8D3AE">${N.g} ${N.cls} · Lv ${L}</div>${stars(S)}</div></div>
+  <div class="stats" style="margin-top:10px"><div>هجوم<b>${fmt(st.atk)}</b></div><div>دفاع<b>${fmt(st.def)}</b></div><div>صحة<b>${fmt(st.hp)}</b></div></div>
+  <div class="hbonus">⚡ مضاعف قوة البطل: <b>×${hMult(h).toFixed(2)}</b> <small>(في المسيرات والساحة)</small></div>
+  <div class="rsec">⭐ النجوم</div><div class="card"><div class="kv"><span>كل نجمة = +10% لكل الإحصائيات</span><b>${S} / 5</b></div>
+   ${S<5?`<div class="kv"><span>النجمة الجاية محتاجة</span><b class="${L>=sNeed?'win':'lose'}">ليفل ${sNeed}</b></div><button class="btn wide gemb" id="hStar" ${L<sNeed?'disabled':''}>⭐ رفع نجمة · 💎 ${fmt(sc)}</button>`:'<div class="sub" style="margin:6px 0 0">⭐ أقصى نجوم</div>'}</div>
+  <div class="rsec">✨ المهارة</div><div class="card"><div class="kv"><span><b style="color:#FFF3D6">${SKN[k]}</b></span><b>Lv ${K} / 5</b></div><div class="sub" style="margin:4px 0 8px">${SKD[k]} · قوة المهارة <b class="win">+${15*(K-1)}%</b>${K<5?' ← <b class="win">+'+15*K+'%</b>':''}</div>
+   ${K<5?`<div class="sub" style="margin:0 0 6px">التكلفة: ${rIco('coal',15)} ${fmt(kc.coal)} · ${rIco('iron',15)} ${fmt(kc.iron)} · محتاج ليفل ${kNeed}</div><button class="btn wide" id="hSkill" ${L<kNeed?'disabled':''}>✨ طوّر المهارة</button>`:'<div class="sub" style="margin:0">✨ أقصى ليفل</div>'}</div>
+  <div class="rsec">🗡️ المعدات</div>${GEAR.map(g=>{const lv=G[g.k]||0,r=RAR[lv],c=gearCost(lv),need=(lv+1)*5;return `<div class="gear" style="--rc:${r[2]}"><div class="gi">${g.i}</div><div class="gt"><b>${g.n} <span style="color:${r[2]}">${r[1]}</span> ${lv?'+'+lv:''}</b><small>+${2*lv}% ${g.st}${lv<10?` · التطوير: ${rIco('iron',13)} ${fmt(c.iron)} ${rIco('coal',13)} ${fmt(c.coal)}${L<need?` · <span class="lose">ليفل ${need}</span>`:''}`:' · أقصى'}</small></div>${lv<10?`<button class="btn sm" data-gear="${g.k}" ${L<need?'disabled':''}>⚒️</button>`:''}</div>`}).join('')}
+  <div class="row"><button class="btn alt wide" id="hBack">← كل الأبطال</button></div>`);
+  $('hBack').onclick=panelHeroes;
+  if($('hStar'))$('hStar').onclick=async()=>{const b=$('hStar');if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ تأكيد: 💎 '+fmt(sc);return}b.disabled=true;if(await heroUp(k,{stars:S+1},{},sc,N.n+' وصلت '+(S+1)+' نجوم ⭐'))heroDetail(k);else b.disabled=false};
+  if($('hSkill'))$('hSkill').onclick=async()=>{$('hSkill').disabled=true;if(await heroUp(k,{skill:K+1},kc,0,SKN[k]+' Lv '+(K+1)))heroDetail(k);else $('hSkill').disabled=false};
+  document.querySelectorAll('[data-gear]').forEach(b=>b.onclick=async()=>{const gk=b.dataset.gear,lv=G[gk]||0,ng=Object.assign({},G,{[gk]:lv+1});b.disabled=true;b.textContent='⏳';
+    if(await heroUp(k,{gear:ng},gearCost(lv),0,GEAR.find(x=>x.k===gk).n+' +'+(lv+1)))heroDetail(k);else{b.disabled=false;b.textContent='⚒️'}})}
 function openMonster(m){const P=power(),M=mPow(m.lvl),ch=P/M,win=ch>=1.1?'عالية':ch>=.95?'متوسطة':'ضعيفة',col=ch>=1.1?'win':ch>=.95?'':'lose';
   openSheet(`${artImg(MIMG[m.type])}<h2>${MT[m.type].n}</h2><p class="sub">ليفل ${m.lvl} · المكان (${m.x}, ${m.y})</p>
   <div class="card"><div class="kv"><span>قوة الوحش</span><b>${fmt(M)}</b></div><div class="kv"><span>قوة جيشك</span><b>${fmt(P)}</b></div><div class="kv"><span>فرصة الفوز</span><b class="${col}">${win}</b></div><div class="kv"><span>نوع العدو</span><b>${MCLS[m.type]?CLS[MCLS[m.type]]+' · يغلبهم '+CLS[BEATEN_BY[MCLS[m.type]]]:'مختلط'}</b></div>
@@ -732,9 +776,7 @@ async function resolveBattle(m,comp,hero){comp=comp||[];const f=factor(comp,monM
   openSheet(reportHTML({won:win,sub:MT[m.type].n+' · ليفل '+m.lvl,myName:PRO.name,myP:P,enName:MT[m.type].n,enP:M,enImg:ART[MIMG[m.type]],loot:win?{wood:300*m.lvl,meat:300*m.lvl,coal:120*m.lvl,iron:60*m.lvl}:null,xp:win?150*m.lvl:0,gems:win&&('gems' in C)?3*m.lvl:0,ups,sent,lost,wounded:hurt,enLost:null,hero,factor:f}));$('okB').onclick=closeSheet;hud()}
 const HN={hayat:{n:'حياة',g:'بطلة',cls:'مشاة',c:'#9C4A1A',d:'تقف في الصف الأول وتحمي الجيش.',a:[40,90,60],w:'sword'},sarab:{n:'سراب',g:'بطلة',cls:'رماح',c:'#4E5394',d:'سريعة كالسراب. تخترق خطوط العدو.',a:[70,60,55],w:'spear'},turbin:{n:'توربين',g:'بطل',cls:'رماة',c:'#2E7D4F',d:'يرمي من بعيد. أعلى ضرر في الجيش.',a:[95,40,50],w:'bow'}};
 const HIMG={hayat:'hero_hayat',sarab:'hero_sarab',turbin:'hero_turbin'},HCLS={hayat:'infantry',sarab:'lancer',turbin:'marksman'};
-function panelHeroes(){openSheet(`<h2>الأبطال</h2><p class="sub">كل بطل يوصل لليفل 100. حارب الوحوش في خريطة العالم علشان تكسب XP.</p><div class="grid">${['hayat','sarab','turbin'].map(k=>{const s=HEROES.find(h=>h.hero_key===k)||{level:1,xp:0},h=HN[k],L=s.level,nx=need(L),g=1+(L-1)*.05;
-  return `<article class="hero"><div class="art" style="background-image:url('${ART[HIMG[k]]}')"><span class="cls">${ico(CI[HCLS[k]],18)} ${h.cls}</span><span class="lvb">Lv ${L}</span></div><div class="body"><h3>${h.n}</h3><div class="sub" style="margin:0">${h.g} ${h.cls} · ${h.d}</div>
-  <div class="stats"><div>هجوم<b>${fmt(h.a[0]*g)}</b></div><div>دفاع<b>${fmt(h.a[1]*g)}</b></div><div>صحة<b>${fmt(h.a[2]*g*10)}</b></div></div><div class="bar w"><i style="width:${L>=100?100:s.xp/nx*100}%"></i></div><div class="sub" style="margin:4px 0 0;font-size:12px">${L>=100?'أقصى ليفل':'XP '+fmt(s.xp)+' / '+fmt(nx)}</div></div></article>`}).join('')}</div>`)}
+
 const cost=(tier,n)=>{const d=1-.02*vipLvl();return {meat:Math.round(5*tier*n*d),wood:Math.round(3*tier*n*d),iron:Math.ceil(tier*n/2*d)}};
 function reportHTML(o){const tot=Math.max(1,o.myP+o.enP),pct=Math.round(o.myP/tot*100),diff=o.enP>0?Math.round((o.myP-o.enP)/o.enP*100):100,L=o.loot;
   return `<div class="rpt ${o.won?'w':'l'}"><div class="rban">${o.won?'🏆 انتصار':'💀 هزيمة'}</div><div class="rsub">${o.sub}</div>
