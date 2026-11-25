@@ -226,6 +226,16 @@ th .ri{width:26px;height:26px}
 .pre{display:flex;gap:6px;margin-top:8px}.pre .pr{flex:1;display:flex;gap:3px}.pre .pr .btn{padding:7px 4px}.pre .pr .btn:first-child{flex:1}
 .bossBox{text-align:center;margin-top:6px}.bossBox img{height:150px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.6))}.bossBox img.dead{filter:grayscale(1);opacity:.45}.bossBox h3{margin:4px 0}.bar.boss{height:12px}.bar.boss i{background:linear-gradient(90deg,#B03020,#E8553F)}.rcard .row{gap:6px;flex-wrap:wrap}
 #r-wood.full,#r-meat.full,#r-coal.full,#r-iron.full{color:#FF8A6A!important}
+.evHead{display:flex;gap:10px;align-items:center;padding:12px;border-radius:14px;background:linear-gradient(135deg,#5a3510,#2a1a0a);border:1px solid rgba(240,192,104,.35);margin:8px 0}.evI{font-size:38px}.evHead small{display:block;color:var(--muted);font-size:12px;margin-top:2px}.evP{font-size:24px;color:var(--gold)}
+.pgrid{margin-top:10px}.ph,.pr{display:grid;grid-template-columns:34px 1fr 1fr;gap:6px;align-items:center;margin-top:6px}.ph span{font-size:12px;color:var(--muted);text-align:center}.pr>b{text-align:center;width:30px;height:30px;line-height:30px;border-radius:50%;background:#3a2a18;color:var(--muted)}.pr.on>b{background:var(--gold);color:#3a1f05}
+.pc{font:inherit;font-size:11.5px;font-weight:700;padding:7px 4px;border-radius:10px;border:1.5px solid #6B5238;background:#241A10;color:#FBEBC8;min-height:44px;cursor:pointer}.pc img{width:14px;height:14px;vertical-align:middle}.pc.gold{border-color:#C99A12;background:linear-gradient(#3a2a10,#241A10)}.pc:disabled{opacity:.5;cursor:default}.pr.on .pc:not(:disabled){border-color:#6FCF97;box-shadow:0 0 0 2px rgba(111,207,151,.3)}.pc.got{opacity:.35}
+.cardx{padding:12px;border-radius:14px;margin-top:10px;background:rgba(255,255,255,.05);border:1.5px solid rgba(240,192,104,.3)}.cardx.on{border-color:#6FCF97}
+.wheelW{position:relative;width:280px;height:280px;margin:18px auto 8px}.wheel{width:100%;height:100%;border-radius:50%;border:6px solid #E8B85A;box-shadow:0 8px 24px rgba(0,0,0,.5);position:relative;overflow:hidden}.wheelP{position:absolute;top:-16px;left:50%;transform:translateX(-50%);z-index:2;font-size:28px;color:#FFE7A3;text-shadow:0 2px 4px #000}
+.wc{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px;border-radius:50%;background:radial-gradient(#FFE7A3,#C98A2B);display:flex;align-items:center;justify-content:center;font-size:26px;border:3px solid #6B3E10}
+.wl{position:absolute;left:50%;top:0;width:76px;margin-left:-38px;height:50%;transform-origin:50% 100%;text-align:center}.wl span{display:block;margin-top:16px;font-size:10.5px;font-weight:800;color:#fff;text-shadow:0 1px 2px #000;line-height:1.35}.wl img{width:15px;height:15px;vertical-align:middle}
+.rkn{width:30px;text-align:center;font-size:16px}.rkr{cursor:pointer}.rkr.me{border-color:var(--gold);background:rgba(240,192,104,.12)}
+.phs{display:flex;gap:8px;margin-top:8px}.phs div{flex:1;text-align:center;padding:8px 4px;border-radius:12px;background:rgba(255,255,255,.05)}.phs img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--gold)}.phs b{display:block;font-size:13px}.phs small{color:var(--muted);font-size:11px}
+.mail{padding:11px;margin-top:8px;border-radius:13px;background:rgba(255,255,255,.05);border:1px solid rgba(240,192,104,.2);cursor:pointer}.mail.new{border-color:var(--gold);background:rgba(240,192,104,.1)}.mbody{margin:8px 0;line-height:1.7;font-size:14px}
 .err{color:#FF9E88;font-size:13.5px;min-height:1em;text-align:center}
 </style>
 </head>
@@ -239,7 +249,7 @@ th .ri{width:26px;height:26px}
     <div class="resbar"><span><img class="ri" data-art="icon_wood" alt="خشب"> <b id="r-wood">0</b></span><span><img class="ri" data-art="icon_meat" alt="لحم"> <b id="r-meat">0</b></span><span><img class="ri" data-art="icon_coal" alt="فحم"> <b id="r-coal">0</b></span><span>⛓️ <b id="r-iron">0</b></span></div>
   </header>
   <main id="stage"><canvas id="cv"></canvas><div id="banner">مدينتك</div>
-    <div class="cbtns" id="cityBtns"><button data-act="missions" aria-label="المهام">📋<span class="rbadge" id="mBadge" hidden>0</span></button><button data-act="login" aria-label="الدخول اليومي">🎁<span class="rbadge" id="lBadge" hidden>!</span></button><button data-act="vip" aria-label="VIP">👑</button><button data-act="arena" aria-label="الساحة">🏟️</button><button data-act="research" aria-label="البحث العلمي">🔬<span class="rbadge" id="rsBadge" hidden>⏳</span></button><button data-act="sound" aria-label="الصوت">🔊</button><button data-act="admin" id="admBtn" aria-label="لوحة المتابعة" hidden>📊</button></div>
+    <div class="cbtns" id="cityBtns"><button data-act="missions" aria-label="المهام">📋<span class="rbadge" id="mBadge" hidden>0</span></button><button data-act="login" aria-label="الدخول اليومي">🎁<span class="rbadge" id="lBadge" hidden>!</span></button><button data-act="events" aria-label="الأحداث والجوايز">🎉<span class="rbadge" id="eBadge" hidden>0</span></button><button data-act="mail" aria-label="البريد">📬<span class="rbadge" id="mlBadge" hidden>0</span></button><button data-act="vip" aria-label="VIP">👑</button><button data-act="arena" aria-label="الساحة">🏟️</button><button data-act="research" aria-label="البحث العلمي">🔬<span class="rbadge" id="rsBadge" hidden>⏳</span></button><button data-act="sound" aria-label="الصوت">🔊</button><button data-act="admin" id="admBtn" aria-label="لوحة المتابعة" hidden>📊</button></div>
     <div class="zoom" id="zoomBtns" hidden><button data-act="zin" aria-label="تكبير">+</button><button data-act="zout" aria-label="تصغير">−</button><button data-act="home" aria-label="مدينتي">⌂</button><button data-act="reports" aria-label="التقارير">📜<span class="rbadge" hidden>0</span></button></div>
   </main>
   <nav id="nav">
@@ -308,6 +318,10 @@ if(!DEMO){
     async arenaForm(f){chk(await db.rpc('arena_set_formation',{f}))},
     async heroUp(uid,k,patch){return chk(await db.from('heroes').update(patch).eq('player_id',uid).eq('hero_key',k).select().single())},
     async summon(n){return chk(await db.rpc('summon',{n}))},
+    async mailList(){return chk(await db.rpc('mail_list'))},
+    async mailClaim(mid){return chk(await db.rpc('mail_claim',{mid}))},
+    async leaderboard(kind){return chk(await db.rpc('leaderboard',{kind}))},
+    async profileCard(pid){return chk(await db.rpc('profile_card',{pid}))},
     async allyTech(aid){const r=chk(await db.from('alliances').select('fund,tech').eq('id',aid).single());return r},
     async allyTechUp(k){return chk(await db.rpc('ally_tech_up',{k}))},
     async boss(){return chk(await db.rpc('ally_boss'))},
@@ -398,6 +412,10 @@ if(!DEMO){
       const amt=Math.floor(Math.min(n.lvl*({coal:6000,iron:3000}[n.res]||30000),ld*({coal:2,iron:1}[n.res]||10))),dur=(60+n.lvl*60)*1000,g={id:Date.now(),node_id:node,res:n.res,amount:amt,troops:comp,started_at:new Date().toISOString(),ends_at:new Date(Date.now()+dur).toISOString(),done:false};S.gathers.push(g);save();return g},
     async gEnd(gid,recall){const g=S.gathers.find(x=>x.id===gid),e=new Date(g.ends_at),st=new Date(g.started_at),got=e<=Date.now()?g.amount:Math.floor(g.amount*(Date.now()-st)/(e-st));S.city[g.res]=Math.floor(cur(g.res))+got;S.city.res_updated_at=new Date().toISOString();
       g.troops.forEach(x=>{const t=S.troops.find(y=>y.troop_class===x.c&&y.tier===x.t);t.amount+=x.n});g.done=true;save();return {res:g.res,got}},
+    async mailList(){if(!S.mail){S.mail=[{id:2,title:'تحديث جديد 🎉',body:'نزلنا الأحداث اليومية والباس والكروت وعجلة الحظ!\nادخل على 🎉 وشوف.',reward:{gems:50},at:new Date().toISOString(),claimed:false},{id:1,title:'أهلاً بيك في النجاة في الصحراء 🌴',body:'نورت الصحرا يا قائد! 🐪\nابني مدينتك، درّب جيشك، وادخل تحالف علشان تبقى أقوى.\nدي هدية صغيرة للبداية 🎁',reward:{gems:100,wood:50000,meat:50000},at:new Date(Date.now()-36e5).toISOString(),claimed:false}];save()}return S.mail},
+    async mailClaim(id){const m=S.mail.find(x=>x.id===id);if(m.claimed)throw new Error('استلمت الهدية دي قبل كده');m.claimed=true;RK.forEach(k=>{if(m.reward[k])S.city[k]=Math.floor(cur(k))+m.reward[k]});RK.forEach(k=>{if(!m.reward[k])S.city[k]=Math.floor(cur(k))});S.city.res_updated_at=new Date().toISOString();if(m.reward.gems)S.city.gems=Number(S.city.gems||0)+m.reward.gems;save();return m.reward},
+    async leaderboard(kind){const L=[{id:ME.id,name:S.profile.name,keep:S.city.keep_level,power:power(),tag:S.ally?S.ally.tag:null},...BOTS.map((b,i)=>({id:'b'+i,name:b[0],keep:b[1],power:b[1]*900,tag:null}))].sort((a,b)=>kind==='keep'?b.keep-a.keep||b.power-a.power:b.power-a.power).map((x,i)=>({...x,rank:i+1}));return {top:L,me:L.find(x=>x.id===ME.id)}},
+    async profileCard(id){const b=String(id).startsWith('b')?BOTS[+String(id).slice(1)]:null;return b?{id,name:b[0],keep:b[1],power:b[1]*900,since:new Date(Date.now()-864e6).toISOString(),x:b[2],y:b[3],ally:null,arena:1000,wins:3,heroes:[{k:'hayat',l:b[1],s:2},{k:'sarab',l:b[1]-1,s:1}]}:{id,name:S.profile.name,keep:S.city.keep_level,power:power(),since:new Date(Date.now()-3e6).toISOString(),x:S.city.map_x,y:S.city.map_y,ally:S.ally?{tag:S.ally.tag,name:S.ally.name,emblem:S.ally.emblem,role:S.ally.role}:null,arena:1000,wins:0,heroes:HEROES.map(h=>({k:h.hero_key,l:h.level,s:h.stars||1}))}},
     async allyTech(){const A=S.ally;if(A.fund==null)A.fund=A.xp;return {tech:A.tech||{},fund:A.fund}},
     async allyTechUp(k){const A=S.ally;A.tech=A.tech||{};if(A.fund==null)A.fund=A.xp;const l=A.tech[k]||0,c=200*(l+1)*(l+1);if(A.fund<c)throw new Error('رصيد التحالف مش كفاية');A.fund-=c;A.tech[k]=l+1;save();return {level:l+1}},
     async boss(){const A=S.ally,d=new Date().toDateString(),L=(A.boss&&A.boss.lvl)||1;if(!A.boss||A.boss.day!==d)A.boss={lvl:L,hp:1e6*L,day:d,hits:0,dmg:0};const B=A.boss;return {lvl:B.lvl,hp:B.hp,max:1e6*B.lvl,hits:B.hits,top:[{name:'Wolfy',dmg:240000,me:false},...(B.dmg?[{name:S.profile.name,dmg:B.dmg,me:true}]:[])].sort((a,b)=>b.dmg-a.dmg)}},
@@ -578,7 +596,7 @@ function clampCam(){if(VIEW==='city'){const mx=Math.max(90,(600*CZ-W)/2+90),hi=M
 function tap(x,y){let best=null,bd=1e9;for(const h of HITS){const d=Math.hypot(h.x-x,h.y-y)*(h.city?.85:1);if(d<h.r&&d<bd){bd=d;best=h}}if(!best)return;
   if(best.b){TAPPED[best.b.id]=performance.now();openBuilding(best.b)}else if(best.m)openMonster(best.m);else if(best.c)openCity(best.c);else if(best.node)openNode(best.node)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,cam=camW;
-  if(a==='zin')zoomTo(cam,cam.z*1.2);if(a==='zout')zoomTo(cam,cam.z/1.2);if(a==='home')homeWorld();if(a==='reports')panelReports();if(!C||!ME)return;if(a==='missions')panelMissions();if(a==='login')panelLogin();if(a==='vip')panelVIP();if(a==='sound')panelSound();if(a==='arena')panelArena();if(a==='research')panelResearch();if(a==='admin'&&ISADM)panelAdmin()});
+  if(a==='zin')zoomTo(cam,cam.z*1.2);if(a==='zout')zoomTo(cam,cam.z/1.2);if(a==='home')homeWorld();if(a==='reports')panelReports();if(!C||!ME)return;if(a==='missions')panelMissions();if(a==='login')panelLogin();if(a==='vip')panelVIP();if(a==='sound')panelSound();if(a==='arena')panelArena();if(a==='research')panelResearch();if(a==='events')panelEvents();if(a==='mail')panelMail();if(a==='admin'&&ISADM)panelAdmin()});
 const openRes=k=>{if(!(C&&ME))return;panelShop('res');if(k)setTimeout(()=>{const e=document.getElementById('sh-'+k);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},80)};
 $('rShop').onclick=()=>openRes();document.querySelectorAll('.resbar span').forEach((sp,i)=>sp.onclick=()=>openRes(['wood','meat','coal','iron'][i]));
 $('gemChip').onclick=()=>{if(C&&ME)panelShop('gem')};
@@ -713,8 +731,8 @@ function openMarch(tg){if((tg.kind==='m'||tg.kind==='c')&&MARCHES.length>=3){toa
   document.querySelectorAll('#trs input').forEach(i=>{i.oninput=()=>{const x=rows.find(r=>key(r)===i.dataset.k);MP.sel[i.dataset.k]=Math.max(0,Math.min(avail(x),Math.floor(+i.value||0)));upd()};i.onchange=()=>{i.value=MP.sel[i.dataset.k]||0}});
   upd();
   $('mGo').onclick=async()=>{const cp=comp(),n=cp.reduce((s,x)=>s+x.n,0),hero=MP.hero,btn=$('mGo');if(!n||n>cap)return;if((tg.kind==='m'||tg.kind==='c')&&MARCHES.length>=3){toast('عندك 3 مسيرات في الطريق');return}
-    if(LBL[tg.kind]){btn.disabled=true;btn.textContent='⏳';try{let r;if(tg.kind==='b')r=await api.bossHit(cp,hero);else if(tg.kind==='r'){await api.rallyStart(tg.c.id,tg.secs,cp,hero);track('pvp')}else await api.rallyJoin(tg.rid,cp,hero);sfx('horse_charge',.7);try{const d=await api.load(ME.id);C=d.city;TROOPS=d.troops;hud()}catch(e){}if(r)bossRes(r);else{toast(tg.kind==='r'?'🚩 الحشد بدأ! أعضاء التحالف يقدروا ينضموا':'➕ انضميت للحشد');panelAlly('war')}}catch(e){toast('⚠️ '+(e.message||'ماتمش'));btn.disabled=false;btn.textContent=LBL[tg.kind]}return}
-    if(tg.kind==='g'){btn.disabled=true;btn.textContent='⏳';try{await api.gStart(tg.node.id,cp);closeSheet();sfx('horse_charge',.7);toast('⛏️ المسيرة راحت تجمع '+RNAME[tg.node.res]);const d=await api.load(ME.id);TROOPS=d.troops;await loadGathers()}catch(e){toast('⚠️ '+(e.message||'ماتمش'));btn.disabled=false;btn.textContent='⛏️ ابعت للجمع'}return}
+    if(LBL[tg.kind]){btn.disabled=true;btn.textContent='⏳';try{let r;if(tg.kind==='b')r=await api.bossHit(cp,hero);else if(tg.kind==='r'){await api.rallyStart(tg.c.id,tg.secs,cp,hero);track('pvp')}else await api.rallyJoin(tg.rid,cp,hero);sfx('horse_charge',.7);try{const d=await api.load(ME.id);C=d.city;TROOPS=d.troops;hud()}catch(e){}track(tg.kind==='b'?'boss':'rally');if(r)bossRes(r);else{toast(tg.kind==='r'?'🚩 الحشد بدأ! أعضاء التحالف يقدروا ينضموا':'➕ انضميت للحشد');panelAlly('war')}}catch(e){toast('⚠️ '+(e.message||'ماتمش'));btn.disabled=false;btn.textContent=LBL[tg.kind]}return}
+    if(tg.kind==='g'){btn.disabled=true;btn.textContent='⏳';try{await api.gStart(tg.node.id,cp);track('gather');closeSheet();sfx('horse_charge',.7);toast('⛏️ المسيرة راحت تجمع '+RNAME[tg.node.res]);const d=await api.load(ME.id);TROOPS=d.troops;await loadGathers()}catch(e){toast('⚠️ '+(e.message||'ماتمش'));btn.disabled=false;btn.textContent='⛏️ ابعت للجمع'}return}
     if(tg.kind==='m'){closeSheet();const m=tg.m,d=Math.hypot(m.x-C.map_x,m.y-C.map_y);MARCHES.push({hero,comp:cp,n,m,fx:C.map_x,fy:C.map_y,t0:performance.now(),dur:Math.min(6000,1500+d*250)});sfx('horse_charge',.7);toast('🐪 المسيرة اتحركت مع '+(hero?HN[hero].n:'الجيش'));return}
     btn.disabled=true;btn.textContent='⏳ المسيرة بتتجهز…';let res;
     try{res=await api.attack(tg.c.id,cp,hero)}catch(e){toast('⚠️ '+(e.message||'الهجوم ماتمش'));btn.disabled=false;btn.textContent='⚔️ ابعت المسيرة';return}
@@ -733,10 +751,10 @@ const clone=o=>JSON.parse(JSON.stringify(o||{}));
 function prog(){const p=clone(C.progress);if(p.day!==today()){p.day=today();p.m={};p.claimed=[];p.chest=false}p.login=p.login||{last:null,streak:0};p.vip=p.vip||0;return p}
 const vipLvl=()=>{if(!P3())return 0;const v=(C.progress||{}).vip||0;let l=0;VIPT.forEach((t,i)=>{if(v>=t)l=i});return l};
 const rwText=rw=>[...RK.filter(k=>rw[k]).map(k=>`${rIco(k,16)} ${fmt(rw[k])}`),rw.gems?`💎 ${fmt(rw.gems)}`:'',rw.xp?`📜 ${fmt(rw.xp)} XP`:'',rw.vip?`👑 ${rw.vip} VIP`:''].filter(Boolean).join(' · ');
-async function commit(p,rw){rw=rw||{};const patch={progress:p};RK.forEach(k=>{if(rw[k])patch[k]=Math.floor(cur(k)+rw[k])});if(rw.gems&&('gems' in C))patch.gems=Number(C.gems)+rw.gems;if(rw.vip)p.vip=(p.vip||0)+rw.vip;
+async function commit(p,rw){rw=rw||{};const patch={progress:p};RK.forEach(k=>{if(rw[k])patch[k]=Math.floor(cur(k)+rw[k])});if(rw.gems&&('gems' in C))patch.gems=Number(C.gems)+rw.gems;if(rw.vip)p.vip=(p.vip||0)+rw.vip;if(rw.gal)patch.gallons=Number(C.gallons)+rw.gal;
   const ok=await saveCity(patch);if(ok&&rw.xp)await giveXP(OWN(),rw.xp);hud();return ok}
 let trackQ=Promise.resolve();
-function track(k,n=1){if(!P3())return;trackQ=trackQ.then(async()=>{const p=prog(),m=MISSIONS.find(x=>x.k===k),before=p.m[k]||0;p.m[k]=before+n;await commit(p);if(m&&before<m.goal&&p.m[k]>=m.goal)toast('📋 مهمة خلصت: '+m.n+' · استلم الجايزة')}).catch(()=>{})}
+function track(k,n=1){if(!P3())return;trackQ=trackQ.then(async()=>{const p=prog(),m=MISSIONS.find(x=>x.k===k),before=p.m[k]||0;p.m[k]=before+n;trackExtra(p,k,n);await commit(p);if(m&&before<m.goal&&p.m[k]>=m.goal)toast('📋 مهمة خلصت: '+m.n+' · استلم الجايزة')}).catch(()=>{})}
 const mClaimable=()=>{if(!P3())return 0;const p=prog();return MISSIONS.filter(m=>(p.m[m.k]||0)>=m.goal&&!p.claimed.includes(m.k)).length+(p.claimed.length===MISSIONS.length&&!p.chest?1:0)};
 const loginReady=()=>P3()&&prog().login.last!==today();
 function badges(){const a=$('mBadge'),b=$('lBadge');if(!a)return;const n=mClaimable();a.textContent=n;a.hidden=!n;b.hidden=!loginReady()}
@@ -964,13 +982,122 @@ function panelResearch(){if(!P9()){toast('شغّل SQL المرحلة 9 في Sup
   openSheet(`<h2>🔬 البحث العلمي</h2><p class="sub">طوّر مدينتك وجيشك بالأبحاث. بحث واحد في نفس الوقت، وكل ليفل محتاج قلعة أعلى.</p>
   ${A?`<div class="card"><div class="kv"><span>🔬 بيتبحث: ${RSN(A.k)} ليفل ${A.l}</span><b id="rsT"></b></div><div class="bar"><i id="rsB"></i></div><button class="btn wide gemb" id="rsS" style="margin-top:8px">💎 خلّصه دلوقتي · <span id="rsG"></span></button></div>`:''}
   ${RS.map(([k,i,n,d])=>{const l=rl(k),c=rCost(l),kp=rKeep(l),en=RK.every(r=>cur(r)>=c[r]),lock=C.keep_level<kp;return `<div class="mem"><div class="alEmb sm">${i}</div><div style="flex:1;min-width:0"><b>${n} · ${l}/10</b><small>${d} · دلوقتي ${k==='train'||k==='build'?'−'+3*l:'+'+(k==='prod'||k==='gather'?5:2)*l}%</small><div class="bar"><i style="width:${l*10}%"></i></div>${l<10?`<small class="${en&&!lock?'':'lose'}">${RK.map(r=>rIco(r,13)+' '+fmt(c[r])).join(' ')} · ⏳ ${fmtT(rTime(l))}${lock?' · 🔒 قلعة '+kp:''}</small>`:''}</div>${l<10?`<button class="btn sm" data-rs="${k}" ${A||!en||lock?'disabled':''}>🔬<br><small>ابحث</small></button>`:'<b>MAX</b>'}</div>`}).join('')}`);
-  document.querySelectorAll('[data-rs]').forEach(b=>b.onclick=async()=>{if(C.rsch&&C.rsch.e>Date.now())return;const k=b.dataset.rs,l=rl(k),c=rCost(l);if(!RK.every(r=>cur(r)>=c[r]))return;b.disabled=true;const now=Date.now(),p={rsch:{k,l:l+1,s:now,e:now+rTime(l)*1000}};RK.forEach(r=>p[r]=Math.floor(cur(r)-c[r]));if(await saveCity(p)){sfx('ui_confirm');toast('🔬 بدأ بحث '+RSN(k)+' · '+fmtT(rTime(l)))}panelResearch()});
+  document.querySelectorAll('[data-rs]').forEach(b=>b.onclick=async()=>{if(C.rsch&&C.rsch.e>Date.now())return;const k=b.dataset.rs,l=rl(k),c=rCost(l);if(!RK.every(r=>cur(r)>=c[r]))return;b.disabled=true;const now=Date.now(),p={rsch:{k,l:l+1,s:now,e:now+rTime(l)*1000}};RK.forEach(r=>p[r]=Math.floor(cur(r)-c[r]));if(await saveCity(p)){sfx('ui_confirm');track('research');toast('🔬 بدأ بحث '+RSN(k)+' · '+fmtT(rTime(l)))}panelResearch()});
   if(A){const iv=setInterval(()=>{if(!$('rsB')||!C.rsch){clearInterval(iv);return}const L=(C.rsch.e-Date.now())/1000,T=(C.rsch.e-C.rsch.s)/1000;$('rsB').style.width=Math.min(100,(1-L/T)*100)+'%';$('rsT').textContent='⏳ '+fmtT(L);if(!$('rsS').classList.contains('confirm'))$('rsG').textContent='💎 '+Math.max(1,Math.ceil(L/60))},500);
     $('rsS').onclick=async()=>{const b=$('rsS'),g=Math.max(1,Math.ceil((C.rsch.e-Date.now())/60000));if(Number(C.gems||0)<g){toast('الجواهر مش كفاية 💎');return}if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ تأكيد: 💎 '+g;return}b.disabled=true;if(await saveCity({gems:Number(C.gems)-g,rsch:{...C.rsch,e:Date.now()}}))checkResearch()}}}
 let rsBusy=false;
 async function checkResearch(){if(!ME||!C||!C.rsch||rsBusy||Date.now()<C.rsch.e)return;rsBusy=true;const r=C.rsch;
   try{if(await saveCity({research:{...(C.research||{}),[r.k]:r.l},rsch:null})){sfx('reward_claim');toast(`🔬 خلص بحث ${RSN(r.k)} · ليفل ${r.l}`);if(document.querySelector('[data-rs]'))panelResearch()}}catch(e){}rsBusy=false}
 setInterval(()=>{checkResearch();const b=$('rsBadge');if(b)b.hidden=!(C&&C.rsch&&C.rsch.e>Date.now())},1000);
+/* ===== المراحل 10-15 ===== */
+const life=k=>((C.progress||{}).life||{})[k]||0;
+const ACH=[
+ {k:'keep',n:'ارفع ليفل القلعة',i:'🏰',v:()=>C.keep_level,t:[5,10,15,20,25,30]},
+ {k:'power',n:'قوة الجيش',i:'💪',v:()=>power(),t:[10000,50000,200000,1000000,5000000,20000000]},
+ {k:'monster',n:'اهزم وحوش',i:'🦂',v:()=>life('monster'),t:[5,25,100,300,1000]},
+ {k:'pvp',n:'هاجم مدن',i:'⚔️',v:()=>life('pvp'),t:[1,10,50,200]},
+ {k:'train',n:'درّب جنود',i:'🛡️',v:()=>life('train'),t:[1000,10000,100000,1000000]},
+ {k:'gather',n:'مسيرات جمع',i:'⛏️',v:()=>life('gather'),t:[1,10,50,200]},
+ {k:'build',n:'طوّر مباني',i:'⚒️',v:()=>life('build'),t:[5,25,100,300]},
+ {k:'arena',n:'معارك الساحة',i:'🏟️',v:()=>life('arena'),t:[5,25,100,500]},
+ {k:'boss',n:'اضرب وحش التحالف',i:'👹',v:()=>life('boss'),t:[1,10,50,150]},
+ {k:'research',n:'ليفلات البحث العلمي',i:'🔬',v:()=>Object.values(C.research||{}).reduce((a,b)=>a+(+b||0),0),t:[1,10,30,60]}];
+const achRw=i=>({gems:[20,50,100,200,300,500][i]||500});
+const achReady=x=>{const g=((prog().ach)||{})[x.k]||0;return g<x.t.length&&x.v()>=x.t[g]};
+const EVD=[{n:'يوم الأبطال',i:'🦸',pts:{arena:100,monster:30,pvp:60}},{n:'يوم الوحوش',i:'🦂',pts:{monster:100,boss:100}},{n:'يوم الجمع',i:'⛏️',pts:{gather:80,donate:30}},
+ {n:'يوم التدريب',i:'🛡️',pts:{train:1,heal:50}},{n:'يوم البناء',i:'⚒️',pts:{build:150,research:150}},{n:'يوم الحرب',i:'⚔️',pts:{pvp:150,rally:200,monster:30}},{n:'يوم التحالف',i:'🤝',pts:{boss:120,donate:40,rally:120}}];
+const EVK={arena:'معركة ساحة',monster:'وحش',pvp:'هجوم على مدينة',boss:'ضربة لوحش التحالف',gather:'مسيرة جمع',donate:'تبرع للتحالف',train:'كل 10 جنود',heal:'علاج جرحى',build:'بدء تطوير مبنى',research:'بدء بحث',rally:'حشد'};
+const EVM=[[300,{gems:50,wood:50000}],[800,{gems:100,meat:100000,coal:20000}],[1500,{gems:200,iron:20000}],[3000,{gems:400,xp:3000}]];
+const evToday=()=>EVD[new Date().getDay()];
+const evState=p=>{p=p||prog();if(!p.ev||p.ev.day!==today())p.ev={day:today(),pts:0,got:[]};return p.ev};
+const PASS0=new Date('2026-11-01T00:00:00').getTime(),PDAYS=28,PCOST=1000;
+const season=()=>Math.floor((Date.now()-PASS0)/(PDAYS*864e5))+1,seasonEnd=()=>PASS0+season()*PDAYS*864e5;
+const PXP={monster:20,gather:30,build:40,research:40,pvp:40,rally:50,boss:40,arena:20,heal:10,donate:10,buy:10};
+const passState=p=>{p=p||prog();if(!p.pass||p.pass.s!==season())p.pass={s:season(),xp:0,prem:false,gf:[],gp:[]};return p.pass};
+const passLvl=ps=>Math.min(30,Math.floor(ps.xp/100));
+const passRw=(L,prem)=>{const f=1+L/10;if(prem)return L%5===0?{gems:100+L*5}:L%2?{gems:25,xp:400}:{gems:25,iron:Math.round(2500*f)};
+  return L%5===0?{gems:30+L*2}:[{wood:Math.round(20000*f)},{meat:Math.round(20000*f)},{coal:Math.round(5000*f)},{xp:Math.round(300*f)}][L%4]};
+const CARDS={m:{n:'💳 الكارت الشهري',cost:500,days:30,now:300,daily:100},w:{n:'🗓️ الكارت الأسبوعي',cost:150,days:7,now:70,daily:50}};
+const cardOn=(p,k)=>{const c=(p.cards||{})[k];return c&&c.until>Date.now()?c:null};
+const WHEEL=[{rw:{wood:30000},w:20,c:'#8B5A2B'},{rw:{gems:10},w:18,c:'#5B3FB0'},{rw:{meat:30000},w:20,c:'#A0442D'},{rw:{coal:8000},w:14,c:'#3D3A38'},{rw:{xp:1000},w:10,c:'#2E7D5B'},{rw:{iron:4000},w:12,c:'#5F6E7D'},{rw:{gems:50},w:5,c:'#8E44AD'},{rw:{gems:300},w:1,c:'#C99A12'}];
+const wheelState=p=>{p=p||prog();if(!p.wheel||p.wheel.day!==today())p.wheel={day:today(),n:0};return p.wheel};
+function trackExtra(p,k,n){p.life=p.life||{};p.life[k]=(p.life[k]||0)+n;
+  const e=evState(p),pt=(evToday().pts[k]||0)*(k==='train'?Math.floor(n/10):n);if(pt){const b4=e.pts;e.pts+=pt;const m=EVM.find(x=>b4<x[0]&&e.pts>=x[0]);if(m)setTimeout(()=>toast('🎯 وصلت '+fmt(m[0])+' نقطة في '+evToday().n+' · استلم الجايزة'),600)}
+  const ps=passState(p),x=k==='train'?Math.min(60,Math.floor(n/50)):(PXP[k]||0);if(x){const l0=passLvl(ps);ps.xp+=x;if(passLvl(ps)>l0)setTimeout(()=>toast('🎫 الباس وصل ليفل '+passLvl(ps)),900)}}
+function evClaimable(){if(!P3())return 0;const p=prog(),e=evState(p),ps=passState(p),L=passLvl(ps),w=wheelState(p);let n=EVM.filter((m,i)=>e.pts>=m[0]&&!e.got.includes(i)).length;
+  for(let i=1;i<=L;i++){if(!ps.gf.includes(i))n++;if(ps.prem&&!ps.gp.includes(i))n++}
+  for(const k in CARDS){const c=cardOn(p,k);if(c&&c.last!==today())n++}
+  n+=ACH.filter(achReady).length;if(!w.n)n++;return n}
+setInterval(()=>{const b=$('eBadge');if(b&&C&&ME){const n=evClaimable();b.textContent=n;b.hidden=!n}},2000);
+let EVT='ev';
+function panelEvents(tab){if(!P3()){toast('شغّل SQL المرحلة 3 في Supabase الأول');return}if(tab)EVT=tab;
+  const p=prog(),T=[['ev','🎯 الحدث'],['pass','🎫 الباس'],['card','💳 الكروت'],['wheel','🎰 العجلة'],['ach','🏆 الإنجازات'],['rank','🥇 الترتيب']];
+  let body='';
+  if(EVT==='ev'){const d=evToday(),e=evState(p),mx=EVM[EVM.length-1][0],end=new Date();end.setHours(24,0,0,0);
+    body=`<div class="evHead"><div class="evI">${d.i}</div><div style="flex:1"><b>${d.n}</b><small>بيخلص بعد <span data-cdt="${end.getTime()}"></span> · كل يوم حدث جديد</small></div><b class="evP">${fmt(e.pts)}</b></div>
+    <div class="bar" style="height:10px"><i style="width:${Math.min(100,e.pts/mx*100)}%"></i></div>
+    <div class="rsec">⭐ ازاي تجمع نقط النهاردة</div><div class="card">${Object.entries(d.pts).map(([k,v])=>`<div class="kv"><span>${EVK[k]}</span><b class="win">+${v}</b></div>`).join('')}</div>
+    <div class="rsec">🎁 الجوايز</div>`+EVM.map(([g,rw],i)=>{const ok2=e.pts>=g,got=e.got.includes(i);return `<div class="mis ${got?'got':''}"><div class="mi">${['🥉','🥈','🥇','👑'][i]}</div><div class="mt"><b>${fmt(g)} نقطة</b><small>${rwText(rw)}</small><div class="bar"><i style="width:${Math.min(100,e.pts/g*100)}%"></i></div></div><button class="btn sm" data-evc="${i}" ${!ok2||got?'disabled':''}>${got?'✓':ok2?'استلم':fmt(e.pts)+'/'+fmt(g)}</button></div>`}).join('')}
+  if(EVT==='pass'){const ps=passState(p),L=passLvl(ps),nx=Math.min(100,ps.xp%100);
+    body=`<div class="evHead"><div class="evI">🎫</div><div style="flex:1"><b>باس الصحراء · الموسم ${season()}</b><small>بيخلص بعد <span data-cdt="${seasonEnd()}"></span> · ${L>=30?'وصلت لآخر ليفل 🎉':'ليفل '+L+' · '+nx+'/100 XP'}</small></div><b class="evP">${L}</b></div>
+    <div class="bar" style="height:10px"><i style="width:${L>=30?100:nx}%"></i></div>
+    <p class="sub">كل حاجة بتعملها في اللعبة بتديك XP للباس: وحوش، جمع، بناء، أبحاث، هجوم، حشد، ساحة… كل 100 XP = ليفل.</p>
+    ${ps.prem?'<div class="card" style="text-align:center"><b class="win">👑 الباس الذهبي مفتوح</b></div>':`<div class="row"><button class="btn wide gemb" id="pBuy">👑 افتح الباس الذهبي · 💧 ${fmt(PCOST)}</button></div>`}
+    <div class="pgrid"><div class="ph"><span>ليفل</span><span>مجاني</span><span>👑 ذهبي</span></div>`+Array.from({length:30},(_,j)=>{const i=j+1,f=ps.gf.includes(i),g=ps.gp.includes(i),r=L>=i;return `<div class="pr ${r?'on':''}"><b>${i}</b>
+      <button class="pc ${f?'got':''}" data-pf="${i}" ${!r||f?'disabled':''}>${f?'✓':''}${rwText(passRw(i,false))}</button>
+      <button class="pc gold ${g?'got':''}" data-pp="${i}" ${!r||g||!ps.prem?'disabled':''}>${g?'✓':ps.prem?'':'🔒 '}${rwText(passRw(i,true))}</button></div>`}).join('')+'</div>'}
+  if(EVT==='card'){body=`<p class="sub">ادفع مرة واحدة وخد جواهر على طول، وبعدين جواهر كل يوم طول المدة. الكروت بتتشحن بالجالونات 💧.</p>`+Object.entries(CARDS).map(([k,c])=>{const on=cardOn(p,k),left=on?Math.ceil((on.until-Date.now())/864e5):0;return `<div class="cardx ${on?'on':''}"><div class="kv"><b style="font-size:17px">${c.n}</b><b>💧 ${fmt(c.cost)}</b></div>
+      <div class="kv"><span>على طول</span><b class="win">💎 ${c.now}</b></div><div class="kv"><span>كل يوم لمدة ${c.days} يوم</span><b class="win">💎 ${c.daily}</b></div><div class="kv"><span>المجموع</span><b>💎 ${fmt(c.now+c.daily*c.days)}</b></div>
+      ${on?`<div class="kv"><span>⏳ فاضل</span><b>${left} يوم</b></div><div class="row"><button class="btn wide" data-cdc="${k}" ${on.last===today()?'disabled':''}>${on.last===today()?'✓ استلمت النهاردة':'💎 استلم '+c.daily+' جوهرة'}</button></div>`:`<div class="row"><button class="btn wide gemb" data-cdb="${k}">اشتري · 💧 ${fmt(c.cost)}</button></div>`}</div>`}).join('')+`<div class="card"><div class="kv"><span>💧 جالوناتك</span><b>${fmt(C.gallons)}</b></div></div><div class="row"><button class="btn alt wide" id="toGal">💧 اشحن جالونات</button></div>`}
+  if(EVT==='wheel'){const w=wheelState(p),free=!w.n,tot=WHEEL.reduce((s,x)=>s+x.w,0);let a=0;const seg=360/WHEEL.length;
+    body=`<p class="sub" style="text-align:center">لفّة ببلاش كل يوم 🎁 · بعد كده 💎 50 للفّة (لحد 10 في اليوم)</p>
+    <div class="wheelW"><div class="wheelP">▼</div><div class="wheel" id="whl" style="background:conic-gradient(${WHEEL.map((x,i)=>`${x.c} ${i*seg}deg ${(i+1)*seg}deg`).join(',')})">${WHEEL.map((x,i)=>`<div class="wl" style="transform:rotate(${i*seg+seg/2}deg)"><span>${rwText(x.rw).replace(/ · /g,'<br>')}</span></div>`).join('')}<div class="wc">🎰</div></div></div>
+    <div class="row"><button class="btn wide ${free?'':'gemb'}" id="spin" ${w.n>=11?'disabled':''}>${free?'🎁 لفّ ببلاش':w.n>=11?'خلصت لفّات النهاردة':'🎰 لفّ · 💎 50'}</button></div><p class="sub" style="text-align:center">لفّيت النهاردة: ${w.n}</p>`}
+  if(EVT==='ach'){const A=p.ach||{};body=`<p class="sub">كل إنجاز ليه كذا مرحلة، وكل مرحلة بتديك جواهر 💎</p>`+ACH.map(x=>{const g=A[x.k]||0,done=g>=x.t.length,goal=x.t[Math.min(g,x.t.length-1)],v=x.v(),r=!done&&v>=goal;return `<div class="mis ${done?'got':''}"><div class="mi">${x.i}</div><div class="mt"><b>${x.n} ${'⭐'.repeat(g)}${'☆'.repeat(x.t.length-g)}</b><small>${done?'كل المراحل خلصت 🎉':fmt(Math.min(v,goal))+' / '+fmt(goal)+' · 💎 '+achRw(g).gems}</small><div class="bar"><i style="width:${done?100:Math.min(100,v/goal*100)}%"></i></div></div><button class="btn sm" data-ac="${x.k}" ${r?'':'disabled'}>${done?'✓':r?'استلم':'⏳'}</button></div>`}).join('')}
+  if(EVT==='rank')body=`<div class="tabs" style="margin-top:0">${[['power','💪 القوة'],['keep','🏰 القلعة'],['arena','🏟️ الساحة'],['ally','🤝 التحالفات']].map(([k,n])=>`<button class="${RKK===k?'on':''}" data-rk="${k}">${n}</button>`).join('')}</div><div id="rkL"><div class="card sub" style="text-align:center">⏳</div></div>`;
+  openSheet(`<h2>🎉 الأحداث والجوايز</h2><div class="tabs">${T.map(([k,n])=>`<button class="${EVT===k?'on':''}" data-et="${k}">${n}</button>`).join('')}</div>`+body);
+  document.querySelectorAll('[data-et]').forEach(b=>b.onclick=()=>panelEvents(b.dataset.et));
+  const cdt=()=>{const L=document.querySelectorAll('[data-cdt]');if(!L.length){clearInterval(iv);return}L.forEach(e=>{const s=(+e.dataset.cdt-Date.now())/1000;e.textContent=s>86400?Math.floor(s/86400)+' يوم و'+Math.floor(s%86400/3600)+' ساعة':fmtT(s)})},iv=setInterval(cdt,1000);cdt();
+  const claim=async(fn,rw,tab)=>{const p=prog();if(fn(p)===false)return;if(await commit(p,rw)){sfx('reward_claim');toast('🎉 '+rwText(rw))}panelEvents(tab)};
+  document.querySelectorAll('[data-evc]').forEach(b=>b.onclick=()=>{b.disabled=true;const i=+b.dataset.evc;claim(p=>{const e=evState(p);if(e.got.includes(i)||e.pts<EVM[i][0])return false;e.got.push(i)},EVM[i][1],'ev')});
+  document.querySelectorAll('[data-pf]').forEach(b=>b.onclick=()=>{b.disabled=true;const i=+b.dataset.pf;claim(p=>{const s=passState(p);if(s.gf.includes(i)||passLvl(s)<i)return false;s.gf.push(i)},passRw(i,false),'pass')});
+  document.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{b.disabled=true;const i=+b.dataset.pp;claim(p=>{const s=passState(p);if(!s.prem||s.gp.includes(i)||passLvl(s)<i)return false;s.gp.push(i)},passRw(i,true),'pass')});
+  if($('pBuy'))$('pBuy').onclick=async()=>{const b=$('pBuy');if(Number(C.gallons)<PCOST){toast('الجالونات مش كفاية 💧');panelShop('gal');return}if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ تأكيد: 💧 '+fmt(PCOST);return}b.disabled=true;const p=prog();passState(p).prem=true;if(await commit(p,{gal:-PCOST})){sfx('reward_claim');toast('👑 الباس الذهبي اتفتح!')}panelEvents('pass')};
+  document.querySelectorAll('[data-cdb]').forEach(b=>b.onclick=async()=>{const k=b.dataset.cdb,c=CARDS[k];if(Number(C.gallons)<c.cost){toast('الجالونات مش كفاية 💧');panelShop('gal');return}if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ تأكيد: 💧 '+fmt(c.cost);return}b.disabled=true;const p=prog();p.cards=p.cards||{};p.cards[k]={until:Date.now()+c.days*864e5,last:today()};if(await commit(p,{gal:-c.cost,gems:c.now+c.daily,vip:Math.round(c.cost/10)})){sfx('reward_claim');toast(`${c.n} اتفعّل · 💎 ${c.now+c.daily}`)}panelEvents('card')});
+  document.querySelectorAll('[data-cdc]').forEach(b=>b.onclick=()=>{b.disabled=true;const k=b.dataset.cdc;claim(p=>{const c=cardOn(p,k);if(!c||c.last===today())return false;c.last=today()},{gems:CARDS[k].daily},'card')});
+  if($('toGal'))$('toGal').onclick=()=>panelShop('gal');
+  document.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>{b.disabled=true;const k=b.dataset.ac,x=ACH.find(y=>y.k===k);let g=0;claim(p=>{p.ach=p.ach||{};g=p.ach[k]||0;if(g>=x.t.length||x.v()<x.t[g])return false;p.ach[k]=g+1},achRw(((prog().ach)||{})[k]||0),'ach')});
+  if($('spin'))$('spin').onclick=async()=>{const b=$('spin'),p=prog(),w=wheelState(p),free=!w.n;if(w.n>=11)return;if(!free&&Number(C.gems||0)<50){toast('الجواهر مش كفاية 💎');return}b.disabled=true;
+    const tot=WHEEL.reduce((s,x)=>s+x.w,0);let r=Math.random()*tot,i=0;for(;i<WHEEL.length-1;i++){r-=WHEEL[i].w;if(r<0)break}
+    const seg=360/WHEEL.length,ang=360*6-(i*seg+seg/2)+(Math.random()-.5)*seg*.6,el=$('whl');sfx('ui_confirm');el.style.transition='transform 3.6s cubic-bezier(.12,.7,.15,1)';el.style.transform=`rotate(${ang}deg)`;
+    const rw={...WHEEL[i].rw};w.n++;if(!free)rw.gems=(rw.gems||0)-50;
+    setTimeout(async()=>{if(await commit(p,rw)){sfx('reward_claim');toast('🎰 كسبت: '+rwText(WHEEL[i].rw))}setTimeout(()=>{if($('whl'))panelEvents('wheel')},1200)},3700)};
+  if(EVT==='rank'){document.querySelectorAll('[data-rk]').forEach(b=>b.onclick=()=>{RKK=b.dataset.rk;panelEvents('rank')});loadRank()}}
+let RKK='power';
+async function loadRank(){const box=$('rkL');if(!box)return;let h='';
+  try{if(RKK==='ally'){const L=await api.allyList();h=L.map((a,i)=>`<div class="mem rkr"><b class="rkn">${['🥇','🥈','🥉'][i]||i+1}</b><div class="alEmb sm">${a.emblem}</div><div style="flex:1;min-width:0"><b>[${esc(a.tag)}] ${esc(a.name)}</b><small>ليفل ${a.lvl} · ${a.members} عضو · القائد ${esc(a.leader||'؟')}</small></div><b>⚡ ${fmt(a.power)}</b></div>`).join('')||'<div class="card sub">مفيش تحالفات لسه.</div>'}
+    else if(RKK==='arena'){const L=await api.arenaTop();h=L.map((a,i)=>`<div class="mem rkr ${a.id===ME.id?'me':''}" data-pc="${a.id}"><b class="rkn">${['🥇','🥈','🥉'][i]||i+1}</b><div style="flex:1;min-width:0"><b>${esc(a.name)}</b><small>${a.wins} فوز · ${a.losses} خسارة</small></div><b>🏟️ ${fmt(a.points)}</b></div>`).join('')}
+    else{const r=await api.leaderboard(RKK);h=(r.me?`<div class="card"><div class="kv"><span>ترتيبك</span><b class="win">#${r.me.rank}</b></div></div>`:'')+r.top.map(a=>`<div class="mem rkr ${a.id===ME.id?'me':''}" data-pc="${a.id}"><b class="rkn">${['🥇','🥈','🥉'][a.rank-1]||a.rank}</b><div style="flex:1;min-width:0"><b>${a.tag?'['+esc(a.tag)+'] ':''}${esc(a.name)}</b><small>قلعة ${a.keep}</small></div><b>${RKK==='keep'?'🏰 '+a.keep:'⚡ '+fmt(a.power)}</b></div>`).join('')}}
+  catch(e){h='<div class="card sub">⚠️ شغّل SQL المراحل 10-15 في Supabase الأول.</div>'}
+  if(!$('rkL'))return;$('rkL').innerHTML=h;document.querySelectorAll('[data-pc]').forEach(b=>b.onclick=()=>profileCard(b.dataset.pc))}
+async function profileCard(id){let r;try{r=await api.profileCard(id)}catch(e){toast('⚠️ مش متاح دلوقتي');return}if(!r)return;
+  openSheet(`${artImg('keep')}<h2>${esc(r.name)}</h2><p class="sub">${r.ally?`${r.ally.emblem} [${esc(r.ally.tag)}] ${esc(r.ally.name)} · ${ROLE[r.ally.role]||''}`:'مش في تحالف'}</p>
+  <div class="card"><div class="kv"><span>🏰 ليفل القلعة</span><b>${r.keep}</b></div><div class="kv"><span>⚡ قوة الجيش</span><b>${fmt(r.power)}</b></div><div class="kv"><span>🏟️ نقط الساحة</span><b>${r.arena==null?'—':fmt(r.arena)}</b></div><div class="kv"><span>⚔️ هجمات كسبها</span><b>${fmt(r.wins)}</b></div><div class="kv"><span>📍 المكان</span><b>(${r.x}, ${r.y})</b></div><div class="kv"><span>📅 بيلعب من</span><b>${ago(r.since)}</b></div></div>
+  <div class="rsec">🦸 الأبطال</div><div class="phs">${(r.heroes||[]).map(h=>`<div><img src="${ART[HIMG[h.k]]}" alt=""><b>${HN[h.k]?HN[h.k].n:h.k}</b><small>Lv ${h.l} · ${'⭐'.repeat(h.s||1)}</small></div>`).join('')}</div>
+  <div class="row"><button class="btn alt wide" id="pcBack">↩️ رجوع للترتيب</button></div>`);$('pcBack').onclick=()=>panelEvents('rank')}
+/* 📬 صندوق البريد */
+let MAIL=[],MAILOPEN=null;
+async function mailPoll(){if(!ME||!api.mailList)return;try{MAIL=await api.mailList()}catch(e){return}const n=MAIL.filter(m=>!m.claimed&&Object.keys(m.reward||{}).length).length,b=$('mlBadge');if(b){b.textContent=n;b.hidden=!n}}
+setInterval(mailPoll,30000);setTimeout(mailPoll,4000);
+async function panelMail(){openSheet('<h2>📬 صندوق البريد</h2><div class="card sub" style="text-align:center">⏳</div>');try{MAIL=await api.mailList()}catch(e){openSheet('<h2>📬 صندوق البريد</h2><div class="card sub">⚠️ شغّل SQL المراحل 10-15 في Supabase الأول.</div>');return}
+  const un=MAIL.filter(m=>!m.claimed&&Object.keys(m.reward||{}).length);
+  openSheet(`<h2>📬 صندوق البريد</h2><p class="sub">رسايل وهدايا من فريق اللعبة 🎁</p>${un.length>1?`<div class="row"><button class="btn wide" id="mAll">🎁 استلم الكل (${un.length})</button></div>`:''}
+  ${MAIL.length?MAIL.map(m=>{const has=Object.keys(m.reward||{}).length,op=MAILOPEN===m.id;return `<div class="mail ${has&&!m.claimed?'new':''}" data-mo="${m.id}"><div class="kv"><b>${has&&!m.claimed?'🎁':'✉️'} ${esc(m.title)}</b><small class="sub">${ago(m.at)}</small></div>
+    ${op?`<div class="mbody">${esc(m.body).replace(/\n/g,'<br>')}</div>${has?`<div class="kv"><span>${rwText(m.reward)}</span>${m.claimed?'<b class="sub">✓ اتاستلم</b>':`<button class="btn sm" data-mcl="${m.id}">استلم</button>`}</div>`:''}`:`<small class="sub">${has?rwText(m.reward):'اضغط علشان تقرا'}</small>`}</div>`}).join(''):'<div class="card sub">مفيش رسايل.</div>'}`);
+  document.querySelectorAll('[data-mo]').forEach(d=>d.onclick=e=>{if(e.target.closest('[data-mcl]'))return;MAILOPEN=MAILOPEN===+d.dataset.mo?null:+d.dataset.mo;panelMail()});
+  const take=async ids=>{let got=0;for(const id of ids){try{await api.mailClaim(id);got++}catch(e){toast('⚠️ '+(e.message||'ماتمش'))}}if(got){sfx('reward_claim');toast('🎁 استلمت '+got+' هدية');try{const d=await api.load(ME.id);C=d.city;hud()}catch(e){}}await mailPoll();panelMail()};
+  document.querySelectorAll('[data-mcl]').forEach(b=>b.onclick=()=>{b.disabled=true;take([+b.dataset.mcl])});
+  if($('mAll'))$('mAll').onclick=()=>{$('mAll').disabled=true;take(un.map(m=>m.id))}}
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
   try{ALLY=await api.allyInfo()}catch(e){openSheet('<h2>🤝 التحالف</h2><div class="card sub">⚠️ شغّل SQL المرحلة 6 (التحالفات) في Supabase الأول.</div><div class="row"><button class="btn alt wide" id="srvChat">💬 شات السيرفر</button></div>');$('srvChat').onclick=panelChat;return}
@@ -1005,7 +1132,7 @@ async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   if($('alLeave'))$('alLeave').onclick=e=>{const b=e.target;if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ متأكد؟ دوس تاني';return}run(()=>api.allyLeave(),'🚪 خرجت من التحالف')};
   if($('hAll'))$('hAll').onclick=()=>{$('hAll').disabled=true;run(()=>api.allyHelpAll(),n=>`🤝 ساعدت ${n} · +${10*n} 🪙`)};
   if($('hReq'))$('hReq').onclick=()=>{$('hReq').disabled=true;run(()=>api.allyHelpReq(),'🙋 طلبت مساعدة من التحالف')};
-  document.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>{b.disabled=true;run(async()=>{await saveCity({});return api.allyDonate(b.dataset.dn,+b.dataset.am)},r=>`💰 اتبرعت · +${fmt(r.points)} نقطة`)});
+  document.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>{b.disabled=true;run(async()=>{await saveCity({});const r=await api.allyDonate(b.dataset.dn,+b.dataset.am);track('donate');return r},r=>`💰 اتبرعت · +${fmt(r.points)} نقطة`)});
   document.querySelectorAll('[data-ash]').forEach(b=>b.onclick=()=>{b.disabled=true;run(()=>api.allyShop(b.dataset.ash),'✅ اشتريت')});
   if(ATB==='chat'){document.querySelectorAll('[data-chm]').forEach(b=>b.onclick=()=>{CHM=b.dataset.chm;panelAlly('chat')});
     const load=async()=>{try{const d=CHM==='ally'?await api.allyChat(A.id,ME.id):await api.chat(PRO.server_id,ME.id),box=$('msgs');if(!box)return;const end=box.scrollHeight-box.scrollTop-box.clientHeight<40;box.innerHTML=d.map(m=>`<div class="msg ${m.mine?'mine':''}"><b>${esc(m.name)}</b>${esc(m.body)}</div>`).join('')||'<div class="sub">مفيش رسايل لسه. ابدأ إنت.</div>';if(end)box.scrollTop=box.scrollHeight}catch(e){}};
