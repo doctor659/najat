@@ -147,6 +147,15 @@ th .ri{width:26px;height:26px}
 .loot .lack{background:rgba(224,99,74,.15)!important;border-color:rgba(224,99,74,.55)!important}.loot .lack b{color:var(--red)!important}
 .btn.heal{background:linear-gradient(180deg,#8FE3A8,#3FA866);box-shadow:0 3px 0 #1F6B3A;color:#0B2614}
 .btn.gemb{background:linear-gradient(180deg,#C39BEA,#7B3FB0);box-shadow:0 3px 0 #3A1450;color:#fff}
+.hsel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.hs{border:2px solid rgba(240,192,104,.25);border-radius:14px;padding:8px 4px;text-align:center;background:rgba(255,255,255,.04);cursor:pointer}
+.hs.on{border-color:#F0C068;background:rgba(240,192,104,.16);box-shadow:0 0 0 2px rgba(240,192,104,.25)}.hs.busy{opacity:.4}
+.hs .hp{width:58px;height:58px;border-radius:50%;margin:0 auto 4px;background:#2A1F14 center 12%/cover no-repeat;border:2px solid #C8913F}
+.hs b{display:block;font-size:13.5px;color:#FFF3D6}.hs small{color:var(--muted);font-size:11px}
+.trow{display:grid;grid-template-columns:auto 1fr 92px auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed rgba(240,192,104,.15)}
+.trow .tn{min-width:0}.trow .tn b{display:block;font-size:14px;color:#FFF3D6}.trow .tn small{color:var(--muted);font-size:11.5px}.trow input{padding:8px 6px;text-align:center}
+.adv{font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:99px;background:rgba(0,0,0,.3);white-space:nowrap}
+.msum{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}.msum div{background:rgba(0,0,0,.28);border-radius:10px;padding:7px;text-align:center}.msum span{display:block;font-size:11px;color:var(--muted)}.msum b{font-size:15px;font-variant-numeric:tabular-nums}
 .err{color:#FF9E88;font-size:13.5px;min-height:1em;text-align:center}
 </style>
 </head>
@@ -218,7 +227,7 @@ if(!DEMO){
     async cities(sid){return chk(await db.from('cities').select('player_id,keep_level,map_x,map_y,profiles(name)').eq('server_id',sid)).map(c=>({id:c.player_id,lvl:c.keep_level,x:c.map_x,y:c.map_y,name:c.profiles?c.profiles.name:'؟'}))},
     async chat(sid,uid){return chk(await db.from('chat_messages').select('id,body,player_id,profiles(name)').eq('server_id',sid).order('id',{ascending:false}).limit(50)).reverse().map(m=>({mine:m.player_id===uid,name:m.profiles?m.profiles.name:'؟',body:m.body}))},
     async send(sid,uid,body){chk(await db.from('chat_messages').insert({server_id:sid,player_id:uid,body}))},
-    async attack(t){return chk(await db.rpc('attack_city',{target:t}))},
+    async attack(t,comp,hero){return chk(await db.rpc('attack_march',{target:t,comp,hero}))},
     async scout(t){return chk(await db.rpc('scout_city',{target:t}))},
     async battles(){return chk(await db.from('battles').select('*').order('id',{ascending:false}).limit(30))}
   };
@@ -239,11 +248,11 @@ if(!DEMO){
     async cities(){return [{id:'me',lvl:S.city.keep_level,x:S.city.map_x,y:S.city.map_y,name:S.profile.name},...BOTS.map((b,i)=>({id:'b'+i,name:b[0],lvl:b[1],x:b[2],y:b[3]}))]},
     async chat(){return S.chat.map(m=>({mine:!!m.me,name:m.n,body:m.b}))},
     async send(sid,u,body){S.chat.push({n:S.profile.name,b:body,me:true});S.chat=S.chat.slice(-50);save()},
-    async scout(t){const bt=BOTS[+t.slice(1)];return {power:bt[1]*900,loot:{wood:bt[1]*4000,meat:bt[1]*4000,coal:bt[1]*800,iron:bt[1]*400}}},
-    async attack(t){const bt=BOTS[+t.slice(1)],r=await this.scout(t),P=power(),won=P*(0.85+Math.random()*.3)>(r.power*1.1+bt[1]*200)*(0.85+Math.random()*.3);let lost=0;
-      S.troops.forEach(x=>{const l=Math.floor(x.amount*(won?.15:.4));lost+=l;x.amount-=l});if(won)for(const k in r.loot)S.city[k]=Number(S.city[k])+r.loot[k];
-      const b={id:Date.now(),attacker_id:'me',defender_id:t,attacker_name:S.profile.name,defender_name:bt[0],attacker_power:Math.round(P),defender_power:r.power,attacker_won:won,attacker_lost:lost,defender_lost:Math.floor(r.power/12*(won?.3:.1)),loot:won?r.loot:{wood:0,meat:0,coal:0,iron:0},created_at:new Date().toISOString()};
-      S.battles=[b,...(S.battles||[])].slice(0,30);save();return {...b,won}},
+    async scout(t){const bt=BOTS[+t.slice(1)];return {mix:[{infantry:3,lancer:1},{lancer:3,marksman:1},{marksman:3,infantry:1}][bt[1]%3],power:bt[1]*900,loot:{wood:bt[1]*4000,meat:bt[1]*4000,coal:bt[1]*800,iron:bt[1]*400}}},
+    async attack(t,comp,hero){const bt=BOTS[+t.slice(1)],r=await this.scout(t),P=marchPower(comp,hero),f=factor(comp,r.mix),won=P*f*(0.85+Math.random()*.3)>(r.power*1.1+bt[1]*200)*(0.85+Math.random()*.3);let lost=0;
+      comp.forEach(x=>{const tr=S.troops.find(y=>y.troop_class===x.c&&y.tier===x.t);if(!tr)return;const l=Math.floor(x.n*(won?.15:.4));lost+=l;tr.amount-=l});if(won)for(const k in r.loot)S.city[k]=Number(S.city[k])+r.loot[k];
+      const b={id:Date.now(),attacker_id:'me',defender_id:t,attacker_name:S.profile.name,defender_name:bt[0],attacker_power:P,defender_power:r.power,attacker_won:won,attacker_lost:lost,defender_lost:Math.floor(r.power/12*(won?.3:.1)),loot:won?r.loot:{wood:0,meat:0,coal:0,iron:0},created_at:new Date().toISOString()};
+      S.battles=[b,...(S.battles||[])].slice(0,30);save();return {...b,won,factor:Math.round(f*1000)/1000,sent:comp.reduce((s,x)=>s+x.n,0)}},
     async battles(){return S.battles||[]}
   };
 }
@@ -384,7 +393,7 @@ function drawWorld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14';c
   for(let i=MARCHES.length-1;i>=0;i--){const mr=MARCHES[i],k=Math.min(1,(t-mr.t0)/mr.dur),ax=sx(mr.fx+.5),ay=sy(mr.fy+.5),bx=sx(mr.m.x+.5),by=sy(mr.m.y+.5);
     ctx.setLineDash([8,6]);ctx.lineDashOffset=-t/40;ctx.strokeStyle='rgba(240,192,104,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);
     const x=ax+(bx-ax)*k,y=ay+(by-ay)*k;drawMarch(mr,x,y,bx,by,t);
-    if(k>=1&&!mr.done){mr.done=true;MARCHES.splice(i,1);for(let j=0;j<26;j++)FX.push({x:bx,y:by,vx:Math.cos(j)*(2+Math.random()*3),vy:Math.sin(j)*(2+Math.random()*3),l:1});(mr.onArrive||(()=>resolveBattle(mr.m)))()}}
+    if(k>=1&&!mr.done){mr.done=true;MARCHES.splice(i,1);for(let j=0;j<26;j++)FX.push({x:bx,y:by,vx:Math.cos(j)*(2+Math.random()*3),vy:Math.sin(j)*(2+Math.random()*3),l:1});(mr.onArrive||(()=>resolveBattle(mr.m,mr.comp,mr.hero)))()}}
   for(let i=FX.length-1;i>=0;i--){const p=FX[i];p.x+=p.vx*dt/16;p.y+=p.vy*dt/16;p.l-=dt/700;if(p.l<=0){FX.splice(i,1);continue}if(p.dust){ctx.fillStyle=`rgba(225,195,140,${p.l*.5})`;ctx.beginPath();ctx.arc(p.x,p.y,(1-p.l)*14+4,0,7);ctx.fill()}else{ctx.fillStyle=`rgba(255,${150+Math.random()*80|0},60,${p.l})`;ctx.beginPath();ctx.arc(p.x,p.y,5*p.l+2,0,7);ctx.fill()}}
   const nt=night(t);if(nt>0){ctx.fillStyle=`rgba(12,22,58,${nt*.35})`;ctx.fillRect(0,0,W,H)}
   $('banner').textContent='🗺️ السيرفر 1 · '+MONSTERS.filter(alive).length+' وحش · '+CITIES.length+' مدينة'}
@@ -476,22 +485,16 @@ function openBuilding(b){if(b.act){openPanel(b.act);return}
   if($('upGo'))$('upGo').onclick=async()=>{const c2=upCost(id,L);if(C.build_target||!RK.every(k=>cur(k)>=c2[k])){toast('مينفعش دلوقتي');return}$('upGo').disabled=true;const now=Date.now();
     const patch={build_target:id,build_level:L+1,build_started_at:new Date(now).toISOString(),build_ends_at:new Date(now+upTime(id,L)*1000).toISOString()};RK.forEach(k=>patch[k]=Math.floor(cur(k)-c2[k]));
     if(await saveCity(patch)){TAPPED[id]=performance.now();toast('⚒️ بدأ تطوير '+b.name);openBuilding(b)}else $('upGo').disabled=false}}
-function openCity(c){const me=c.id===ME.id;
+function openCity(c){const me=c.id===ME.id;SC=null;
   openSheet(`${artImg('keep')}<h2>${esc(c.name)}</h2><p class="sub">${me?'دي مدينتك.':'مدينة لاعب على السيرفر.'}</p><div class="card"><div class="kv"><span>ليفل القلعة</span><b>${c.lvl}</b></div><div class="kv"><span>المكان</span><b>(${c.x}, ${c.y})</b></div>
   ${me?`<div class="kv"><span>قوة جيشك</span><b>${fmt(power())}</b></div>`:`<div class="kv"><span>🔭 قوة جيشه</span><b id="scP">⏳</b></div><div class="kv"><span>قوة جيشك</span><b>${fmt(power())}</b></div><div class="kv"><span>فرصة الفوز</span><b id="scC">⏳</b></div><div class="kv"><span>تنهب لو كسبت</span><b id="scL">⏳</b></div>`}</div>
   ${me?'':`<div class="row"><button class="btn red wide" id="pvp">⚔️ هجوم على ${esc(c.name)}</button></div><p class="sub" style="margin-top:8px">لو كسبت هتنهب 20% من موارده. والمدافع عنده ميزة الأسوار، وهو كمان يقدر يرد عليك 😈</p>`}`);
   if(me)return;
-  api.scout(c.id).then(r=>{if(!$('scP'))return;const P=power(),D=r.power*(1.1+(r.wall||0)*.03)+c.lvl*200,ch=P/Math.max(D,1),cc=$('scC');$('scP').textContent=fmt(r.power);
+  api.scout(c.id).then(r=>{SC=r;if(!$('scP'))return;const P=power(),D=r.power*(1.1+(r.wall||0)*.03)+c.lvl*200,ch=P/Math.max(D,1),cc=$('scC');$('scP').textContent=fmt(r.power);
     cc.textContent=ch>=1.15?'عالية':ch>=.9?'متوسطة':'ضعيفة';cc.className=ch>=1.15?'win':ch>=.9?'':'lose';$('scL').innerHTML=['wood','meat','coal','iron'].map(k=>`${rIco(k,16)} ${fmt(r.loot[k])}`).join(' ')})
    .catch(()=>{if($('scP')){$('scP').textContent='؟';$('scC').textContent='؟';$('scL').textContent='؟'}});
-  $('pvp').onclick=async()=>{if(MARCHES.some(x=>x.m.x===c.x&&x.m.y===c.y)){toast('فيه مسيرة رايحة للمدينة دي');return}if(MARCHES.length>=3){toast('عندك 3 مسيرات في الطريق، استنى واحدة توصل');return}if(power()<=0){toast('درّب جنود الأول');return}
-    const btn=$('pvp');btn.disabled=true;btn.textContent='⏳ الجيش بيتجهز…';let res;
-    try{res=await api.attack(c.id)}catch(e){toast('⚠️ '+(e.message||'الهجوم ماتمش'));btn.disabled=false;btn.textContent='⚔️ هجوم على '+c.name;return}
-    closeSheet();const sentN=TROOPS.reduce((a,x)=>a+x.amount,0),d=Math.hypot(c.x-C.map_x,c.y-C.map_y);
-    MARCHES.push({hero:['hayat','sarab','turbin'][MARCHES.length%3],n:TROOPS.reduce((s,x)=>s+x.amount,0),m:{x:c.x,y:c.y},fx:C.map_x,fy:C.map_y,t0:performance.now(),dur:Math.min(6000,1500+d*250),onArrive:()=>pvpReport(res,c,sentN)});toast('🐪 الجيش اتحرك ناحية '+c.name+'…');
-    try{const dd=await api.load(ME.id);C=dd.city;TROOPS=dd.troops;HEROES=dd.heroes;hud()}catch(e){}
-    loadReports()}}
-function pvpReport(r,c,sent){openSheet(reportHTML({won:r.won,sub:'هجومك على '+esc(c.name),myName:PRO.name,myP:r.attacker_power,enName:c.name,enP:r.defender_power,enImg:ART.keep,loot:r.won?r.loot:null,sent:sent||0,lost:r.attacker_lost,wounded:r.attacker_wounded||0,enLost:r.defender_lost,defBonus:1}));$('okB').onclick=closeSheet;hud()}
+  $('pvp').onclick=()=>{if(MARCHES.some(x=>x.m.x===c.x&&x.m.y===c.y)){toast('فيه مسيرة رايحة للمدينة دي');return}openMarch({kind:'c',c,name:c.name,mix:SC&&SC.mix,enP:SC?Math.round(SC.power*(1.1+(SC.wall||0)*.03)+c.lvl*200):null})}}
+function pvpReport(r,c,sent,hero){openSheet(reportHTML({won:r.won,sub:'هجومك على '+esc(c.name),myName:PRO.name,myP:r.attacker_power,enName:c.name,enP:r.defender_power,enImg:ART.keep,loot:r.won?r.loot:null,sent:r.sent||sent||0,hero,factor:r.factor,lost:r.attacker_lost,wounded:r.attacker_wounded||0,enLost:r.defender_lost,defBonus:1}));$('okB').onclick=closeSheet;hud()}
 let REPORTS=[],notified=null;
 const ago=t=>{const s=Math.max(0,(Date.now()-new Date(t))/1000);return s<60?'دلوقتي':s<3600?'من '+Math.floor(s/60)+' دقيقة':s<86400?'من '+Math.floor(s/3600)+' ساعة':'من '+Math.floor(s/86400)+' يوم'};
 async function loadReports(){if(!ME||!C)return;let list;try{list=await api.battles(ME.id)}catch(e){return}if(!ME)return;REPORTS=list||[];
@@ -508,18 +511,62 @@ function panelReports(){if(!ME)return;LS.set('najat_read_'+ME.id,Math.max(0,...R
     return `<div class="rep ${won?'w':'l'}"><div class="rh"><span class="ricon">${atk?'⚔️':'🛡️'}</span><div class="rt"><b>${atk?'هجوم على '+esc(b.defender_name):'دفاع ضد '+esc(b.attacker_name)}</b><small>${ago(b.created_at)}</small></div><span class="rres ${won?'win':'lose'}">${won?'انتصار':'هزيمة'}</span></div>
     <div class="rgrid"><div><span>قوتك</span><b>${fmt(atk?b.attacker_power:b.defender_power)}</b></div><div><span>قوته</span><b>${fmt(atk?b.defender_power:b.attacker_power)}</b></div><div><span>خسايرك</span><b class="lose">-${fmt(atk?b.attacker_lost:b.defender_lost)}</b></div><div><span>خسايره</span><b>-${fmt(atk?b.defender_lost:b.attacker_lost)}</b></div></div>
     ${b.attacker_won?`<div class="rloot"><span>${atk?'نهبت:':'اتنهب منك:'}</span>${['wood','meat','coal','iron'].map(k=>`<em>${rIco(k,16)} ${atk?'+':'-'}${fmt(L[k]||0)}</em>`).join('')}</div>`:''}</div>`}).join(''):'<div class="card sub">مفيش معارك لسه. روح الخريطة ودوس على مدينة لاعب تهاجمها ⚔️</div>'}`)}
+const MCLS={scorpion:'lancer',wolf:'marksman',bandit:'infantry',worm:null};
+const BEATS={infantry:'lancer',lancer:'marksman',marksman:'infantry'},BEATEN_BY=Object.fromEntries(Object.entries(BEATS).map(([a,b])=>[b,a]));
+const cmult=(a,e)=>BEATS[a]===e?1.25:BEATS[e]===a?.8:1;
+const marchCap=()=>10000+C.keep_level*3000;
+const reserved=(c,t)=>MARCHES.reduce((s,m)=>s+(m.comp||[]).filter(x=>x.c===c&&x.t===t).reduce((a,x)=>a+x.n,0),0);
+const avail=x=>Math.max(0,x.amount-reserved(x.troop_class,x.tier));
+const busyHeroes=()=>MARCHES.map(m=>m.hero).filter(Boolean);
+const monMix=m=>MCLS[m.type]?{[MCLS[m.type]]:1}:{infantry:1,lancer:1,marksman:1};
+function factor(comp,mix){mix=mix||{};const tw=comp.reduce((s,x)=>s+x.n*x.t,0),dw=Object.values(mix).reduce((a,b)=>a+b,0);if(!tw||!dw)return 1;const aw={};comp.forEach(x=>aw[x.c]=(aw[x.c]||0)+x.n*x.t);let f=0;for(const a in aw)for(const e in mix)f+=aw[a]/tw*mix[e]/dw*cmult(a,e);return f}
+function marchPower(comp,hero){const base=comp.reduce((s,x)=>s+x.n*x.t*4,0),h=HEROES.find(x=>x.hero_key===hero),hl=h?h.level:0;return Math.round(base*(1+hl/100)+hl*60)}
+let SC=null;const MP={hero:null,sel:{}};
+function openMarch(tg){if(MARCHES.length>=3){toast('عندك 3 مسيرات في الطريق، استنى واحدة توصل');return}
+  const rows=TROOPS.filter(x=>avail(x)>0).sort((a,b)=>b.tier-a.tier||a.troop_class.localeCompare(b.troop_class));if(!rows.length){toast('مفيش جنود فاضية. درّب أو استنى المسيرات ترجع');return}
+  const freeH=['hayat','sarab','turbin'].filter(k=>!busyHeroes().includes(k));if(!MP.hero||!freeH.includes(MP.hero))MP.hero=freeH.find(k=>HCLS[k]===BEATEN_BY[enCls()])||freeH[0]||null;
+  function enCls(){const mx=tg.mix||{};return Object.keys(mx).sort((a,b)=>mx[b]-mx[a])[0]}
+  const key=x=>x.troop_class+':'+x.tier,cap=marchCap();
+  const comp=()=>rows.map(x=>({c:x.troop_class,t:x.tier,n:Math.min(avail(x),MP.sel[key(x)]||0)})).filter(x=>x.n>0);
+  const fill=mode=>{MP.sel={};if(mode==='clear')return;let left=cap;const ec=enCls(),rank=x=>mode==='smart'&&ec?(BEATS[x.troop_class]===ec?0:BEATS[ec]===x.troop_class?2:1):0;
+    [...rows].sort((a,b)=>rank(a)-rank(b)||b.tier-a.tier).forEach(x=>{const n=Math.min(avail(x),left);if(n>0){MP.sel[key(x)]=n;left-=n}})};
+  fill('smart');
+  const ec=enCls(),hint=ec&&tg.mix&&Object.keys(tg.mix).length===1?`جيش العدو ${CLS[ec]} → <b class="win">${CLS[BEATEN_BY[ec]]}</b> بيغلبهم 💡`:ec?`جيش العدو أغلبه ${CLS[ec]} → <b class="win">${CLS[BEATEN_BY[ec]]}</b> بيغلبهم 💡`:'نوع جيش العدو مش معروف';
+  openSheet(`<h2>⚔️ تجهيز المسيرة</h2><p class="sub">الهدف: <b style="color:var(--gold)">${esc(tg.name)}</b><br>${hint}</p>
+  <div class="rsec">🦸 البطل</div><div class="hsel">${['hayat','sarab','turbin'].map(k=>{const h=HEROES.find(x=>x.hero_key===k)||{level:1},busy=busyHeroes().includes(k);return `<div class="hs ${k===MP.hero?'on':''} ${busy?'busy':''}" data-h="${k}"><div class="hp" style="background-image:url('${ART[HIMG[k]]}')"></div><b>${HN[k].n}</b><small>${busy?'في مسيرة':'Lv '+h.level+' · '+HN[k].cls}</small></div>`}).join('')}</div>
+  <div class="rsec">🛡️ الجنود <small style="font-family:var(--body);font-size:12px;color:var(--muted)">(السعة ${fmt(cap)})</small></div>
+  <div class="qn"><button class="btn alt sm" data-f="smart">⚡ ذكي</button><button class="btn alt sm" data-f="all">📦 الأقصى</button><button class="btn alt sm" data-f="clear">✕ مسح</button></div>
+  <div id="trs">${rows.map(x=>{const a=BEATS[x.troop_class]===ec?'<span class="adv win">💪 أفضلية</span>':ec&&BEATS[ec]===x.troop_class?'<span class="adv lose">⚠️ ضعيف</span>':'';return `<div class="trow">${ico(CI[x.troop_class],30)}<div class="tn"><b>${CLS[x.troop_class]} T${x.tier} ${a}</b><small>متاح ${fmt(avail(x))}</small></div><input type="number" inputmode="numeric" min="0" max="${avail(x)}" data-k="${key(x)}" value="${MP.sel[key(x)]||0}"><button class="btn alt sm" data-all="${key(x)}">الكل</button></div>`}).join('')}</div>
+  <div class="msum" id="mSum"></div><div class="row"><button class="btn red wide" id="mGo">⚔️ ابعت المسيرة</button></div>`);
+  const sync=()=>document.querySelectorAll('#trs input').forEach(i=>i.value=MP.sel[i.dataset.k]||0);
+  const upd=()=>{const cp=comp(),n=cp.reduce((s,x)=>s+x.n,0),P=marchPower(cp,MP.hero),f=factor(cp,tg.mix),EP=tg.enP,ch=EP?P*f/EP:null,pc=Math.round((f-1)*100);
+    $('mSum').innerHTML=`<div><span>الجنود</span><b dir="ltr" class="${n>cap?'lose':''}">${fmt(n)} / ${fmt(cap)}</b></div><div><span>قوة المسيرة</span><b>${fmt(P)}</b></div><div><span>أفضلية الأنواع</span><b class="${pc>0?'win':pc<0?'lose':''}">${pc>0?'+':''}${pc}%</b></div><div><span>فرصة الفوز</span><b class="${ch==null?'':ch>=1.15?'win':ch>=.9?'':'lose'}">${ch==null?'؟':ch>=1.15?'عالية':ch>=.9?'متوسطة':'ضعيفة'}</b></div>`;
+    $('mGo').disabled=!n||n>cap};
+  document.querySelectorAll('[data-h]').forEach(d=>d.onclick=()=>{if(d.classList.contains('busy'))return;MP.hero=d.dataset.h;document.querySelectorAll('[data-h]').forEach(x=>x.classList.toggle('on',x===d));upd()});
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{fill(b.dataset.f);sync();upd()});
+  document.querySelectorAll('[data-all]').forEach(b=>b.onclick=()=>{const x=rows.find(r=>key(r)===b.dataset.all),used=Object.entries(MP.sel).filter(([k])=>k!==b.dataset.all).reduce((s,[,v])=>s+v,0);MP.sel[b.dataset.all]=Math.max(0,Math.min(avail(x),cap-used));sync();upd()});
+  document.querySelectorAll('#trs input').forEach(i=>{i.oninput=()=>{const x=rows.find(r=>key(r)===i.dataset.k);MP.sel[i.dataset.k]=Math.max(0,Math.min(avail(x),Math.floor(+i.value||0)));upd()};i.onchange=()=>{i.value=MP.sel[i.dataset.k]||0}});
+  upd();
+  $('mGo').onclick=async()=>{const cp=comp(),n=cp.reduce((s,x)=>s+x.n,0),hero=MP.hero,btn=$('mGo');if(!n||n>cap)return;if(MARCHES.length>=3){toast('عندك 3 مسيرات في الطريق');return}
+    if(tg.kind==='m'){closeSheet();const m=tg.m,d=Math.hypot(m.x-C.map_x,m.y-C.map_y);MARCHES.push({hero,comp:cp,n,m,fx:C.map_x,fy:C.map_y,t0:performance.now(),dur:Math.min(6000,1500+d*250)});toast('🐪 المسيرة اتحركت مع '+(hero?HN[hero].n:'الجيش'));return}
+    btn.disabled=true;btn.textContent='⏳ المسيرة بتتجهز…';let res;
+    try{res=await api.attack(tg.c.id,cp,hero)}catch(e){toast('⚠️ '+(e.message||'الهجوم ماتمش'));btn.disabled=false;btn.textContent='⚔️ ابعت المسيرة';return}
+    closeSheet();const c=tg.c,d=Math.hypot(c.x-C.map_x,c.y-C.map_y);
+    MARCHES.push({hero,comp:cp,n,m:{x:c.x,y:c.y},fx:C.map_x,fy:C.map_y,t0:performance.now(),dur:Math.min(6000,1500+d*250),onArrive:()=>pvpReport(res,c,n,hero)});toast('🐪 المسيرة اتحركت ناحية '+c.name+'…');
+    try{const dd=await api.load(ME.id);C=dd.city;TROOPS=dd.troops;HEROES=dd.heroes;hud()}catch(e){}
+    loadReports()}}
 function openMonster(m){const P=power(),M=mPow(m.lvl),ch=P/M,win=ch>=1.1?'عالية':ch>=.95?'متوسطة':'ضعيفة',col=ch>=1.1?'win':ch>=.95?'':'lose';
   openSheet(`${artImg(MIMG[m.type])}<h2>${MT[m.type].n}</h2><p class="sub">ليفل ${m.lvl} · المكان (${m.x}, ${m.y})</p>
-  <div class="card"><div class="kv"><span>قوة الوحش</span><b>${fmt(M)}</b></div><div class="kv"><span>قوة جيشك</span><b>${fmt(P)}</b></div><div class="kv"><span>فرصة الفوز</span><b class="${col}">${win}</b></div>
+  <div class="card"><div class="kv"><span>قوة الوحش</span><b>${fmt(M)}</b></div><div class="kv"><span>قوة جيشك</span><b>${fmt(P)}</b></div><div class="kv"><span>فرصة الفوز</span><b class="${col}">${win}</b></div><div class="kv"><span>نوع العدو</span><b>${MCLS[m.type]?CLS[MCLS[m.type]]+' · يغلبهم '+CLS[BEATEN_BY[MCLS[m.type]]]:'مختلط'}</b></div>
   <div class="kv"><span>الجايزة</span><b>🪵${fmt(300*m.lvl)} 🍖${fmt(300*m.lvl)} ⚫${fmt(120*m.lvl)} ⛓️${fmt(60*m.lvl)} · XP ${fmt(150*m.lvl)}</b></div></div>
   <div class="row"><button class="btn red wide" id="atk">⚔️ هجوم</button></div>`);
-  $('atk').onclick=()=>{if(MARCHES.some(x=>x.m===m)){toast('فيه مسيرة رايحة للوحش ده');return}if(MARCHES.length>=3){toast('عندك 3 مسيرات في الطريق، استنى واحدة توصل');return}if(P<=0){toast('درّب جنود الأول');return}closeSheet();const d=Math.hypot(m.x-C.map_x,m.y-C.map_y);MARCHES.push({hero:['hayat','sarab','turbin'][MARCHES.length%3],n:TROOPS.reduce((s,x)=>s+x.amount,0),m,fx:C.map_x,fy:C.map_y,t0:performance.now(),dur:Math.min(6000,1500+d*250)});toast('🐪 الجيش اتحرك…')}}
-async function resolveBattle(m){const P=power(),M=mPow(m.lvl),win=P*(.9+Math.random()*.2)>=M*(.9+Math.random()*.2),pct=win?.05:.2;let lost=0;
-  let hurt=0,capLeft=P1()?Math.max(0,hospCap()-woundedN()):0;for(const t of TROOPS){const l=Math.floor(t.amount*pct);if(l>0){const w=Math.min(l,capLeft);capLeft-=w;hurt+=w;t.amount-=l;lost+=l;if(P1())t.wounded=(t.wounded||0)+w;try{await api.setTroop(ME.id,t.troop_class,t.tier,t.amount,P1()?t.wounded:undefined)}catch(e){}}}
+  $('atk').onclick=()=>{if(MARCHES.some(x=>x.m===m)){toast('فيه مسيرة رايحة للوحش ده');return}openMarch({kind:'m',m,name:MT[m.type].n+' · ليفل '+m.lvl,mix:monMix(m),enP:M})}}
+async function resolveBattle(m,comp,hero){comp=comp||[];const f=factor(comp,monMix(m)),P=marchPower(comp,hero),M=mPow(m.lvl),win=P*f*(.9+Math.random()*.2)>=M*(.9+Math.random()*.2),pct=win?.05:.2,sent=comp.reduce((s,x)=>s+x.n,0);let lost=0,hurt=0,capLeft=P1()?Math.max(0,hospCap()-woundedN()):0;
+  for(const x of comp){const t=TROOPS.find(r=>r.troop_class===x.c&&r.tier===x.t);if(!t)continue;const l=Math.min(t.amount,Math.floor(x.n*pct));if(l>0){const w=Math.min(l,capLeft);capLeft-=w;hurt+=w;t.amount-=l;lost+=l;if(P1())t.wounded=(t.wounded||0)+w;try{await api.setTroop(ME.id,t.troop_class,t.tier,t.amount,P1()?t.wounded:undefined)}catch(e){}}}
   let ups=[];if(win){const L=m.lvl;await saveCity({wood:Math.floor(cur('wood')+300*L),meat:Math.floor(cur('meat')+300*L),coal:Math.floor(cur('coal')+120*L),iron:Math.floor(cur('iron')+60*L),...('gems' in C?{gems:Number(C.gems)+3*L}:{})});
-    for(const h of HEROES){let lv=h.level,xp=h.xp+150*L;while(lv<100&&xp>=need(lv)){xp-=need(lv);lv++}if(lv>=100)xp=0;try{const r=await api.setHero(ME.id,h.hero_key,lv,xp);if(r.level>h.level)ups.push(HN[h.hero_key].n+' → '+r.level);Object.assign(h,r)}catch(e){}}
+    for(const h of HEROES){let lv=h.level,xp=h.xp+(h.hero_key===hero?300:150)*L;while(lv<100&&xp>=need(lv)){xp-=need(lv);lv++}if(lv>=100)xp=0;try{const r=await api.setHero(ME.id,h.hero_key,lv,xp);if(r.level>h.level)ups.push(HN[h.hero_key].n+' → '+r.level);Object.assign(h,r)}catch(e){}}
     KILLED[m.id]=Date.now()+10*60e3;LS.set('najat_k_'+ME.id,KILLED)}
-  const sent=TROOPS.reduce((a,x)=>a+x.amount,0)+lost;openSheet(reportHTML({won:win,sub:MT[m.type].n+' · ليفل '+m.lvl,myName:PRO.name,myP:P,enName:MT[m.type].n,enP:M,enImg:ART[MIMG[m.type]],loot:win?{wood:300*m.lvl,meat:300*m.lvl,coal:120*m.lvl,iron:60*m.lvl}:null,xp:win?150*m.lvl:0,gems:win&&('gems' in C)?3*m.lvl:0,ups,sent,lost,wounded:hurt,enLost:null}));$('okB').onclick=closeSheet;hud()}
+  openSheet(reportHTML({won:win,sub:MT[m.type].n+' · ليفل '+m.lvl,myName:PRO.name,myP:P,enName:MT[m.type].n,enP:M,enImg:ART[MIMG[m.type]],loot:win?{wood:300*m.lvl,meat:300*m.lvl,coal:120*m.lvl,iron:60*m.lvl}:null,xp:win?150*m.lvl:0,gems:win&&('gems' in C)?3*m.lvl:0,ups,sent,lost,wounded:hurt,enLost:null,hero,factor:f}));$('okB').onclick=closeSheet;hud()}
 const HN={hayat:{n:'حياة',g:'بطلة',cls:'مشاة',c:'#9C4A1A',d:'تقف في الصف الأول وتحمي الجيش.',a:[40,90,60],w:'sword'},sarab:{n:'سراب',g:'بطلة',cls:'رماح',c:'#4E5394',d:'سريعة كالسراب. تخترق خطوط العدو.',a:[70,60,55],w:'spear'},turbin:{n:'توربين',g:'بطل',cls:'رماة',c:'#2E7D4F',d:'يرمي من بعيد. أعلى ضرر في الجيش.',a:[95,40,50],w:'bow'}};
 const HIMG={hayat:'hero_hayat',sarab:'hero_sarab',turbin:'hero_turbin'},HCLS={hayat:'infantry',sarab:'lancer',turbin:'marksman'};
 function panelHeroes(){openSheet(`<h2>الأبطال</h2><p class="sub">كل بطل يوصل لليفل 100. حارب الوحوش في خريطة العالم علشان تكسب XP.</p><div class="grid">${['hayat','sarab','turbin'].map(k=>{const s=HEROES.find(h=>h.hero_key===k)||{level:1,xp:0},h=HN[k],L=s.level,nx=need(L),g=1+(L-1)*.05;
@@ -529,7 +576,7 @@ const cost=(tier,n)=>({meat:5*tier*n,wood:3*tier*n,iron:Math.ceil(tier*n/2)});
 function reportHTML(o){const tot=Math.max(1,o.myP+o.enP),pct=Math.round(o.myP/tot*100),diff=o.enP>0?Math.round((o.myP-o.enP)/o.enP*100):100,L=o.loot;
   return `<div class="rpt ${o.won?'w':'l'}"><div class="rban">${o.won?'🏆 انتصار':'💀 هزيمة'}</div><div class="rsub">${o.sub}</div>
   <div class="vs"><div class="side"><div class="sav" style="background-image:url('${ART[HIMG[o.hero||'hayat']]}')"></div><b>${esc(o.myName)}</b><span>${fmt(o.myP)}</span></div><div class="vsx">VS</div><div class="side"><div class="sav en" style="background-image:url('${o.enImg}')"></div><b>${esc(o.enName)}</b><span>${fmt(o.enP)}</span></div></div>
-  <div class="pbar"><i style="width:${pct}%"></i></div><div class="pnote">${diff>=0?`قوتك كانت أعلى بـ ${diff}%`:`قوتك كانت أقل بـ ${-diff}%`}${o.defBonus?' · والمدافع عنده ميزة الأسوار':''}</div>
+  <div class="pbar"><i style="width:${pct}%"></i></div><div class="pnote">${diff>=0?`قوتك كانت أعلى بـ ${diff}%`:`قوتك كانت أقل بـ ${-diff}%`}${o.factor&&Math.abs(o.factor-1)>.005?' · أفضلية الأنواع '+(o.factor>1?'+':'')+Math.round((o.factor-1)*100)+'%':''}${o.defBonus?' · والمدافع عنده ميزة الأسوار':''}</div>
   ${o.won&&L?`<div class="rsec">🎁 الغنيمة</div><div class="loot">${['wood','meat','coal','iron'].map(k=>`<div>${rIco(k,30)}<b>+${fmt(L[k]||0)}</b></div>`).join('')}</div>`:''}
   ${o.gems?`<div class="rsec">💎 جواهر</div><div class="tip" style="margin-top:6px;border-style:solid">+${fmt(o.gems)} جوهرة</div>`:''}
   ${o.xp?`<div class="rsec">📜 خبرة الأبطال</div><div class="tip" style="margin-top:6px;border-style:solid">+${fmt(o.xp)} XP لكل بطل${o.ups&&o.ups.length?'<br>⬆️ '+o.ups.join(' · '):''}</div>`:''}
