@@ -1818,8 +1818,8 @@ const stDone=()=>{try{const s=(C.progress||{}).st;return !!(s&&s.done)}catch(e){
 const stC=()=>(((C.progress||{}).st)||{}).c||0;
 async function stSave(c,rw,done){if(ST.replay)return;const p=prog();p.st=Object.assign({},p.st||{},{c});if(done)p.st.done=1;await commit(p,rw||{})}
 function stCheck(){if(ST.on||!C||!ME||!P3()||!$('auth').hidden)return;if(/nostory/.test(location.hash)){return}
-  const s=(C.progress||{}).st;if(s&&s.done)return;
-  if(!s){const old=(C.keep_level||1)>=5||Object.keys((C.progress||{}).life||{}).length>0||(((C.progress||{}).login||{}).streak||0)>1;if(old){const p=prog();p.st={c:9,done:1,skip:1};commit(p,{});return}}
+  const s=(C.progress||{}).st;if(s&&s.done){if(s.skip&&!s.seen){ST.replay=true;storyStart(0)}return}
+  if(!s){const old=(C.keep_level||1)>=5||Object.keys((C.progress||{}).life||{}).length>0||(((C.progress||{}).login||{}).streak||0)>1;if(old){const p=prog();p.st={c:9,done:1,skip:1};commit(p,{});ST.replay=true;storyStart(0);return}}
   storyStart(stC())}
 setInterval(stCheck,1500);setInterval(()=>{if(ST.on&&$('sheet')&&!$('sheet').hidden)closeSheet()},400);
 
@@ -1829,7 +1829,8 @@ function stUI(){let o=$('stv');if(o)return o;o=document.createElement('div');o.i
   document.body.appendChild(o);$('stSkip').onclick=stSkip;return o}
 function stClose(){const o=$('stv');if(o)o.remove();document.body.classList.remove('storyMode');ST.on=false;CAMP.on=false;SCITY.tap=null}
 async function stSkip(){if(ST.full){ST.skipIntro=true;return}const b=$('stSkip');if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ تخطّي القصة كلها؟';setTimeout(()=>{b.classList.remove('confirm');b.textContent='تخطَّ ⏭'},3000);return}
-  ST.abort=true;stClose();stCityRestore(true);if(!ST.replay){const c=stC(),rw={};if(c<1)addRw(rw,ST_RW1);if(c<4)addRw(rw,ST_RW2);await stSave(9,rw,true);toast('🎁 '+rwText(rw))}}
+  ST.abort=true;stClose();stCityRestore(true);if(!ST.replay){const c=stC(),rw={};if(c<1)addRw(rw,ST_RW1);if(c<4)addRw(rw,ST_RW2);await stSave(9,rw,true);toast('🎁 '+rwText(rw))}else stSeen()}
+function stSeen(){try{const p=prog();p.st=Object.assign({},p.st||{},{seen:1});commit(p,{})}catch(e){}}
 function stAbort(){if(ST.abort)throw new Error('skip')}
 function say(who,text){stAbort();return new Promise(res=>{const b=$('stBox');const s=SPK[who];sfx('ui_click',.4);
   b.className=who==='nar'?'nar':'';b.innerHTML=who==='nar'?`<p id="stT"></p><span class="stNext">▼</span>`:`<img src="${ART[s.p]}" class="stPort ${who==='lead'?'sm':''}" alt=""><div class="stName">${who==='lead'?esc(PRO.name||s.n):s.n}</div><p id="stT"></p><span class="stNext">▼</span>`;b.hidden=false;
@@ -1999,7 +2000,7 @@ async function chapterOasis(c){document.body.classList.add('storyMode');stCityRu
 
 async function storyStart(c){if(ST.on)return;ST.on=true;ST.abort=false;closeSheet();document.body.classList.add('storyMode');try{
     if(c<2){stUI();if(c<1){await intro();await chapter1()}stAbort();await chapter2()}
-    stAbort();if(!ST.replay)await chapterOasis(Math.max(2,stC()));else{stClose();stCityRestore()}
+    stAbort();await chapterOasis(ST.replay?2:Math.max(2,stC()));if(ST.replay)stSeen()
   }catch(e){if(e.message!=='skip')console.log('STORY '+e.message);if(!ST.abort){stClose();stCityRestore()}}ST.replay=false}
 window.__ST={CAMP,ST,SCITY};function storyReplay(){if(ST.on)return;ST.replay=true;closeSheet();storyStart(0)}
 
