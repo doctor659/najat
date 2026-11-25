@@ -225,6 +225,7 @@ th .ri{width:26px;height:26px}
 .ar{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:8px 10px;border-radius:11px;background:rgba(255,255,255,.05);font-size:13.5px}.ar b{flex:1;min-width:45%;color:#FFF3D6}.ar span{font-weight:700;font-variant-numeric:tabular-nums}.ar small{width:100%;color:var(--muted);font-size:11.5px}
 .pre{display:flex;gap:6px;margin-top:8px}.pre .pr{flex:1;display:flex;gap:3px}.pre .pr .btn{padding:7px 4px}.pre .pr .btn:first-child{flex:1}
 .bossBox{text-align:center;margin-top:6px}.bossBox img{height:150px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.6))}.bossBox img.dead{filter:grayscale(1);opacity:.45}.bossBox h3{margin:4px 0}.bar.boss{height:12px}.bar.boss i{background:linear-gradient(90deg,#B03020,#E8553F)}.rcard .row{gap:6px;flex-wrap:wrap}
+#r-wood.full,#r-meat.full,#r-coal.full,#r-iron.full{color:#FF8A6A!important}
 .err{color:#FF9E88;font-size:13.5px;min-height:1em;text-align:center}
 </style>
 </head>
@@ -238,7 +239,7 @@ th .ri{width:26px;height:26px}
     <div class="resbar"><span><img class="ri" data-art="icon_wood" alt="خشب"> <b id="r-wood">0</b></span><span><img class="ri" data-art="icon_meat" alt="لحم"> <b id="r-meat">0</b></span><span><img class="ri" data-art="icon_coal" alt="فحم"> <b id="r-coal">0</b></span><span>⛓️ <b id="r-iron">0</b></span></div>
   </header>
   <main id="stage"><canvas id="cv"></canvas><div id="banner">مدينتك</div>
-    <div class="cbtns" id="cityBtns"><button data-act="missions" aria-label="المهام">📋<span class="rbadge" id="mBadge" hidden>0</span></button><button data-act="login" aria-label="الدخول اليومي">🎁<span class="rbadge" id="lBadge" hidden>!</span></button><button data-act="vip" aria-label="VIP">👑</button><button data-act="arena" aria-label="الساحة">🏟️</button><button data-act="sound" aria-label="الصوت">🔊</button><button data-act="admin" id="admBtn" aria-label="لوحة المتابعة" hidden>📊</button></div>
+    <div class="cbtns" id="cityBtns"><button data-act="missions" aria-label="المهام">📋<span class="rbadge" id="mBadge" hidden>0</span></button><button data-act="login" aria-label="الدخول اليومي">🎁<span class="rbadge" id="lBadge" hidden>!</span></button><button data-act="vip" aria-label="VIP">👑</button><button data-act="arena" aria-label="الساحة">🏟️</button><button data-act="research" aria-label="البحث العلمي">🔬<span class="rbadge" id="rsBadge" hidden>⏳</span></button><button data-act="sound" aria-label="الصوت">🔊</button><button data-act="admin" id="admBtn" aria-label="لوحة المتابعة" hidden>📊</button></div>
     <div class="zoom" id="zoomBtns" hidden><button data-act="zin" aria-label="تكبير">+</button><button data-act="zout" aria-label="تصغير">−</button><button data-act="home" aria-label="مدينتي">⌂</button><button data-act="reports" aria-label="التقارير">📜<span class="rbadge" hidden>0</span></button></div>
   </main>
   <nav id="nav">
@@ -416,8 +417,8 @@ if(!DEMO){
 /* ================= GAME STATE ================= */
 let ME=null,PRO=null,C=null,HEROES=[],TROOPS=[],CITIES=[],MONSTERS=[],KILLED={},MARCHES=[];
 const RB={wood:{n:'المنشرة',r:'خشب',col:'sawmill_level',base:120},meat:{n:'كوخ الصيادين',r:'لحم',col:'hunters_level',base:120},coal:{n:'منجم الفحم',r:'فحم',col:'coal_mine_level',base:60},iron:{n:'منجم الحديد',r:'حديد',col:'iron_mine_level',base:30}};
-const rate=k=>{const L=C[RB[k].col];return RB[k].base*L*(1+L*.08)*SPEED};
-const cur=k=>Number(C[k])+rate(k)*Math.max(0,(Date.now()-new Date(C.res_updated_at).getTime())/3.6e6);
+const rate=k=>{const L=C[RB[k].col];return RB[k].base*L*(1+L*.08)*SPEED*(1+.05*rl('prod'))};
+const cur=k=>{const v=Number(C[k]),a=rate(k)*Math.max(0,(Date.now()-new Date(C.res_updated_at).getTime())/3.6e6);if(!P9())return v+a;const cp=capOf(k);return v>=cp?v:Math.min(cp,v+a)};
 const UNLOCK=[1,5,8,10,15,18,20,25,30];
 const tiersOpen=()=>UNLOCK.filter(u=>C.keep_level>=u).length;
 const CLS={infantry:'مشاة',lancer:'رماح',marksman:'رماة'};
@@ -425,7 +426,7 @@ const need=L=>Math.round(100*Math.pow(L,1.5));
 function power(){let p=0;TROOPS.forEach(t=>p+=t.amount*t.tier*4);const hl=HEROES.reduce((s,h)=>s+h.level,0);return Math.round(p*(1+hl/300)+hl*60)}
 async function saveCity(patch){const upd={res_updated_at:new Date().toISOString(),...patch};for(const k in RB)if(!(k in patch))upd[k]=Math.floor(cur(k));
   try{C=await api.saveCity(ME.id,upd);hud();return true}catch(e){toast('ماتحفظش: '+(e.message||e));return false}}
-function hud(){if(!C)return;for(const k in RB)$('r-'+k).textContent=fmt(cur(k));$('hGal').textContent=fmt(C.gallons);$('hGem').textContent=fmt(C.gems||0);$('hName').textContent=PRO.name;$('hAv').innerHTML=esc((PRO.name||'?').trim().charAt(0))+(P3()?`<span class="vipb">VIP ${vipLvl()}</span>`:'');$('hPow').textContent='القوة '+fmt(power())+' · قلعة '+C.keep_level}
+function hud(){if(!C)return;for(const k in RB){const e=$('r-'+k);e.textContent=fmt(cur(k));e.classList.toggle('full',P9()&&cur(k)>=capOf(k))}$('hGal').textContent=fmt(C.gallons);$('hGem').textContent=fmt(C.gems||0);$('hName').textContent=PRO.name;$('hAv').innerHTML=esc((PRO.name||'?').trim().charAt(0))+(P3()?`<span class="vipb">VIP ${vipLvl()}</span>`:'');$('hPow').textContent='القوة '+fmt(power())+' · قلعة '+C.keep_level}
 setInterval(hud,1000);
 
 /* ================= AUTH ================= */
@@ -484,9 +485,9 @@ function drawCity(t,dt){HITS=[];const nt=night(t),Z=cityBase()*camC.z;CZ=Z;const
   if(ok('city_ground')){if(!GROUND)GROUND=ctx.createPattern(IMG.city_ground,'repeat');const k=560*Z/IMG.city_ground.naturalWidth;ctx.save();ctx.translate(ox,oy);ctx.scale(k,k);ctx.fillStyle=GROUND;ctx.fillRect(-ox/k-2,-oy/k-2,W/k+4,H/k+4);ctx.restore()}else{ctx.fillStyle='#D9A55A';ctx.fillRect(0,0,W,H)}
   const L=[...BLD].sort((a,c)=>a.y-c.y);
   for(const b of L){if(!ok(b.img))continue;const [x,y]=S(b.x,b.y),w=b.w*Z;const g=ctx.createRadialGradient(x,y-w*.18,w*.1,x,y-w*.18,w*.55);g.addColorStop(0,'rgba(70,35,5,.35)');g.addColorStop(1,'rgba(70,35,5,0)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y-w*.18,w*.58,w*.24,0,0,7);ctx.fill()}
-  for(const b of L){const im=IMG[b.img];if(!ok(b.img))continue;const [x,y]=S(b.x,b.y),w=b.w*Z,h=w*im.naturalHeight/im.naturalWidth;
+  for(const b of L){const im=IMG[b.img];if(!ok(b.img))continue;const [x,y]=S(b.x,b.y),w=b.w*Z*(1+STG(+b.lvl()||0)*.04),h=w*im.naturalHeight/im.naturalWidth;
     let sx=1,sy=1;const tp=TAPPED[b.id];if(tp){const k=(t-tp)/420;if(k<1){const e=Math.sin(k*Math.PI)*Math.exp(-k*2);sx=1+e*.08;sy=1-e*.05}else delete TAPPED[b.id]}
-    ctx.save();ctx.translate(x,y);ctx.scale(sx,sy);ctx.drawImage(im,-w/2,-h,w,h);ctx.restore();b._x=x;b._y=y;b._w=w;b._h=h;HITS.push({x,y:y-h*.45,r:w*.45,b});
+    ctx.save();ctx.translate(x,y);ctx.scale(sx,sy);ctx.drawImage(im,-w/2,-h,w,h);ctx.restore();drawStage(b,x,y,w,h,t);b._x=x;b._y=y;b._w=w;b._h=h;HITS.push({x,y:y-h*.45,r:w*.45,b});
     if(b.smoke&&Math.random()<dt/120)PART.push({x:x-w/2+b.smoke[0]*w,y:y-h+b.smoke[1]*h,vx:(Math.random()-.2)*.25,vy:-.4-Math.random()*.2,l:1,s:Z,c:'130,120,110'});
     if(b.sparkle&&Math.random()<dt/110)PART.push({x:x+(Math.random()-.5)*w*.35,y:y-h*.45+(Math.random()-.5)*h*.1,vx:0,vy:-.2,l:1,s:Z,c:'200,248,255',sp:1});
     if(C.build_target===b.id&&Math.random()<dt/50)PART.push({x:x+(Math.random()-.5)*w*.75,y:y-h*.15,vx:(Math.random()-.5)*.7,vy:-.35,l:1,s:Z,c:'235,205,150'})}
@@ -497,7 +498,7 @@ function drawCity(t,dt){HITS=[];const nt=night(t),Z=cityBase()*camC.z;CZ=Z;const
   if(nt>0){ctx.fillStyle=`rgba(10,18,52,${nt*.5})`;ctx.fillRect(0,0,W,H);ctx.save();ctx.globalCompositeOperation='lighter';
     for(const b of L){if(b._x==null)continue;const cx=b._x,cy=b._y-b._h*.38,R=b._w*.62,g=ctx.createRadialGradient(cx,cy,2,cx,cy,R);g.addColorStop(0,`rgba(255,165,60,${nt*.34})`);g.addColorStop(1,'rgba(255,165,60,0)');ctx.fillStyle=g;ctx.fillRect(cx-R,cy-R,R*2,R*2)}ctx.restore()}
   for(const b of L)if(b._x!=null)label(b,t);
-  if(t-lastFloat>2600){lastFloat=t;for(const b of BLD)if(b.res&&b._x!=null)FLOAT.push({x:b._x,y:b._y-b._h*.85,t0:t,s:'+'+fmt(rate(b.res)/1380),ic:RICON[b.res]})}
+  if(t-lastFloat>2600){lastFloat=t;for(const b of BLD)if(b.res&&b._x!=null&&!(P9()&&cur(b.res)>=capOf(b.res)))FLOAT.push({x:b._x,y:b._y-b._h*.85,t0:t,s:'+'+fmt(rate(b.res)/1380),ic:RICON[b.res]})}
   for(let i=FLOAT.length-1;i>=0;i--){const f=FLOAT[i],k=(t-f.t0)/1700;if(k>1){FLOAT.splice(i,1);continue}const y=f.y-k*34;ctx.globalAlpha=k<.15?k/.15:1-Math.max(0,(k-.6)/.4);
     ctx.font='800 14px "IBM Plex Sans Arabic",Tahoma';ctx.textAlign='left';ctx.textBaseline='middle';const tw=ctx.measureText(f.s).width,iw=ok(f.ic)?22:0,x0=f.x-(tw+iw+4)/2;
     if(iw)ctx.drawImage(IMG[f.ic],x0,y-12,22,22*IMG[f.ic].naturalHeight/IMG[f.ic].naturalWidth);ctx.lineWidth=3.5;ctx.strokeStyle='rgba(40,20,5,.85)';ctx.strokeText(f.s,x0+iw+4,y);ctx.fillStyle='#FFF1C9';ctx.fillText(f.s,x0+iw+4,y);ctx.globalAlpha=1;ctx.textBaseline='alphabetic'}
@@ -506,7 +507,7 @@ function label(b,t){const L=String(b.lvl()),fs=Math.max(11,Math.min(14,CZ*30));c
   const tw=ctx.measureText(b.name).width,h=fs*1.95,w=tw+h+fs*1.3,x=b._x-w/2,y=b._y-h*.7;
   const g=ctx.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'rgba(70,42,16,.94)');g.addColorStop(1,'rgba(30,17,6,.94)');ctx.fillStyle=g;rr(x,y,w,h,h/2);ctx.fill();ctx.strokeStyle='#E8B85A';ctx.lineWidth=1.4;ctx.stroke();
   ctx.fillStyle='#FBEBC8';ctx.fillText(b.name,(x+fs*.65+x+w-h)/2,y+h/2+1);
-  const cx=x+w-h/2,cy=y+h/2,gr=ctx.createLinearGradient(0,cy-h/2,0,cy+h/2);gr.addColorStop(0,'#FFE7A3');gr.addColorStop(1,'#C98A2B');ctx.fillStyle=gr;ctx.beginPath();ctx.arc(cx,cy,h/2-1.5,0,7);ctx.fill();ctx.strokeStyle='#6B3E10';ctx.lineWidth=1;ctx.stroke();
+  const cx=x+w-h/2,cy=y+h/2,gr=ctx.createLinearGradient(0,cy-h/2,0,cy+h/2);const sg=STG2[STG(+b.lvl()||0)];gr.addColorStop(0,sg[0]);gr.addColorStop(1,sg[1]);ctx.fillStyle=gr;ctx.beginPath();ctx.arc(cx,cy,h/2-1.5,0,7);ctx.fill();ctx.strokeStyle='#6B3E10';ctx.lineWidth=1;ctx.stroke();
   ctx.fillStyle='#3A1F05';ctx.font=`800 ${fs*.92}px Tahoma`;ctx.fillText(L,cx,cy+1);
   const TRN=b.id==='barracks'&&C.train&&C.train.e>Date.now(),u=C.build_target===b.id||TRN;if(u){const L2=TRN?(C.train.e-Date.now())/1000:bLeft(),T2=TRN?(C.train.e-C.train.s)/1000:bTot(),k=Math.min(1,1-L2/T2);ctx.fillStyle='rgba(0,0,0,.55)';rr(x+4,y+h+4,w-8,7,3.5);ctx.fill();ctx.fillStyle='#6FCF97';rr(x+4,y+h+4,(w-8)*k,7,3.5);ctx.fill();
     ctx.font='22px sans-serif';ctx.fillText(TRN?'🛡️':'⚒️',b._x,b._y-b._h-8-Math.abs(Math.sin(t/160))*8);ctx.font='800 12.5px Tahoma';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(30,15,5,.9)';const tt='⏳ '+fmtT(L2);ctx.strokeText(tt,b._x,y+h+24);ctx.fillStyle='#FFF3D6';ctx.fillText(tt,b._x,y+h+24)}
@@ -577,7 +578,7 @@ function clampCam(){if(VIEW==='city'){const mx=Math.max(90,(600*CZ-W)/2+90),hi=M
 function tap(x,y){let best=null,bd=1e9;for(const h of HITS){const d=Math.hypot(h.x-x,h.y-y)*(h.city?.85:1);if(d<h.r&&d<bd){bd=d;best=h}}if(!best)return;
   if(best.b){TAPPED[best.b.id]=performance.now();openBuilding(best.b)}else if(best.m)openMonster(best.m);else if(best.c)openCity(best.c);else if(best.node)openNode(best.node)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,cam=camW;
-  if(a==='zin')zoomTo(cam,cam.z*1.2);if(a==='zout')zoomTo(cam,cam.z/1.2);if(a==='home')homeWorld();if(a==='reports')panelReports();if(!C||!ME)return;if(a==='missions')panelMissions();if(a==='login')panelLogin();if(a==='vip')panelVIP();if(a==='sound')panelSound();if(a==='arena')panelArena();if(a==='admin'&&ISADM)panelAdmin()});
+  if(a==='zin')zoomTo(cam,cam.z*1.2);if(a==='zout')zoomTo(cam,cam.z/1.2);if(a==='home')homeWorld();if(a==='reports')panelReports();if(!C||!ME)return;if(a==='missions')panelMissions();if(a==='login')panelLogin();if(a==='vip')panelVIP();if(a==='sound')panelSound();if(a==='arena')panelArena();if(a==='research')panelResearch();if(a==='admin'&&ISADM)panelAdmin()});
 const openRes=k=>{if(!(C&&ME))return;panelShop('res');if(k)setTimeout(()=>{const e=document.getElementById('sh-'+k);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},80)};
 $('rShop').onclick=()=>openRes();document.querySelectorAll('.resbar span').forEach((sp,i)=>sp.onclick=()=>openRes(['wood','meat','coal','iron'][i]));
 $('gemChip').onclick=()=>{if(C&&ME)panelShop('gem')};
@@ -595,7 +596,7 @@ function openPanel(p){if(p==='heroes')panelHeroes();if(p==='army')panelArmy();if
 const BDEF={keep:{col:'keep_level',base:[800,800,200,80],tm:1.5},wood:{col:'sawmill_level',base:[150,200,30,10]},meat:{col:'hunters_level',base:[200,100,30,10]},coal:{col:'coal_mine_level',base:[250,200,0,20]},iron:{col:'iron_mine_level',base:[300,250,60,0]},hospital:{col:'hospital_level',base:[300,200,50,20]},warehouse:{col:'warehouse_level',base:[300,150,60,30]},wall:{col:'wall_level',base:[400,100,80,40]}};
 const RK=['wood','meat','coal','iron'];
 const upCost=(id,L)=>{const b=BDEF[id].base;return Object.fromEntries(RK.map((k,i)=>[k,Math.round(b[i]*L*L)]))};
-const upTime=(id,L)=>Math.max(3,Math.round(15*Math.pow(L,1.9)*(BDEF[id].tm||1)*(1-.03*vipLvl())*(1-.03*tl('build'))));
+const upTime=(id,L)=>Math.max(3,Math.round(15*Math.pow(L,1.9)*(BDEF[id].tm||1)*(1-.03*vipLvl())*(1-.03*(tl('build')+rl('build')))));
 const P1=()=>!!C&&('hospital_level' in C);
 const fmtT=s=>{s=Math.max(0,Math.ceil(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`:`${m}:${String(x).padStart(2,'0')}`};
 const bLeft=()=>C&&C.build_ends_at?(new Date(C.build_ends_at)-Date.now())/1000:0;
@@ -624,10 +625,12 @@ function openBuilding(b){if(b.act){openPanel(b.act);return}
   const id=b.id,def=BDEF[id],L=C[def.col]||1,max=id==='keep'?30:C.keep_level,busy=!!C.build_target,mine=C.build_target===id,c=upCost(id,L),tm=upTime(id,L),enough=RK.every(k=>cur(k)>=c[k]);
   let info='';
   if(id==='keep'){const next=UNLOCK.find(u=>u>L);info=`<div class="kv"><span>الجيوش المفتوحة</span><b>T1 – T${tiersOpen()}</b></div><div class="kv"><span>الجيش الجاي</span><b>${next?'ليفل '+next+' → T'+(UNLOCK.indexOf(next)+1):'كله مفتوح'}</b></div>`}
-  else if(b.res)info=`<div class="kv"><span>الإنتاج الحالي</span><b>${fmt(rate(b.res))} / ساعة</b></div><div class="kv"><span>بعد التطوير</span><b>${fmt(RB[b.res].base*(L+1)*(1+(L+1)*.08)*SPEED)} / ساعة</b></div>`;
+  else if(b.res)info=`<div class="kv"><span>الإنتاج الحالي</span><b>${fmt(rate(b.res))} / ساعة</b></div><div class="kv"><span>بعد التطوير</span><b>${fmt(RB[b.res].base*(L+1)*(1+(L+1)*.08)*SPEED*(1+.05*rl('prod')))} / ساعة</b></div>`;
   else if(id==='hospital'){const w=woundedN();info=`<div class="kv"><span>سعة المستشفى</span><b>${fmt(hospCap())} جريح</b></div><div class="kv"><span>بعد التطوير</span><b>${fmt((L+1)*3000)}</b></div><div class="kv"><span>جرحى دلوقتي</span><b class="${w?'lose':''}">${fmt(w)}</b></div>`}
   else if(id==='warehouse')info=`<div class="kv"><span>محمي من النهب</span><b>${RK.map(k=>rIco(k,14)+' '+fmt(protect(k))).join(' ')}</b></div><div class="kv"><span>بعد التطوير</span><b>${fmt((L+1)*20000)} خشب ولحم</b></div>`;
   else if(id==='wall')info=`<div class="kv"><span>قوة الدفاع</span><b>+${10+3*L}%</b></div><div class="kv"><span>بعد التطوير</span><b>+${10+3*(L+1)}%</b></div>`;
+  info+=stageInfo(L);if(P9()&&b.res&&cur(b.res)>=capOf(b.res))info+='<div class="kv"><span class="lose">⚠️ المخزن مليان والإنتاج واقف</span><b>طوّر المخزن 📦</b></div>';
+  if(P9()&&id==='warehouse')info+=`<div class="kv"><span>📦 سعة التخزين</span><b>${RK.map(k=>rIco(k,14)+' '+fmt(capOf(k))).join(' ')}</b></div><div class="kv"><span>السعة بعد التطوير</span><b>${fmt((L+1)*1e6)} خشب ولحم</b></div>`;
   let action;
   if(mine)action=`<div class="card"><div class="kv"><span>⚒️ جاري التطوير لليفل ${C.build_level}</span><b id="bpTxt"></b></div><div class="bar"><i id="bpBar"></i></div></div><div class="row"><button class="btn wide gemb" id="spd">💎 خلّصه دلوقتي (<span id="spdG"></span> جوهرة)</button></div>`;
   else if(L>=max)action=`<div class="row"><button class="btn wide" disabled>${id==='keep'?'أقصى ليفل':'طوّر القلعة لليفل '+(L+1)+' الأول'}</button></div>`;
@@ -699,8 +702,8 @@ function openMarch(tg){if((tg.kind==='m'||tg.kind==='c')&&MARCHES.length>=3){toa
   <div class="msum" id="mSum"></div><div class="row"><button class="btn red wide" id="mGo">⚔️ ابعت المسيرة</button></div>`);
   if(tg.kind==='g'){const h=document.querySelector('.hsel');if(h){h.previousElementSibling.remove();h.remove()}}
   const sync=()=>document.querySelectorAll('#trs input').forEach(i=>i.value=MP.sel[i.dataset.k]||0);
-  const upd=()=>{if(tg.kind==='g'){const cp=comp(),n=cp.reduce((s,x)=>s+x.n,0),ld=cp.reduce((s,x)=>s+x.n*x.t,0),amt=Math.floor(Math.min(nodeCap(tg.node),ld*({coal:2,iron:1}[tg.node.res]||10))*(1+.05*tl('gather')));$('mSum').innerHTML=`<div><span>الجنود</span><b dir="ltr">${fmt(n)} / ${fmt(cap)}</b></div><div><span>هتجمع</span><b class="win">${rIco(tg.node.res,16)} ${fmt(amt)}</b></div>`;$('mGo').disabled=!n||n>cap;$('mGo').textContent='⛏️ ابعت للجمع';return}const cp=comp(),n=cp.reduce((s,x)=>s+x.n,0),P=marchPower(cp,MP.hero),f=factor(cp,tg.mix),EP=tg.enP,ch=EP?P*f/EP:null,pc=Math.round((f-1)*100);
-    $('mSum').innerHTML=`<div><span>الجنود</span><b dir="ltr" class="${n>cap?'lose':''}">${fmt(n)} / ${fmt(cap)}</b></div><div><span>قوة المسيرة</span><b>${fmt(P)}</b></div><div><span>أفضلية الأنواع</span><b class="${pc>0?'win':pc<0?'lose':''}">${pc>0?'+':''}${pc}%</b></div>${tg.kind==='b'?`<div><span>الضرر المتوقع</span><b class="win">~${fmt(Math.round(P*(1+.02*tl('atk'))))}</b></div>`:`<div><span>فرصة الفوز</span><b class="${ch==null?'':ch>=1.15?'win':ch>=.9?'':'lose'}">${ch==null?'؟':ch>=1.15?'عالية':ch>=.9?'متوسطة':'ضعيفة'}</b></div>`}`;
+  const upd=()=>{if(tg.kind==='g'){const cp=comp(),n=cp.reduce((s,x)=>s+x.n,0),ld=cp.reduce((s,x)=>s+x.n*x.t,0),amt=Math.floor(Math.min(nodeCap(tg.node),ld*({coal:2,iron:1}[tg.node.res]||10))*(1+.05*(tl('gather')+rl('gather'))));$('mSum').innerHTML=`<div><span>الجنود</span><b dir="ltr">${fmt(n)} / ${fmt(cap)}</b></div><div><span>هتجمع</span><b class="win">${rIco(tg.node.res,16)} ${fmt(amt)}</b></div>`;$('mGo').disabled=!n||n>cap;$('mGo').textContent='⛏️ ابعت للجمع';return}const cp=comp(),n=cp.reduce((s,x)=>s+x.n,0),P=marchPower(cp,MP.hero),f=factor(cp,tg.mix),EP=tg.enP,ch=EP?P*f/EP:null,pc=Math.round((f-1)*100);
+    $('mSum').innerHTML=`<div><span>الجنود</span><b dir="ltr" class="${n>cap?'lose':''}">${fmt(n)} / ${fmt(cap)}</b></div><div><span>قوة المسيرة</span><b>${fmt(P)}</b></div><div><span>أفضلية الأنواع</span><b class="${pc>0?'win':pc<0?'lose':''}">${pc>0?'+':''}${pc}%</b></div>${tg.kind==='b'?`<div><span>الضرر المتوقع</span><b class="win">~${fmt(Math.round(P*(1+.02*(tl('atk')+rl('atk')))))}</b></div>`:`<div><span>فرصة الفوز</span><b class="${ch==null?'':ch>=1.15?'win':ch>=.9?'':'lose'}">${ch==null?'؟':ch>=1.15?'عالية':ch>=.9?'متوسطة':'ضعيفة'}</b></div>`}`;
     $('mGo').disabled=!n||n>cap;if(LBL[tg.kind])$('mGo').textContent=LBL[tg.kind]};
   document.querySelectorAll('[data-h]').forEach(d=>d.onclick=()=>{if(d.classList.contains('busy'))return;MP.hero=d.dataset.h;document.querySelectorAll('[data-h]').forEach(x=>x.classList.toggle('on',x===d));upd()});
   document.querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>{const p=((C.progress||{}).presets||[])[+b.dataset.pl];if(!p)return;MP.sel={};let left=cap;rows.forEach(x=>{const k=key(x),n=Math.min(avail(x),p.sel[k]||0,left);if(n>0){MP.sel[k]=n;left-=n}});if(p.h&&OWN().includes(p.h)&&!busyHeroes().includes(p.h)){MP.hero=p.h;document.querySelectorAll('[data-h]').forEach(x=>x.classList.toggle('on',x.dataset.h===p.h))}sync();upd();toast('⭐ اتحملت التشكيلة '+(+b.dataset.pl+1))});
@@ -940,6 +943,34 @@ function bossRes(r){sfx(r.killed?'victory':'ui_confirm');openSheet(`<div class="
   <div class="row"><button class="btn wide" id="okB">تمام</button></div>`);$('okB').onclick=()=>panelAlly('boss')}
 const LBL={b:'👹 اضرب الوحش',r:'🚩 ابدأ الحشد',rj:'➕ انضم للحشد'};
 let HBN=0,RBN=0;const setBadge=()=>{const b=$('aBadge');if(b){b.textContent=HBN+RBN;b.hidden=!(HBN+RBN)}};
+const RS=[['prod','🌾','الإنتاج','+5% إنتاج كل الموارد'],['atk','⚔️','الهجوم','+2% قوة الهجوم'],['def','🛡️','الدفاع','+2% دفاع المدينة'],['gather','⛏️','الجمع','+5% موارد الجمع'],['train','🏋️','التدريب','−3% وقت التدريب'],['build','🏗️','البناء','−3% وقت البناء']];
+const RSN=k=>(RS.find(x=>x[0]===k)||[,,'؟'])[2];
+const P9=()=>!!C&&('research' in C);
+const rl=k=>P9()?+((C.research||{})[k]||0):0;
+const capOf=k=>Math.max(1,C.warehouse_level||1)*({coal:200000,iron:100000}[k]||1000000);
+const rCost=l=>{const q=(l+1)*(l+1);return {wood:20000*q,meat:20000*q,coal:4000*q,iron:2000*q}};
+const rTime=l=>Math.round(60*(l+1)*(l+1)*(1-.02*vipLvl())*(1-.03*rl('build')));
+const rKeep=l=>3*(l+1);
+const STG=L=>L>=20?3:L>=12?2:L>=6?1:0,STC=['#9C8463','#C27A3A','#C9D3DC','#F5C542'],STN=['حجري','برونزي','فضي','ذهبي'],STG2=[['#E9DCC0','#8C765A'],['#F4B27A','#9A5422'],['#FFFFFF','#8C9AA8'],['#FFE7A3','#C98A2B']];
+function stageInfo(L){const s=STG(L),nx=[6,12,20][s];return `<div class="kv"><span>✨ مظهر المبنى</span><b style="color:${STC[s]}">${STN[s]}${nx?` <small class="sub">(${STN[s+1]} عند ليفل ${nx})</small>`:''}</b></div>`}
+function drawStage(b,x,y,w,h,t){const s=STG(+b.lvl()||0);if(!s)return;ctx.save();
+  ctx.globalAlpha=.85;ctx.strokeStyle=STC[s];ctx.lineWidth=Math.max(2,w*.012);ctx.beginPath();ctx.ellipse(x,y-w*.04,w*.44,w*.14,0,0,7);ctx.stroke();ctx.globalAlpha=.18;ctx.fillStyle=STC[s];ctx.fill();ctx.globalAlpha=1;
+  if(s>=2)for(const d of [-1,1]){const px=x+d*w*.43,py=y-w*.05,ph=h*.42;ctx.strokeStyle='#5A3A1A';ctx.lineWidth=Math.max(1.5,w*.008);ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py-ph);ctx.stroke();
+    const wv=Math.sin(t/300+d)*w*.015;ctx.fillStyle=s===3?'#D4A017':'#B03A2E';ctx.beginPath();ctx.moveTo(px,py-ph);ctx.quadraticCurveTo(px+d*w*.06,py-ph+h*.03+wv,px+d*w*.12,py-ph+h*.05+wv);ctx.lineTo(px,py-ph+h*.11);ctx.closePath();ctx.fill()}
+  if(s===3)for(let i=0;i<4;i++){const a=t/900+i*1.7,k=(Math.sin(t/400+i*2)+1)/2,sx=x+Math.cos(a)*w*.38,sy=y-h*.55+Math.sin(a*1.3)*h*.3,r=w*.018*(.5+k);ctx.globalAlpha=.4+.6*k;ctx.fillStyle='#FFF4C2';ctx.beginPath();for(let j=0;j<8;j++){const rr2=j%2?r*.35:r*1.6,an=j*Math.PI/4;ctx.lineTo(sx+Math.cos(an)*rr2,sy+Math.sin(an)*rr2)}ctx.closePath();ctx.fill()}
+  ctx.restore()}
+function panelResearch(){if(!P9()){toast('شغّل SQL المرحلة 9 في Supabase الأول');return}
+  const A=C.rsch&&C.rsch.e>Date.now()?C.rsch:null;
+  openSheet(`<h2>🔬 البحث العلمي</h2><p class="sub">طوّر مدينتك وجيشك بالأبحاث. بحث واحد في نفس الوقت، وكل ليفل محتاج قلعة أعلى.</p>
+  ${A?`<div class="card"><div class="kv"><span>🔬 بيتبحث: ${RSN(A.k)} ليفل ${A.l}</span><b id="rsT"></b></div><div class="bar"><i id="rsB"></i></div><button class="btn wide gemb" id="rsS" style="margin-top:8px">💎 خلّصه دلوقتي · <span id="rsG"></span></button></div>`:''}
+  ${RS.map(([k,i,n,d])=>{const l=rl(k),c=rCost(l),kp=rKeep(l),en=RK.every(r=>cur(r)>=c[r]),lock=C.keep_level<kp;return `<div class="mem"><div class="alEmb sm">${i}</div><div style="flex:1;min-width:0"><b>${n} · ${l}/10</b><small>${d} · دلوقتي ${k==='train'||k==='build'?'−'+3*l:'+'+(k==='prod'||k==='gather'?5:2)*l}%</small><div class="bar"><i style="width:${l*10}%"></i></div>${l<10?`<small class="${en&&!lock?'':'lose'}">${RK.map(r=>rIco(r,13)+' '+fmt(c[r])).join(' ')} · ⏳ ${fmtT(rTime(l))}${lock?' · 🔒 قلعة '+kp:''}</small>`:''}</div>${l<10?`<button class="btn sm" data-rs="${k}" ${A||!en||lock?'disabled':''}>🔬<br><small>ابحث</small></button>`:'<b>MAX</b>'}</div>`}).join('')}`);
+  document.querySelectorAll('[data-rs]').forEach(b=>b.onclick=async()=>{if(C.rsch&&C.rsch.e>Date.now())return;const k=b.dataset.rs,l=rl(k),c=rCost(l);if(!RK.every(r=>cur(r)>=c[r]))return;b.disabled=true;const now=Date.now(),p={rsch:{k,l:l+1,s:now,e:now+rTime(l)*1000}};RK.forEach(r=>p[r]=Math.floor(cur(r)-c[r]));if(await saveCity(p)){sfx('ui_confirm');toast('🔬 بدأ بحث '+RSN(k)+' · '+fmtT(rTime(l)))}panelResearch()});
+  if(A){const iv=setInterval(()=>{if(!$('rsB')||!C.rsch){clearInterval(iv);return}const L=(C.rsch.e-Date.now())/1000,T=(C.rsch.e-C.rsch.s)/1000;$('rsB').style.width=Math.min(100,(1-L/T)*100)+'%';$('rsT').textContent='⏳ '+fmtT(L);if(!$('rsS').classList.contains('confirm'))$('rsG').textContent='💎 '+Math.max(1,Math.ceil(L/60))},500);
+    $('rsS').onclick=async()=>{const b=$('rsS'),g=Math.max(1,Math.ceil((C.rsch.e-Date.now())/60000));if(Number(C.gems||0)<g){toast('الجواهر مش كفاية 💎');return}if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ تأكيد: 💎 '+g;return}b.disabled=true;if(await saveCity({gems:Number(C.gems)-g,rsch:{...C.rsch,e:Date.now()}}))checkResearch()}}}
+let rsBusy=false;
+async function checkResearch(){if(!ME||!C||!C.rsch||rsBusy||Date.now()<C.rsch.e)return;rsBusy=true;const r=C.rsch;
+  try{if(await saveCity({research:{...(C.research||{}),[r.k]:r.l},rsch:null})){sfx('reward_claim');toast(`🔬 خلص بحث ${RSN(r.k)} · ليفل ${r.l}`);if(document.querySelector('[data-rs]'))panelResearch()}}catch(e){}rsBusy=false}
+setInterval(()=>{checkResearch();const b=$('rsBadge');if(b)b.hidden=!(C&&C.rsch&&C.rsch.e>Date.now())},1000);
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
   try{ALLY=await api.allyInfo()}catch(e){openSheet('<h2>🤝 التحالف</h2><div class="card sub">⚠️ شغّل SQL المرحلة 6 (التحالفات) في Supabase الأول.</div><div class="row"><button class="btn alt wide" id="srvChat">💬 شات السيرفر</button></div>');$('srvChat').onclick=panelChat;return}
@@ -1026,7 +1057,7 @@ function panelSound(){const S=AU.set,row=(k,vk,n,ic)=>`<div class="card"><div cl
 let NODES=[],GATH=[],BUSY={},gBusyT=false;
 const P7=()=>!!C&&('train' in C);
 const nodeCap=n=>n.lvl*({coal:6000,iron:3000}[n.res]||30000);
-const trainSecs=(t,n)=>Math.max(10,Math.ceil(n*t*.02*(1-.02*vipLvl())*(1-.03*tl('train'))));
+const trainSecs=(t,n)=>Math.max(10,Math.ceil(n*t*.02*(1-.02*vipLvl())*(1-.03*(tl('train')+rl('train')))));
 const myG=n=>GATH.find(g=>g.node_id===n.id&&!g.done);
 async function loadGathers(){if(!api.myGathers||!ME)return;try{GATH=await api.myGathers();BUSY=await api.gBusy()||{}}catch(e){}}
 async function gatherTick(){if(!ME||!C||gBusyT||!GATH.length)return;const due=GATH.find(g=>!g.done&&new Date(g.ends_at)<=Date.now());if(!due)return;gBusyT=true;
