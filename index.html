@@ -849,7 +849,7 @@ function drawWorldOld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14
 
 /* ---------- LOOP & INPUT ---------- */
 let last=performance.now();
-let lastErr=-1e9,lastDraw=0;function loop(t){requestAnimationFrame(loop);if(document.hidden||t-lastDraw<22)return;lastDraw=t;const dt=Math.min(64,Math.max(0,t-last));last=t;try{if(C&&ME){stepCam(dt);VIEW==='city'?drawCity(t,dt):drawWorld(t,dt)}else{ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}wOverlay()}catch(e){if(t-lastErr>8000){lastErr=t;console.error(e);toast('⚠️ '+(e.message||e))}}}
+let lastErr=-1e9,lastDraw=0;function loop(t){requestAnimationFrame(loop);if(document.hidden||t-lastDraw<22)return;lastDraw=t;const dt=Math.min(64,Math.max(0,t-last));last=t;try{if(C&&ME){stepCam(dt);VIEW==='city'?(glHide(),drawCity(t,dt)):drawWorld(t,dt)}else{glHide();ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}wOverlay()}catch(e){if(t-lastErr>8000){lastErr=t;console.error(e);toast('⚠️ '+(e.message||e))}}}
 requestAnimationFrame(loop);
 let drag=null;const pts=new Map();
 cv.addEventListener('pointerdown',e=>{if(e.isPrimary)pts.clear();try{cv.setPointerCapture(e.pointerId)}catch(_){}stopCam();pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;drag={lx:e.clientX,ly:e.clientY,lt:performance.now(),vx:0,vy:0,t0:performance.now(),x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false,pinch:pts.size===2?dist():0,z0:cam.z}});
@@ -1622,9 +1622,9 @@ function panelTitles(){const P=PALACE||{},sul=P.sultan&&ME&&P.sultan.id===ME.id;
 function palaceRes(x){sfx(x.won?'victory':'defeat');const s=x.site||0,nm=s?'البرج':'القصر';loadPalace();
   openSheet(`${artImg(s?'turret':'palace')}<h2 style="text-align:center">${x.won?(s?'🗼 البرج بقى بتاعكم!':'👑 القصر بقى بتاعكم!'):'💥 الهجوم فشل'}</h2><div class="card"><div class="kv"><span>⚡ قوة مسيرتك</span><b>${fmt(x.attacker_power)}</b></div><div class="kv"><span>🛡️ دفاع ${nm}</span><b>${fmt(x.defender_power)}</b></div><div class="kv"><span>💀 جنود ماتوا</span><b class="lose">${fmt(x.lost)}</b></div><div class="kv"><span>${x.won?'🏰 جنودك اللي جوه':'↩️ جنود رجعوا'}</span><b>${fmt(x.sent-x.lost)}</b></div></div>
   <p class="sub" style="text-align:center">${x.won?(s?'البرج هيضرب جنود القصر لو ماسكه تحالف تاني 💥':'العداد بدأ! امسكوه لحد الفوز المباشر، وخلّي أعضاء تحالفك يبعتوا تعزيزات 🛡️'):'قوّي جيشك، أو اعملوا حشد مع التحالف 🚩'}</p><div class="row"><button class="btn wide" id="okB">تمام</button></div>`);$('okB').onclick=()=>openSite(s)}
-function panelMenu(){const T=[['story','📜','القصة'],['chat','💬','الدردشة'],['lighthouse','🗼','المنارة'],['gifts','🎁','هدايا التحالف'],['jawhar','💎','جوهر VIP'],['arena','🏟️','الساحة'],['explore','🧭','الاستكشاف'],['merchant','🛒','التاجر'],['offers','💰','العروض'],['guide','📖','الدليل'],['research','🔬','البحث'],['events','🎉','الأحداث'],['rank','🥇','الترتيب'],['wheel','🎰','العجلة'],['throne','👑','حرب العرش'],['profile','👤','الحاكم والعُدّة'],['gearpk','🛒','باقات العُدّة'],['marchpk','⏩','تسريع الزحف'],['spells','✨','التعويذات'],['kmap','🗺️','خريطة المملكة'],['gfx','✨','الجرافيك'],['sound','🔊','الصوت']];if($('admBtn')&&!$('admBtn').hidden)T.push(['admin','📊','المتابعة']);
+function panelMenu(){const T=[['story','📜','القصة'],['chat','💬','الدردشة'],['lighthouse','🗼','المنارة'],['gifts','🎁','هدايا التحالف'],['jawhar','💎','جوهر VIP'],['arena','🏟️','الساحة'],['explore','🧭','الاستكشاف'],['merchant','🛒','التاجر'],['offers','💰','العروض'],['guide','📖','الدليل'],['research','🔬','البحث'],['events','🎉','الأحداث'],['rank','🥇','الترتيب'],['wheel','🎰','العجلة'],['throne','👑','حرب العرش'],['profile','👤','الحاكم والعُدّة'],['gearpk','🛒','باقات العُدّة'],['marchpk','⏩','تسريع الزحف'],['spells','✨','التعويذات'],['kmap','🗺️','خريطة المملكة'],['gfx','✨','الجرافيك'],['gl','🎮','محرك الرسم'],['sound','🔊','الصوت']];if($('admBtn')&&!$('admBtn').hidden)T.push(['admin','📊','المتابعة']);
   openSheet(`<h2>☰ المزيد</h2><div class="mgrid2">${T.map(([a,i,n])=>`<button class="mtile" data-mact="${a}"><span>${i}</span><b>${n}</b></button>`).join('')}</div>`);
-  document.querySelectorAll('[data-mact]').forEach(b=>b.onclick=()=>{const f={gfx:()=>{let v='hi';try{v=localStorage.getItem('najat_gfx')==='lo'?'hi':'lo';localStorage.setItem('najat_gfx',v)}catch(e){}toast(v==='hi'?'✨ الجرافيك العالي شغال: رياح ورمال وعواصف':'⚡ الجرافيك العادي: من غير مؤثرات تقيلة')},spells:panelSpells,kmap:panelKingdom,marchpk:panelMarchShop,gearpk:()=>{CHF=null;panelGearPacks()},story:storyReplay,chat:()=>panelChat(),lighthouse:panelLighthouse,gifts:panelGifts,jawhar:panelJawhar,arena:panelArena,explore:panelExplore,merchant:panelMerchant,offers:panelOffers,guide:panelGuide,research:panelResearch,events:()=>panelEvents('ev'),rank:()=>{CHF=null;panelLB()},wheel:()=>panelEvents('wheel'),throne:()=>openSite(0),profile:()=>panelChief(),sound:panelSound,admin:panelAdmin}[b.dataset.mact];if(f)f()})}
+  document.querySelectorAll('[data-mact]').forEach(b=>b.onclick=()=>{const f={gl:()=>{let on=!glWant();try{localStorage.setItem('najat_gl',on?'on':'off')}catch(e){}if(!on){if(GL.cv)GL.cv.remove();GL.cv=null;GL.gl=null;GL.on=false;GL.tex={};GL.fail=1}else GL.fail=0;toast(on?'🎮 محرك الرسم السريع (WebGL) شغال':'🖌️ محرك الرسم العادي شغال')},gfx:()=>{let v='hi';try{v=localStorage.getItem('najat_gfx')==='lo'?'hi':'lo';localStorage.setItem('najat_gfx',v)}catch(e){}toast(v==='hi'?'✨ الجرافيك العالي شغال: رياح ورمال وعواصف':'⚡ الجرافيك العادي: من غير مؤثرات تقيلة')},spells:panelSpells,kmap:panelKingdom,marchpk:panelMarchShop,gearpk:()=>{CHF=null;panelGearPacks()},story:storyReplay,chat:()=>panelChat(),lighthouse:panelLighthouse,gifts:panelGifts,jawhar:panelJawhar,arena:panelArena,explore:panelExplore,merchant:panelMerchant,offers:panelOffers,guide:panelGuide,research:panelResearch,events:()=>panelEvents('ev'),rank:()=>{CHF=null;panelLB()},wheel:()=>panelEvents('wheel'),throne:()=>openSite(0),profile:()=>panelChief(),sound:panelSound,admin:panelAdmin}[b.dataset.mact];if(f)f()})}
 const cLvl=()=>{const p=(C&&C.progress)||{};return chiefLv(p.cx2?(p.cxp||0):(p.cxp||0)*25)};
 /* ================= 🗺️ الخريطة الكبيرة · كاميرا ناعمة · سهم المدينة · النقل باللمس ================= */
 let FLY=null,SEL=null;
@@ -2681,11 +2681,11 @@ function fxAir(t){const ts=T*camW.z,hi=GFX();
   if(WX.sk>0){ctx.fillStyle=`rgba(214,160,80,${WX.sk*.32})`;ctx.fillRect(0,0,W,H);if(ok('fx_storm')){for(let j=0;j<4;j++){const p=((t-WX.storm.s)/14000+j*.25)%1;drawFrame('fx_storm',8,Math.floor(t/120+j*2)%8,-300+p*(W+600),H*(.25+j*.17),W*.9,.5,.5,WX.sk*.7)}}}}
 /* 🏛️ منطقة الفجر + القصر */
 const DFIRE=()=>{const c=PCX+.5,r=DZ+.5;return [[c-r,c-r],[c+r,c-r],[c+r,c+r],[c-r,c+r],[c,c-r],[c+r,c],[c,c+r],[c-r,c]]};
-function drawDawnIso(t){const c=PCX,lo=c-DZ,hi=c+DZ+1,li=c-DZI,hi2=c+DZI+1,ts=T*camW.z;
-  isoDia(lo,lo,hi,hi);if(!patFill('tx_dawn',ts/150)){ctx.fillStyle='#6E2418';ctx.fill()}
+function drawDawnIso(t,G){const c=PCX,lo=c-DZ,hi=c+DZ+1,li=c-DZI,hi2=c+DZI+1,ts=T*camW.z;
+  const pu=.5+.5*Math.sin(t/700);if(!G){isoDia(lo,lo,hi,hi);if(!patFill('tx_dawn',ts/150)){ctx.fillStyle='#6E2418';ctx.fill()}
   isoDia(lo,lo,hi,hi);ctx.fillStyle='rgba(20,4,2,.30)';ctx.fill();isoDia(li,li,hi2,hi2);ctx.fillStyle='rgba(25,3,0,.30)';ctx.fill();
-  const pu=.5+.5*Math.sin(t/700);isoDia(lo,lo,hi,hi);ctx.save();ctx.globalCompositeOperation='lighter';patFill('tx_dawn',ts/150,0,0,.10+.10*pu);ctx.restore();
-  const V=isoDia(lo,lo,hi,hi);ctx.save();ctx.shadowColor='rgba(255,80,30,.9)';ctx.shadowBlur=18*(.6+.4*pu);ctx.strokeStyle=`rgba(255,90,40,${.55+.3*pu})`;ctx.lineWidth=Math.max(2,ts*.08);ctx.stroke();ctx.restore();
+  isoDia(lo,lo,hi,hi);ctx.save();ctx.globalCompositeOperation='lighter';patFill('tx_dawn',ts/150,0,0,.10+.10*pu);ctx.restore();
+  }const V=isoDia(lo,lo,hi,hi);if(!G){ctx.save();ctx.shadowColor='rgba(255,80,30,.9)';ctx.shadowBlur=18*(.6+.4*pu);ctx.strokeStyle=`rgba(255,90,40,${.55+.3*pu})`;ctx.lineWidth=Math.max(2,ts*.08);ctx.stroke();ctx.restore()}
   if(ok('iso_border')){const im=IMG.iso_border,bh=Math.max(10,ts*.75),bw=bh*im.naturalWidth/im.naturalHeight;for(let e=0;e<4;e++){const a=V[e],b=V[(e+1)%4],L=Math.hypot(b[0]-a[0],b[1]-a[1]),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.save();ctx.translate(a[0],a[1]);ctx.rotate(ang);ctx.globalAlpha=.85+.15*pu;for(let s=0;s<L;s+=bw*.98)ctx.drawImage(im,0,0,im.naturalWidth*Math.min(1,(L-s)/bw),im.naturalHeight,s,-bh/2,Math.min(bw,L-s),bh);ctx.restore()}}
   if(ts>9)ctx.save(),ctx.font=`800 ${Math.max(12,Math.min(22,ts*.55))}px "IBM Plex Sans Arabic",Tahoma`,ctx.textAlign='center',ctx.fillStyle='rgba(255,225,180,.9)',ctx.shadowColor='#000',ctx.shadowBlur=6,ctx.fillText('🏛️ منطقة الفجر',V[0][0],V[0][1]+ts*1.4),ctx.restore()}
 function siteDraw(s,t,list){const c=PCX,xy=s?[[c-12,c-12],[c+12,c-12],[c+12,c+12],[c-12,c+12]][s-1]:[c,c],R=s?1:3,ts=T*camW.z,[bx,by]=wP(xy[0]+R+1,xy[1]+R+1),[mx,my]=wP(xy[0]+.5,xy[1]+.5),k=s?'iso_tower':'iso_palace',w=(2*R+1)*2*IHX*ts*(s?1.05:1.04);
@@ -2698,14 +2698,14 @@ function fireDraw(t,list){const ts=T*camW.z,n=night(t);DFIRE().forEach(([x,y],i)
   ctx.save();ctx.globalCompositeOperation='lighter';drawFrame('fx_glow',8,Math.floor(t/140+i)%8,px,py-ts*.5,ts*(2.4+n*1.6),.5,.5,.35+n*.5);ctx.restore()}})})}
 /* 🌍 الرسم الرئيسي */
 function drawWorld(t,dt){HITS=[];if(!camW.isoZ){camW.isoZ=1;camW.z=.8;if(C)homeWorld()}const z=camW.z,ts=T*z;if(!DECO)genDeco();fxStep(t,dt);
-  ctx.fillStyle='#2A1C10';ctx.fillRect(0,0,W,H);
-  isoDia(0,0,MAP,MAP);if(!patFill('tx_sand',ts/170)){ctx.fillStyle='#E3BE7A';ctx.fill()}
+  const G=glGround(t);if(G)ctx.clearRect(0,0,W,H);else{ctx.fillStyle='#2A1C10';ctx.fillRect(0,0,W,H);
+  isoDia(0,0,MAP,MAP);if(!patFill('tx_sand',ts/170)){ctx.fillStyle='#E3BE7A';ctx.fill()}}
   isoDia(0,0,MAP,MAP);ctx.save();ctx.strokeStyle='rgba(120,80,30,.8)';ctx.lineWidth=4;ctx.stroke();ctx.restore();
-  for(const L of LAKES){const [x,y]=wP(L[0],L[1]),rw=L[2]*2*IHX*ts,rh=L[2]*2*IHY*ts;if(x<-rw*2||x>W+rw*2||y<-rh*2||y>H+rh*2)continue;
+  if(!G)for(const L of LAKES){const [x,y]=wP(L[0],L[1]),rw=L[2]*2*IHX*ts,rh=L[2]*2*IHY*ts;if(x<-rw*2||x>W+rw*2||y<-rh*2||y>H+rh*2)continue;
     ctx.save();const g=ctx.createRadialGradient(x,y,rw*.7,x,y,rw*1.5);g.addColorStop(0,'rgba(120,110,50,.45)');g.addColorStop(1,'rgba(120,110,50,0)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,rw*1.5,rh*1.5,0,0,7);ctx.fill();
     ctx.beginPath();ctx.ellipse(x,y,rw,rh,0,0,7);ctx.clip();const p=pat('tx_water');if(p){ctx.translate(camW.x+t/60%512,camW.y+t/90%512);const k=ts/140;ctx.scale(k,k);ctx.fillStyle=p;ctx.fillRect((x-camW.x-rw-600)/k,(y-camW.y-rh-600)/k,(rw*2+1200)/k,(rh*2+1200)/k)}else{ctx.fillStyle='#2BB3C6';ctx.fill()}ctx.restore();
     ctx.save();ctx.strokeStyle='rgba(230,210,150,.8)';ctx.lineWidth=Math.max(1.5,ts*.06);ctx.beginPath();ctx.ellipse(x,y,rw,rh,0,0,7);ctx.stroke();ctx.restore()}
-  drawDawnIso(t);fxGround(t);drawSel(t);
+  drawDawnIso(t,G);fxGround(t);drawSel(t);
   const vis=(x,y)=>x>-90&&x<W+90&&y>-120&&y<H+90,L=[],occ=occSet();
   for(const d of DECO){if(occ.has(d[0]+','+d[1]))continue;const [x,y]=wP(d[0]+.5,d[1]+.5);if(!vis(x,y))continue;const k=DKEYS[d[2]];L.push({d:d[0]+d[1],f:()=>{if(!ok(k))return;const im=IMG[k],w=ts*DSZ[d[2]]*d[3],h=w*im.naturalHeight/im.naturalWidth;ctx.save();if(d[4]){ctx.translate(x,0);ctx.scale(-1,1);ctx.translate(-x,0)}ctx.drawImage(im,x-w/2,y+ts*IHY*.9-h,w,h);ctx.restore()}})}
   for(let s=0;s<5;s++)siteDraw(s,t,L);fireDraw(t,L);
@@ -2724,6 +2724,73 @@ function drawWorld(t,dt){HITS=[];if(!camW.isoZ){camW.isoZ=1;camW.z=.8;if(C)homeW
 function homeWorld(){const ts=T*camW.z;camW.x=W/2-(C.map_x-C.map_y)*ts*IHX;camW.y=H/2-(C.map_x+C.map_y+1)*ts*IHY}
 function drawSel(t){if(!SEL)return;const k=.5+.5*Math.sin(t/220),bad=!!SEL.why;ctx.save();isoDia(SEL.x,SEL.y,SEL.x+1,SEL.y+1);ctx.fillStyle=bad?`rgba(232,85,63,${.25+.12*k})`:`rgba(80,220,120,${.25+.14*k})`;ctx.fill();ctx.strokeStyle=bad?'#FF7A5C':'#7DFF9E';ctx.lineWidth=2.5;ctx.stroke();ctx.restore()}
 window.__ISO={wP,wInv,DECO:()=>DECO,WX,GFX};
+
+/* 🎮 WebGL — طبقة أرض خريطة المملكة (الرمل + البحيرات + منطقة الفجر) على كارت الشاشة */
+const GL={cv:null,gl:null,pr:null,u:{},tex:{},vb:null,fail:0,on:false};
+function glWant(){try{if(/[?&#]gl=0/.test(location.href))return false;return localStorage.getItem('najat_gl')!=='off'}catch(e){return true}}
+const GLV=`#version 300 es
+in vec2 aP;uniform vec2 uCam,uRes;uniform float uTs,uSp;out vec2 vS,vW;
+void main(){vec2 s=uSp>.5?aP:vec2(uCam.x+(aP.x-aP.y)*uTs*.5,uCam.y+(aP.x+aP.y)*uTs*.25);vS=s;vW=aP;gl_Position=vec4(s.x/uRes.x*2.-1.,1.-s.y/uRes.y*2.,0,1);}`;
+const GLF=`#version 300 es
+precision highp float;in vec2 vS,vW;out vec4 o;
+uniform sampler2D uT;uniform vec2 uCam,uTsz,uOff,uC;uniform float uSc,uMode,uHas,uPu,uTs,uLo,uHi,uLi,uHi2,uRw,uRh;uniform vec3 uCol;
+vec4 pat(vec2 off,float sc){return texture(uT,(vS-uCam-off)/sc/uTsz);}
+void main(){
+ if(uMode<.5){o=uHas>.5?pat(uOff,uSc):vec4(uCol,1);return;}
+ if(uMode<1.5){ /* منطقة الفجر */
+  vec2 w=vW;float dx=min(w.x-uLo,uHi-w.x),dy=min(w.y-uLo,uHi-w.y),d=min(dx,dy);
+  float px=d*uTs*.56;vec4 c=vec4(0);
+  if(d>=0.){vec4 A=uHas>.5?pat(vec2(0),uSc):vec4(uCol,1);vec3 r=A.rgb;
+   r=r*.7+vec3(20.,4.,2.)/255.*.3;
+   if(w.x>=uLi&&w.x<=uHi2&&w.y>=uLi&&w.y<=uHi2)r=r*.7+vec3(25.,3.,0.)/255.*.3;
+   r+=A.rgb*(.10+.10*uPu);c=vec4(r,1);}
+  float lw=max(2.,uTs*.08)*.5,ad=abs(px);
+  float ln=(1.-smoothstep(lw-.7,lw+.7,ad))*(.55+.3*uPu);
+  float gs=9.*(.6+.4*uPu),gl=exp(-ad*ad/(2.*gs*gs))*.9*(d<0.?1.:.6);
+  vec3 lc=vec3(1.,90./255.,40./255.),gc=vec3(1.,80./255.,30./255.);
+  c=vec4(gc*gl,gl)+c*(1.-gl);c=vec4(lc*ln,ln)+c*(1.-ln);o=c;return;}
+ /* بحيرة */
+ vec2 q2=(vS-uC)/vec2(uRw,uRh);float q=length(q2);float fw0=max(length(vec2(dFdx(q),dFdy(q))),1e-4)*.5;
+ float h=clamp((length(vS-uC)/uRw-.7)/.8,0.,1.);float ha=.45*(1.-h)*(1.-smoothstep(1.5-fw0,1.5+fw0,q));vec4 c=vec4(vec3(120.,110.,50.)/255.*ha,ha);
+ float fw=max(length(vec2(dFdx(q),dFdy(q))),1e-4);
+ float ins=1.-smoothstep(-.5,.5,(q-1.)/fw);
+ vec4 W2=uHas>.5?pat(uOff,uSc):vec4(43./255.,179./255.,198./255.,1);c=W2*ins+c*(1.-ins);
+ float lw=max(1.5,uTs*.06)*.5,rd=abs(q-1.)/fw;float ra=(1.-smoothstep(lw-.5,lw+.5,rd))*.8;
+ c=vec4(vec3(230.,210.,150.)/255.*ra,ra)+c*(1.-ra);o=c;}`;
+function glInit(){if(GL.gl)return true;if(GL.fail||!glWant())return false;
+  try{const c=document.createElement('canvas');c.id='glw';c.style.cssText='position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none';
+    const gl=c.getContext('webgl2',{alpha:false,antialias:false,depth:false,stencil:false,premultipliedAlpha:true,powerPreference:'low-power'});if(!gl){GL.fail=1;return false}
+    const sh=(t,src)=>{const s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s};
+    const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,GLV));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,GLF));gl.bindAttribLocation(p,0,'aP');gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p));
+    gl.useProgram(p);['uCam','uRes','uTs','uSp','uT','uTsz','uOff','uC','uSc','uMode','uHas','uPu','uLo','uHi','uLi','uHi2','uRw','uRh','uCol'].forEach(n=>GL.u[n]=gl.getUniformLocation(p,n));
+    GL.vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,GL.vb);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+    gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.uniform1i(GL.u.uT,0);
+    c.addEventListener('webglcontextlost',e=>{e.preventDefault();GL.fail=1;GL.gl=null;GL.on=false;c.remove()});
+    cv.parentNode.insertBefore(c,cv);GL.cv=c;GL.gl=gl;GL.pr=p;return true}catch(e){console.warn('GL',e);GL.fail=1;return false}}
+function glTex(k){const g=GL.gl;if(GL.tex[k])return GL.tex[k];if(!ok(k))return null;
+  try{const t=g.createTexture();g.bindTexture(g.TEXTURE_2D,t);g.pixelStorei(g.UNPACK_PREMULTIPLY_ALPHA_WEBGL,true);g.texImage2D(g.TEXTURE_2D,0,g.RGBA,g.RGBA,g.UNSIGNED_BYTE,IMG[k]);g.generateMipmap(g.TEXTURE_2D);
+    g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.REPEAT);g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.REPEAT);g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR_MIPMAP_LINEAR);g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR);
+    return GL.tex[k]={t,w:IMG[k].naturalWidth,h:IMG[k].naturalHeight}}catch(e){return null}}
+function glQuad(a){const g=GL.gl;g.bufferData(g.ARRAY_BUFFER,new Float32Array(a),g.STREAM_DRAW);g.drawArrays(g.TRIANGLE_STRIP,0,4)}
+function glUse(k,col){const g=GL.gl,u=GL.u,T2=k&&glTex(k);g.uniform1f(u.uHas,T2?1:0);if(T2){g.activeTexture(g.TEXTURE0);g.bindTexture(g.TEXTURE_2D,T2.t);g.uniform2f(u.uTsz,T2.w,T2.h)}g.uniform3f(u.uCol,col[0]/255,col[1]/255,col[2]/255)}
+function glHide(){if(GL.cv&&GL.on){GL.cv.style.visibility='hidden';GL.on=false}}
+/* يرسم الأرض كلها؛ يرجّع true لو اتعمل بالـ WebGL */
+function glGround(t){if(!glInit())return false;const g=GL.gl,u=GL.u,c=GL.cv,d=Math.min(1.5,window.devicePixelRatio||1),pw=Math.round(W*d),ph=Math.round(H*d);
+  if(c.width!==pw||c.height!==ph){c.width=pw;c.height=ph}if(!GL.on){c.style.visibility='visible';GL.on=true}
+  const ts=T*camW.z;g.viewport(0,0,pw,ph);g.clearColor(42/255,28/255,16/255,1);g.clear(g.COLOR_BUFFER_BIT);
+  g.uniform2f(u.uCam,camW.x,camW.y);g.uniform2f(u.uRes,W,H);g.uniform1f(u.uTs,ts);
+  /* الرمل */
+  g.uniform1f(u.uSp,0);g.uniform1f(u.uMode,0);glUse('tx_sand',[227,190,122]);g.uniform1f(u.uSc,ts/170);g.uniform2f(u.uOff,0,0);glQuad([0,0,MAP,0,0,MAP,MAP,MAP]);
+  /* البحيرات */
+  g.uniform1f(u.uSp,1);g.uniform1f(u.uMode,2);glUse('tx_water',[43,179,198]);g.uniform1f(u.uSc,ts/140);g.uniform2f(u.uOff,t/60%512,t/90%512);
+  for(const L of LAKES||[]){const [x,y]=wP(L[0],L[1]),rw=L[2]*2*IHX*ts,rh=L[2]*2*IHY*ts;if(x<-rw*2||x>W+rw*2||y<-rh*2||y>H+rh*2)continue;
+    g.uniform2f(u.uC,x,y);g.uniform1f(u.uRw,rw);g.uniform1f(u.uRh,rh);const ex=rw*1.55+3,ey=rh*1.55+3;glQuad([x-ex,y-ey,x+ex,y-ey,x-ex,y+ey,x+ex,y+ey])}
+  /* منطقة الفجر */
+  const cc=PCX,lo=cc-DZ,hi=cc+DZ+1,m=2.2;g.uniform1f(u.uSp,0);g.uniform1f(u.uMode,1);glUse('tx_dawn',[110,36,24]);g.uniform1f(u.uSc,ts/150);
+  g.uniform1f(u.uPu,.5+.5*Math.sin(t/700));g.uniform1f(u.uLo,lo);g.uniform1f(u.uHi,hi);g.uniform1f(u.uLi,cc-DZI);g.uniform1f(u.uHi2,cc+DZI+1);
+  glQuad([lo-m,lo-m,hi+m,lo-m,lo-m,hi+m,hi+m,hi+m]);
+  return true}
+window.__GL={GL,glGround,glWant,lakes:()=>LAKES,cam:camW};
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
