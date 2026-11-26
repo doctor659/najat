@@ -855,19 +855,19 @@ let drag=null;const pts=new Map();
 cv.addEventListener('pointerdown',e=>{if(e.isPrimary)pts.clear();try{cv.setPointerCapture(e.pointerId)}catch(_){}stopCam();pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;drag={lx:e.clientX,ly:e.clientY,lt:performance.now(),vx:0,vy:0,t0:performance.now(),x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false,pinch:pts.size===2?dist():0,z0:cam.z}});
 function dist(){const v=[...pts.values()];return v.length<2?0:Math.hypot(v[0][0]-v[1][0],v[0][1]-v[1][1])}
 cv.addEventListener('pointermove',e=>{if(!drag)return;pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;
-  if(pts.size===2&&drag.pinch){drag.moved=true;zoomTo(cam,drag.z0*dist()/drag.pinch);return}
-  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>12)drag.moved=true;if(drag.moved){cam.x=drag.cx+dx;cam.y=drag.cy+dy;clampCam();const nw=performance.now(),el=Math.max(1,nw-drag.lt);drag.vx=drag.vx*.6+.4*(e.clientX-drag.lx)/el;drag.vy=drag.vy*.6+.4*(e.clientY-drag.ly)/el;drag.lx=e.clientX;drag.ly=e.clientY;drag.lt=nw}});
-cv.addEventListener('pointerup',e=>{pts.delete(e.pointerId);if(drag&&(!drag.moved||(performance.now()-drag.t0<260&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<22))&&!drag.pinch){const r=cv.getBoundingClientRect();if(drag.moved){const cam=VIEW==='city'?camC:camW;cam.x=drag.cx;cam.y=drag.cy}tap(e.clientX-r.left,e.clientY-r.top)}else if(drag&&drag.moved&&!drag.pinch&&performance.now()-drag.lt<90){const cam=VIEW==='city'?camC:camW,mx=2.2;cam.vx=Math.max(-mx,Math.min(mx,drag.vx));cam.vy=Math.max(-mx,Math.min(mx,drag.vy))}if(!pts.size)drag=null});
+  if(pts.size===2&&drag.pinch){drag.moved=true;popClose();const v=[...pts.values()],r0=cv.getBoundingClientRect();zoomTo(cam,drag.z0*dist()/drag.pinch,(v[0][0]+v[1][0])/2-r0.left,(v[0][1]+v[1][1])/2-r0.top);return}
+  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>12)drag.moved=true;if(drag.moved){popClose();cam.x=drag.cx+dx;cam.y=drag.cy+dy;clampCam();const nw=performance.now(),el=Math.max(1,nw-drag.lt);drag.vx=drag.vx*.6+.4*(e.clientX-drag.lx)/el;drag.vy=drag.vy*.6+.4*(e.clientY-drag.ly)/el;drag.lx=e.clientX;drag.ly=e.clientY;drag.lt=nw}});
+cv.addEventListener('pointerup',e=>{pts.delete(e.pointerId);if(drag&&drag.pinch&&pts.size===1){const q=[...pts.values()][0],cam=VIEW==='city'?camC:camW;drag={lx:q[0],ly:q[1],lt:performance.now(),vx:0,vy:0,t0:0,x:q[0],y:q[1],cx:cam.x,cy:cam.y,moved:true,pinch:1,z0:cam.z};return}if(drag&&(!drag.moved||(performance.now()-drag.t0<260&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<22))&&!drag.pinch){const r=cv.getBoundingClientRect();if(drag.moved){const cam=VIEW==='city'?camC:camW;cam.x=drag.cx;cam.y=drag.cy}tap(e.clientX-r.left,e.clientY-r.top)}else if(drag&&drag.moved&&!drag.pinch&&performance.now()-drag.lt<90){const cam=VIEW==='city'?camC:camW,mx=2.2;cam.vx=Math.max(-mx,Math.min(mx,drag.vx));cam.vy=Math.max(-mx,Math.min(mx,drag.vy))}if(!pts.size)drag=null});
 cv.addEventListener('pointercancel',e=>{pts.clear();drag=null});document.addEventListener('visibilitychange',()=>{pts.clear();drag=null});
 ['gesturestart','gesturechange'].forEach(n=>document.addEventListener(n,e=>e.preventDefault()));
 window.addEventListener('error',e=>toast('⚠️ '+(e.message||'خطأ')));window.addEventListener('unhandledrejection',e=>toast('⚠️ '+((e.reason&&e.reason.message)||e.reason||'خطأ')));
-cv.addEventListener('wheel',e=>{e.preventDefault();const cam=VIEW==='city'?camC:camW;zoomTo(cam,cam.z*(e.deltaY<0?1.1:.9))},{passive:false});
-function zoomTo(cam,z){z=Math.max(VIEW==='city'?.6:.3,Math.min(VIEW==='city'?2.6:1.8,z));if(VIEW==='world'){const k=z/cam.z;cam.x=W/2-(W/2-cam.x)*k;cam.y=H/2-(H/2-cam.y)*k}else{cam.x*=z/cam.z;cam.y*=z/cam.z}cam.z=z;clampCam()}
+cv.addEventListener('wheel',e=>{e.preventDefault();const cam=VIEW==='city'?camC:camW;zoomTo(cam,cam.z*(e.deltaY<0?1.1:.9),e.offsetX,e.offsetY)},{passive:false});
+function zoomTo(cam,z,ax,ay){z=Math.max(VIEW==='city'?.6:.3,Math.min(VIEW==='city'?2.6:1.8,z));if(VIEW==='world'){const k=z/cam.z,X=ax==null?W/2:ax,Y=ay==null?H/2:ay;cam.x=X-(X-cam.x)*k;cam.y=Y-(Y-cam.y)*k}else{cam.x*=z/cam.z;cam.y*=z/cam.z}cam.z=z;clampCam()}
 function clampCam(){if(VIEW==='city'){const mx=Math.max(0,878*CZ-W/2),hi=Math.max(0,797*CZ-H/2+40),lo=Math.min(0,H/2-959*CZ-30);camC.x=Math.max(-mx,Math.min(mx,camC.x));camC.y=Math.max(lo,Math.min(hi,camC.y))}else{const ts=T*camW.z,hw=MAP*ts*IHX,hh=MAP*ts*IHY;camW.x=Math.max(W/2-hw,Math.min(W/2+hw,camW.x));camW.y=Math.max(H/2-2*hh,Math.min(H/2,camW.y))}}
-function tap(x,y){if(SCITY.tap&&VIEW==='city'&&SCITY.tap(x,y))return;let best=null,bd=1e9;for(const h of HITS){const d=Math.hypot(h.x-x,h.y-y)*(h.city?.85:1);if(d<h.r&&d<bd){bd=d;best=h}}if(!best){if(VIEW==='world'&&C&&ME){const [tx,ty]=wTile(x,y);selTile(tx,ty)}return}if(VIEW==='world'){SEL=null;$('tilePop').hidden=true}
+function tap(x,y){if(SCITY.tap&&VIEW==='city'&&SCITY.tap(x,y))return;let best=null,bd=1e9;for(const h of HITS){const d=Math.hypot(h.x-x,h.y-y)*(h.city?.85:1);if(d<h.r&&d<bd){bd=d;best=h}}if(!best){if(VIEW==='world'&&C&&ME){const [fx,fy]=wInv(x,y);selTile(Math.round(fx-1),Math.round(fy-1))}return}if(VIEW==='world'){SEL=null;$('tilePop').hidden=true}
   if(best.cit){citTalk(best.cit);return}if(best.plot){toast('🏗️ أرض فاضية · مبنى جديد هيتبني هنا في تحديث قريب');return}if(best.b){TAPPED[best.b.id]=performance.now();openBuilding(best.b)}else if(best.m)openMonster(best.m);else if(best.c)openCity(best.c);else if(best.node)openNode(best.node);else if(best.chest)openChest(best.chest);else if(best.site!=null)openSite(best.site)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,cam=camW;
-  if(a==='zin')zoomTo(cam,cam.z*1.2);if(a==='zout')zoomTo(cam,cam.z/1.2);if(a==='home'){if(VIEW==='world'&&C)flyW(C.map_x,C.map_y);else homeWorld()}if(a==='goto'&&C&&ME)panelGoto();if(a==='reports')panelReports();if(!C||!ME)return;if(a==='view'){const t=document.querySelector('#nav button[data-view="'+(VIEW==='city'?'world':'city')+'"]');if(t)t.click();return}if(a==='missions')panelMissions();if(a==='login')panelLogin();if(a==='vip')panelVIP();if(a==='sound')panelSound();if(a==='arena')panelArena();if(a==='research')panelResearch();if(a==='menu')panelMenu();if(a==='buildq'){const bb=C.build_target&&BLD.find(x=>x.id===C.build_target);if(bb)openBuilding(bb);else toast('⚒️ البنّاء فاضي، دوس على أي مبنى وطوّره')}if(a==='marchq')panelArmy();if(a==='allyp')panelAlly();if(a==='res')openRes();if(a==='gal')panelShop('gal');if(a==='events')panelEvents();if(a==='bag')panelBag();if(a==='explore')panelExplore();if(a==='merchant')panelMerchant();if(a==='offers')panelOffers();if(a==='guide')panelGuide();if(a==='profile')panelChief();if(a==='mail')panelMail();if(a==='admin'&&ISADM)panelAdmin()});
+  if(a==='zin')zoomTo(cam,cam.z*1.2);if(a==='zout')zoomTo(cam,cam.z/1.2);if(a==='home'){if(VIEW==='world'&&C)flyW(C.map_x+.5,C.map_y+.5);else homeWorld()}if(a==='goto'&&C&&ME)panelGoto();if(a==='reports')panelReports();if(!C||!ME)return;if(a==='view'){const t=document.querySelector('#nav button[data-view="'+(VIEW==='city'?'world':'city')+'"]');if(t)t.click();return}if(a==='missions')panelMissions();if(a==='login')panelLogin();if(a==='vip')panelVIP();if(a==='sound')panelSound();if(a==='arena')panelArena();if(a==='research')panelResearch();if(a==='menu')panelMenu();if(a==='buildq'){const bb=C.build_target&&BLD.find(x=>x.id===C.build_target);if(bb)openBuilding(bb);else toast('⚒️ البنّاء فاضي، دوس على أي مبنى وطوّره')}if(a==='marchq')panelArmy();if(a==='allyp')panelAlly();if(a==='res')openRes();if(a==='gal')panelShop('gal');if(a==='events')panelEvents();if(a==='bag')panelBag();if(a==='explore')panelExplore();if(a==='merchant')panelMerchant();if(a==='offers')panelOffers();if(a==='guide')panelGuide();if(a==='profile')panelChief();if(a==='mail')panelMail();if(a==='admin'&&ISADM)panelAdmin()});
 const openRes=k=>{if(!(C&&ME))return;panelShop('res');if(k)setTimeout(()=>{const e=document.getElementById('sh-'+k);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},80)};
 $('rShop').onclick=()=>openRes();document.querySelectorAll('.resbar span').forEach((sp,i)=>sp.onclick=()=>openRes(['wood','meat','coal','iron'][i]));
 $('gemChip').onclick=()=>{if(C&&ME)panelShop('gem')};
@@ -1634,7 +1634,7 @@ function stepCam(dt){const cam=VIEW==='city'?camC:camW;
   if(cam.vx||cam.vy){const ox=cam.x,oy=cam.y;cam.x+=cam.vx*dt;cam.y+=cam.vy*dt;clampCam();const f=Math.pow(.92,dt/16);cam.vx=cam.x===ox+cam.vx*dt?cam.vx*f:0;cam.vy=cam.y===oy+cam.vy*dt?cam.vy*f:0;if(Math.abs(cam.vx)<.02)cam.vx=0;if(Math.abs(cam.vy)<.02)cam.vy=0}}
 function flyW(tx,ty,ms){const ts=T*camW.z,x1=W/2-(tx-ty)*ts*IHX,y1=H/2-(tx+ty+1)*ts*IHY;const d=Math.hypot(x1-camW.x,y1-camW.y);FLY={x0:camW.x,y0:camW.y,x1,y1,t0:performance.now(),ms:ms||Math.min(1300,350+d*.35)};camW.vx=camW.vy=0}
 const wTile=(x,y)=>{const [a,b]=wInv(x,y);return [Math.floor(a),Math.floor(b)]};
-function tileWhy(x,y){if(x<1||y<1||x>MAP-2||y>MAP-2)return 'برة حدود الخريطة';if(inPal(x,y)&&(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=3||[[-12,-12],[12,-12],[12,12],[-12,12]].some(([a,b])=>Math.abs(x-PCX-a)<=1&&Math.abs(y-PCX-b)<=1)))return 'ده مكان القصر والأبراج 👑';if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=20&&!(typeof warOn==='function'&&warOn()))return '🔒 منطقة الفجر: النقل جواها وقت حرب العرش بس';
+function tileWhy1(x,y){if(x<1||y<1||x>MAP-2||y>MAP-2)return 'برة حدود الخريطة';if(inPal(x,y)&&(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=3||[[-12,-12],[12,-12],[12,12],[-12,12]].some(([a,b])=>Math.abs(x-PCX-a)<=1&&Math.abs(y-PCX-b)<=1)))return 'ده مكان القصر والأبراج 👑';if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=20&&!(typeof warOn==='function'&&warOn()))return '🔒 منطقة الفجر: النقل جواها وقت حرب العرش بس';
   if(ME&&x===C.map_x&&y===C.map_y)return 'دي مدينتك أصلاً 🏰';
   if(CITIES.some(c=>c.id!==ME.id&&Math.abs(c.x-x)+Math.abs(c.y-y)<2))return 'جنب مدينة تانية';
   if(NODES.some(n=>n.x===x&&n.y===y))return 'فيه موارد هنا';
@@ -1644,8 +1644,8 @@ function selTile(x,y){if(x<0||y<0||x>=MAP||y>=MAP){SEL=null;return}SEL={x,y,t:pe
   const p=$('tilePop');p.innerHTML=`<div class="tpH">📍 X:${x} · Y:${y}</div>${SEL.why?`<div class="tpW">⛔ ${SEL.why}</div>`:`<div class="tpO">✅ المكان فاضي</div>`}<div class="tpB"><button id="tpCan" class="btn alt">✕</button><button id="tpGo" class="btn gemb" ${SEL.why?'disabled':''}>🌀 انقل هنا · 💎 200</button></div>`;p.hidden=false;
   $('tpCan').onclick=()=>{SEL=null;p.hidden=true};$('tpGo').onclick=()=>tpHere($('tpGo'))}
 async function tpHere(b){if(!SEL||SEL.why)return;if(Number(C.gems||0)<200){toast('محتاج 💎 200 علشان تنقل');return}b.disabled=true;b.textContent='⏳ جاري النقل…';const {x,y}=SEL;
-  try{const r=await api.teleport(x,y);sfx('ui_confirm');const d=await api.load(ME.id);C=d.city;hud();SEL=null;$('tilePop').hidden=true;await refreshWorld();flyW(r.x,r.y,700);
-    setTimeout(()=>{const ts=T*camW.z,[cx,cy]=wP(r.x+.5,r.y+.5);for(let j=0;j<40;j++){const a=j/40*Math.PI*2,v=1.5+Math.random()*3.5;FX.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v*.6,l:1,dust:j%2})}},720);
+  try{const r=await api.teleport(x,y);sfx('ui_confirm');const d=await api.load(ME.id);C=d.city;hud();SEL=null;$('tilePop').hidden=true;await refreshWorld();flyW(r.x+.5,r.y+.5,700);
+    setTimeout(()=>{const ts=T*camW.z,[cx,cy]=wP(r.x+1,r.y+1);for(let j=0;j<40;j++){const a=j/40*Math.PI*2,v=1.5+Math.random()*3.5;FX.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v*.6,l:1,dust:j%2})}},720);
     toast(`🌀 مدينتك اتنقلت لـ X:${r.x} Y:${r.y}`)}catch(e){toast('⚠️ '+(e.message||'ماتمش'));b.disabled=false;b.textContent='🌀 انقل هنا · 💎 200'}}
 function drawSelOld(t){if(!SEL)return;const ts=T*camW.z,x=camW.x+SEL.x*ts,y=camW.y+SEL.y*ts,k=.5+.5*Math.sin(t/220),bad=!!SEL.why;
   ctx.save();ctx.fillStyle=bad?`rgba(232,85,63,${.22+.12*k})`:`rgba(80,220,120,${.22+.14*k})`;ctx.strokeStyle=bad?'#FF7A5C':'#7DFF9E';ctx.lineWidth=2.5;
@@ -2657,7 +2657,7 @@ function genDeco(){const R=rng(4242);DECO=[];LAKES=[];const far=(x,y,d,L)=>L.eve
   for(let i=0;LAKES.length<12&&i<2000;i++){const x=8+R()*(MAP-16),y=8+R()*(MAP-16),r=1.6+R()*1.8;if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<DZ+8)continue;if(!far(x,y,22,LAKES))continue;LAKES.push([x,y,r])}
   const tot=DW.reduce((a,b)=>a+b,0);
   for(let i=0;DECO.length<420&&i<9000;i++){const x=2+Math.floor(R()*(MAP-4)),y=2+Math.floor(R()*(MAP-4));if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=DZ+2)continue;if(!far(x,y,3.2,DECO)||!far(x,y,5,LAKES))continue;let r=R()*tot,t=0;while(r>DW[t]){r-=DW[t];t++}DECO.push([x,y,t,.85+R()*.35,R()<.5])}}
-function occSet(){const k=CITIES.length+'|'+NODES.length+'|'+MONSTERS.length;if(OCC&&OCCk===k)return OCC;OCCk=k;OCC=new Set();[...CITIES,...NODES,...MONSTERS].forEach(o=>{for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)OCC.add((o.x+dx)+','+(o.y+dy))});return OCC}
+function occSet(){const k=CITIES.length+'|'+NODES.length+'|'+MONSTERS.length;if(OCC&&OCCk===k)return OCC;OCCk=k;OCC=new Set();const cs=new Set(CITIES);[...CITIES,...NODES,...MONSTERS].forEach(o=>{const e=cs.has(o)?2:1;for(let dx=-1;dx<=e;dx++)for(let dy=-1;dy<=e;dy++)OCC.add((o.x+dx)+','+(o.y+dy))});return OCC}
 /* مؤثرات */
 const WX={streaks:[],devils:[],clouds:[],drift:[0,0],storm:null,nextStorm:performance.now()+90000+Math.random()*120000};
 function fxStep(t,dt){const hi=GFX(),ts=T*camW.z;
@@ -2712,7 +2712,7 @@ function drawWorld(t,dt){HITS=[];if(!camW.isoZ){camW.isoZ=1;camW.z=.8;if(C)homeW
   if(P3()){genTreasure();const tg=treGot();for(const c of TRE){if(tg.includes(c.i))continue;const [x,y]=wP(c.x+.5,c.y+.5);if(!vis(x,y))continue;L.push({d:c.x+c.y,f:()=>{drawChest(x,y,ts,t);HITS.push({x,y,r:Math.max(28,ts*.45),chest:c})}})}}
   for(const n of NODES){if(Math.max(Math.abs(n.x-PCX),Math.abs(n.y-PCX))<=DZ||CITIES.some(c=>c.x===n.x&&c.y===n.y))continue;const [x,y]=wP(n.x+.5,n.y+.5);if(!vis(x,y))continue;L.push({d:n.x+n.y,f:()=>{drawNode(n,x,y,ts*.5,t);HITS.push({x,y:y-ts*.15,r:Math.max(30,ts*.5),node:n})}})}
   for(const m of MONSTERS){if(!alive(m))continue;const [x,y]=wP(m.x+.5,m.y+.5);if(!vis(x,y))continue;L.push({d:m.x+m.y,f:()=>{monster(m,x,y,ts*.62,t);HITS.push({x,y:m._cy||y,r:Math.max(34,m._r||ts*.6),m})}})}
-  for(const c of CITIES){const [x,y]=wP(c.x+.5,c.y+.5);if(!vis(x,y))continue;L.push({d:c.x+c.y+.1,f:()=>{const me=c.id===ME.id;fort(x,y,ts*.34,me,c.lvl,t);if(shOf(c)>Date.now())dome(x,y,ts,t);badge(x+ts*.42,y-ts*.32,String(c.lvl),me?'#8A5A1C':'#1F4F8F');nameTag(x,y+ts*.42,(PALACE&&PALACE.sultan&&PALACE.sultan.id===c.id?'👑 ':'')+titleOf(c.id)+(TAGS[c.id]?'['+TAGS[c.id].t+'] ':'')+c.name,me);HITS.push({x,y:fort._cy||y,r:Math.max(36,fort._r||ts*.6),c,city:1})}})}
+  for(const c of CITIES){const [x,y]=wP(c.x+1,c.y+1);if(!vis(x,y))continue;L.push({d:c.x+c.y+1.1,f:()=>{const me=c.id===ME.id;fort(x,y,ts*.34,me,c.lvl,t);if(shOf(c)>Date.now())dome(x,y,ts,t);badge(x+ts*.42,y-ts*.32,String(c.lvl),me?'#8A5A1C':'#1F4F8F');nameTag(x,y+ts*.42,(PALACE&&PALACE.sultan&&PALACE.sultan.id===c.id?'👑 ':'')+titleOf(c.id)+(TAGS[c.id]?'['+TAGS[c.id].t+'] ':'')+c.name,me);HITS.push({x,y:fort._cy||y,r:Math.max(36,fort._r||ts*.6),c,city:1})}})}
   L.sort((a,b)=>a.d-b.d);for(const o of L)o.f();
   for(let i=MARCHES.length-1;i>=0;i--){const mr=MARCHES[i];if(!mr)continue;const k=Math.min(1,(t-mr.t0)/mr.dur),[ax,ay]=wP(mr.fx+.5,mr.fy+.5),[bx,by]=wP(mr.m.x+.5,mr.m.y+.5);
     ctx.setLineDash([8,6]);ctx.lineDashOffset=-t/40;ctx.strokeStyle='rgba(240,192,104,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);
@@ -2721,8 +2721,8 @@ function drawWorld(t,dt){HITS=[];if(!camW.isoZ){camW.isoZ=1;camW.z=.8;if(C)homeW
   fxAir(t);
   const nt=night(t);if(nt>0){ctx.fillStyle=`rgba(12,22,58,${nt*.35})`;ctx.fillRect(0,0,W,H);ctx.save();ctx.globalCompositeOperation='lighter';DFIRE().forEach(([x,y],i)=>{const [px,py]=wP(x,y);if(px>-150&&px<W+150&&py>-150&&py<H+150)drawFrame('fx_glow',8,Math.floor(t/140+i)%8,px,py-ts*.5,ts*3.2,.5,.5,nt*.55)});ctx.restore()}
   $('banner').textContent='🗺️ السيرفر 1 · '+MONSTERS.filter(alive).length+' وحش · '+CITIES.length+' مدينة'}
-function homeWorld(){const ts=T*camW.z;camW.x=W/2-(C.map_x-C.map_y)*ts*IHX;camW.y=H/2-(C.map_x+C.map_y+1)*ts*IHY}
-function drawSel(t){if(!SEL)return;const k=.5+.5*Math.sin(t/220),bad=!!SEL.why;ctx.save();isoDia(SEL.x,SEL.y,SEL.x+1,SEL.y+1);ctx.fillStyle=bad?`rgba(232,85,63,${.25+.12*k})`:`rgba(80,220,120,${.25+.14*k})`;ctx.fill();ctx.strokeStyle=bad?'#FF7A5C':'#7DFF9E';ctx.lineWidth=2.5;ctx.stroke();ctx.restore()}
+function homeWorld(){const ts=T*camW.z;camW.x=W/2-(C.map_x-C.map_y)*ts*IHX;camW.y=H/2-(C.map_x+C.map_y+2)*ts*IHY}
+function drawSel(t){if(!SEL)return;const k=.5+.5*Math.sin(t/220),bad=!!SEL.why;ctx.save();isoDia(SEL.x,SEL.y,SEL.x+2,SEL.y+2);ctx.fillStyle=bad?`rgba(232,85,63,${.25+.12*k})`:`rgba(80,220,120,${.25+.14*k})`;ctx.fill();ctx.strokeStyle=bad?'#FF7A5C':'#7DFF9E';ctx.lineWidth=2.5;ctx.stroke();{const a=wP(SEL.x+1,SEL.y),b=wP(SEL.x+1,SEL.y+2),c=wP(SEL.x,SEL.y+1),d=wP(SEL.x+2,SEL.y+1);ctx.globalAlpha=.55;ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.moveTo(c[0],c[1]);ctx.lineTo(d[0],d[1]);ctx.stroke();ctx.setLineDash([])}ctx.restore()}
 window.__ISO={wP,wInv,DECO:()=>DECO,WX,GFX};
 
 /* 🎮 WebGL — طبقة أرض خريطة المملكة (الرمل + البحيرات + منطقة الفجر) على كارت الشاشة */
@@ -2791,6 +2791,18 @@ function glGround(t){if(!glInit())return false;const g=GL.gl,u=GL.u,c=GL.cv,d=Ma
   glQuad([lo-m,lo-m,hi+m,lo-m,lo-m,hi+m,hi+m,hi+m]);
   return true}
 window.__GL={GL,glGround,glWant,lakes:()=>LAKES,cam:camW};
+/* 🌀 النقل على 4 مربعات (2×2): المدينة بتاخد المربع (x,y) واللي جنبه يمين وتحت */
+function tileWhy(x,y){if(x<1||y<1||x+1>MAP-2||y+1>MAP-2)return 'برة حدود الخريطة';const Q=[[0,0],[1,0],[0,1],[1,1]];
+  if(Q.some(([a,b])=>{const X=x+a-PCX,Y=y+b-PCX;return Math.max(Math.abs(X),Math.abs(Y))<=3||[[-12,-12],[12,-12],[12,12],[-12,12]].some(([p,q])=>Math.abs(X-p)<=1&&Math.abs(Y-q)<=1)}))return 'ده مكان القصر والأبراج 👑';
+  if(Q.some(([a,b])=>Math.max(Math.abs(x+a-PCX),Math.abs(y+b-PCX))<=DZ)&&!(typeof warOn==='function'&&warOn()))return '🔒 منطقة الفجر: النقل جواها وقت حرب العرش بس';
+  if(ME&&x===C.map_x&&y===C.map_y)return 'دي مدينتك أصلاً 🏰';
+  if(CITIES.some(c=>c.id!==ME.id&&Math.abs(c.x-x)<2&&Math.abs(c.y-y)<2))return 'جنب مدينة تانية';
+  const In=o=>o.x>=x&&o.x<=x+1&&o.y>=y&&o.y<=y+1;
+  if(NODES.some(In))return 'فيه موارد هنا';
+  if(MONSTERS.some(m=>alive(m)&&In(m)))return 'فيه وحش هنا 🦂';
+  if((LAKES||[]).some(L=>Math.hypot(L[0]-x-1,L[1]-y-1)<L[2]*1.414+1.2))return 'ده مية الواحة 💧';
+  return ''}
+function popClose(){if(VIEW==='world'&&SEL){SEL=null;$('tilePop').hidden=true}}
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
