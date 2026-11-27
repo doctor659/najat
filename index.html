@@ -2745,7 +2745,7 @@ function drawDawnIso(t,G){const c=PCX,lo=c-DZ,hi=c+DZ+1,li=c-DZI,hi2=c+DZI+1,ts=
   isoDia(lo,lo,hi,hi);ctx.save();ctx.globalCompositeOperation='lighter';patFill('tx_dawn',ts/150,0,0,.10+.10*pu);ctx.restore();
   }const V=isoDia(lo,lo,hi,hi);if(!G){ctx.save();ctx.strokeStyle=`rgba(255,90,40,${.18+.1*pu})`;ctx.lineWidth=Math.max(6,ts*.3);ctx.stroke();ctx.strokeStyle=`rgba(255,90,40,${.55+.3*pu})`;ctx.lineWidth=Math.max(2,ts*.08);ctx.stroke();ctx.restore()}
   if(ok('iso_border')){const im=IMG.iso_border,bh=Math.max(10,ts*.75),bw=bh*im.naturalWidth/im.naturalHeight;for(let e=0;e<4;e++){const a=V[e],b=V[(e+1)%4],L=Math.hypot(b[0]-a[0],b[1]-a[1]),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.save();ctx.translate(a[0],a[1]);ctx.rotate(ang);ctx.globalAlpha=.85+.15*pu;for(let s=0;s<L;s+=bw*.98)ctx.drawImage(im,0,0,im.naturalWidth*Math.min(1,(L-s)/bw),im.naturalHeight,s,-bh/2,Math.min(bw,L-s),bh);ctx.restore()}}
-  if(ts>9)ctx.save(),ctx.font=`800 ${Math.max(12,Math.min(22,ts*.55))}px "IBM Plex Sans Arabic",Tahoma`,ctx.textAlign='center',ctx.fillStyle='rgba(255,225,180,.9)',ctx.shadowColor='#000',ctx.shadowBlur=6,ctx.fillText('🏛️ منطقة الفجر',V[0][0],V[0][1]+ts*1.4),ctx.restore()}
+  if(ts>9&&typeof PXG!=='undefined'&&PXG.act&&!PXG.tgt)dzLabel(V[0][0],V[0][1]+ts*1.4,Math.round(Math.max(12,Math.min(22,ts*.55))));else if(ts>9)ctx.save(),ctx.font=`800 ${Math.max(12,Math.min(22,ts*.55))}px "IBM Plex Sans Arabic",Tahoma`,ctx.textAlign='center',ctx.fillStyle='rgba(255,225,180,.9)',ctx.shadowColor='#000',ctx.shadowBlur=6,ctx.fillText('🏛️ منطقة الفجر',V[0][0],V[0][1]+ts*1.4),ctx.restore()}
 function siteDraw(s,t,list){const c=PCX,xy=s?[[c-8,c-8],[c+8,c-8],[c+8,c+8],[c-8,c+8]][s-1]:[c,c],R=s?1:3,ts=T*camW.z,[bx,by]=wP(xy[0]+R+1,xy[1]+R+1),[mx,my]=wP(xy[0]+.5,xy[1]+.5),k=s?'iso_tower':'iso_palace',w=(2*R+1)*2*IHX*ts*(s?1.05:1.04);
   list.push({d:xy[0]+xy[1]+R*2,f:()=>{if(mx<-w||mx>W+w||my<-w*1.2||my>H+w)return;const st=siteOf(s),own=st&&st.alliance,mine=own&&PALACE&&PALACE.my_ally&&own.id===PALACE.my_ally;
     ctx.save();ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(mx+ts*.4,my+ts*.25,w*.48,w*.24,0,0,7);ctx.fill();ctx.restore();
@@ -3519,6 +3519,29 @@ function btpBegin(g,c2,BW,BH){pxgOff();BTP.on=false;const A=PXU.app;if(!A||!BTP.
 function btpEnd(){if(!BTP.on)return;if(PXG.tgt===BTP)pxgOff();try{PXU.app.renderer.render({container:BTP.cont,clear:true,clearColor:'#C8914A'})}catch(e){BTP.on=false}}
 {const _s=pxuSync;pxuSync=function(){if(BTP.open){if(BTP.ov&&BTP.ov.isConnected)return;btpClose();return}return _s()}}
 window.__BTP=BTP;
+
+/* ✨ المرحلة 4: الضلال والدواير والشرار والتراب على الخريطة بكارت الشاشة (وبقوا في مكانهم الصح فوق/تحت المباني) */
+const PXS={rec:null,bad:false,tx:{},P:{},on:false};
+const PXS_N=['moveTo','lineTo','rect','roundRect','quadraticCurveTo','bezierCurveTo','arcTo','closePath'];
+function pxsCol(fs){if(typeof fs!=='string')return null;const q=v=>Math.min(255,Math.round(v/8)*8);
+  if(fs[0]==='#'){if(fs.length!==7&&fs.length!==4)return null;const h=fs.length===4?fs.slice(1).split('').map(c=>parseInt(c+c,16)):[1,3,5].map(i=>parseInt(fs.substr(i,2),16));return ['rgb('+h.map(q)+')',1]}
+  const m=/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/.exec(fs);if(!m)return null;return ['rgb('+[m[1],m[2],m[3]].map(v=>q(+v))+')',m[4]==null?1:+m[4]]}
+function pxsTex(rgb){let c=PXS.tx[rgb];if(c)return c;c=document.createElement('canvas');c.width=c.height=96;const g=c.getContext('2d');g.fillStyle=rgb;g.beginPath();g.arc(48,48,47,0,7);g.fill();c._static=1;return PXS.tx[rgb]=c}
+function pxsOn(){if(PXS.on)return;const P=PXS.P,pr=CanvasRenderingContext2D.prototype;if(!P.fill)['beginPath','ellipse','arc','fill',...PXS_N].forEach(n=>P[n]=pr[n]);PXS.on=true;PXS.rec=null;PXS.bad=false;
+  ctx.beginPath=function(){PXS.rec=null;PXS.bad=false;return P.beginPath.call(ctx)};
+  ctx.ellipse=function(x,y,rx,ry,rot,s,e){if(!PXS.rec&&!PXS.bad&&!rot&&Math.abs(e-s)>=6.28)PXS.rec=[x,y,rx,ry];else PXS.bad=true;return P.ellipse.apply(ctx,arguments)};
+  ctx.arc=function(x,y,r,s,e){if(!PXS.rec&&!PXS.bad&&Math.abs(e-s)>=6.28)PXS.rec=[x,y,r,r];else PXS.bad=true;return P.arc.apply(ctx,arguments)};
+  PXS_N.forEach(n=>{ctx[n]=function(){PXS.bad=true;return P[n].apply(ctx,arguments)}});
+  ctx.fill=function(){const r=PXS.rec;if(r&&!PXS.bad&&!arguments.length&&PXG.act&&!PXG.tgt&&PXW.on&&!PXG.clip[PXG.clip.length-1]&&r[2]>0&&r[3]>0){const c=pxsCol(ctx.fillStyle);
+      if(c){const a0=ctx.globalAlpha;ctx.globalAlpha=a0*c[1];try{pxgDraw(pxsTex(c[0]),r[0]-r[2],r[1]-r[3],r[2]*2,r[3]*2)}finally{ctx.globalAlpha=a0}return}}
+    return P.fill.apply(ctx,arguments)}}
+function pxsOff(){if(!PXS.on)return;PXS.on=false;['beginPath','ellipse','arc','fill',...PXS_N].forEach(n=>delete ctx[n])}
+{const _on=pxgOn;pxgOn=function(tgt){_on(tgt);if(PXG.act&&!PXG.tgt)pxsOn()}}
+{const _off=pxgOff;pxgOff=function(){pxsOff();_off()}}
+/* 🏛️ كلمة "منطقة الفجر" صورة جاهزة بدل ضل بيتحسب كل فريم */
+function dzLabel(x,y,fs){const F=`800 ${fs}px "IBM Plex Sans Arabic",Tahoma`,s='🏛️ منطقة الفجر';PXG_M.font=F;const w=PXG_M.measureText(s).width+24,h=fs*1.9;
+  const L=pxgLabTex('dz'+fs,w,h,g=>{g.font=F;g.textAlign='center';g.fillStyle='rgba(255,225,180,.9)';g.shadowColor='#000';g.shadowBlur=6;g.fillText(s,w/2,h*.68)});pxgPut(L,x-w/2,y-h*.68)}
+window.__PXS=PXS;
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
