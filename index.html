@@ -890,7 +890,7 @@ function drawWorldOld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14
 
 /* ---------- LOOP & INPUT ---------- */
 let last=performance.now();
-let lastErr=-1e9,lastDraw=0;function loop(t){requestAnimationFrame(loop);if(document.hidden||t-lastDraw<(IS_PHONE?31:22))return;lastDraw=t;const dt=Math.min(64,Math.max(0,t-last));last=t;try{if(C&&ME){stepCam(dt);VIEW==='city'?(glHide(),pxwHide(),pxcyFrame(t,dt)):(pxcHide(),(()=>{const a0=performance.now();drawWorld(t,dt);pxwEnd(t);fxMeasure(performance.now()-a0)})())}else{glHide();pxcHide();ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}wOverlay()}catch(e){if(t-lastErr>8000){lastErr=t;console.error(e);toast('⚠️ '+(e.message||e))}}}
+let lastErr=-1e9,lastDraw=0;function loop(t){requestAnimationFrame(loop);if(document.hidden||(typeof BTP!=='undefined'&&BTP.open&&BTP.ov&&BTP.ov.isConnected)||t-lastDraw<(IS_PHONE?31:22))return;lastDraw=t;const dt=Math.min(64,Math.max(0,t-last));last=t;try{if(C&&ME){stepCam(dt);VIEW==='city'?(glHide(),pxwHide(),pxcyFrame(t,dt)):(pxcHide(),(()=>{const a0=performance.now();drawWorld(t,dt);pxwEnd(t);fxMeasure(performance.now()-a0)})())}else{glHide();pxcHide();ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}wOverlay()}catch(e){if(t-lastErr>8000){lastErr=t;console.error(e);toast('⚠️ '+(e.message||e))}}}
 requestAnimationFrame(loop);
 let drag=null;const pts=new Map();
 cv.addEventListener('pointerdown',e=>{if(e.isPrimary)pts.clear();try{cv.setPointerCapture(e.pointerId)}catch(_){}stopCam();pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;drag={lx:e.clientX,ly:e.clientY,lt:performance.now(),vx:0,vy:0,t0:performance.now(),x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false,pinch:pts.size===2?dist():0,z0:cam.z}});
@@ -1827,7 +1827,7 @@ function playBattle(o){return new Promise(resolve=>{
   ov.innerHTML=`<canvas class="btCv"></canvas><div class="btTop"><div class="btSide me"><b>${esc(PRO.name)}</b><div class="btHp"><i class="hm"></i></div><small>⚡ ${fmt(o.myP)}</small></div><div class="btSide en"><b>${esc(o.enName||'العدو')}</b><div class="btHp"><i class="he"></i></div><small>⚡ ${fmt(o.enP)}</small></div></div><div class="btTitle">${esc(o.title||'')}</div>
   <div class="btCtl"><button data-b="auto" class="on">AUTO</button><button data-b="spd">×1</button><button data-b="skip">⏭️</button></div>
   <div class="btCards">${heroes.map((k,i)=>`<button class="btCard" data-bk="${i}"><img src="${ART[HIMG[k]]}" alt=""><span>${HN[k].n}</span><div class="btCh"><i></i></div></button>`).join('')}</div><div class="btVs">VS</div><div class="btEnd" hidden></div>`;
-  document.body.appendChild(ov);sfx('battle_start');
+  document.body.appendChild(ov);sfx('battle_start');btpOpen(ov);
   const cv2=ov.querySelector('.btCv'),g=cv2.getContext('2d'),dpr=Math.min(2,window.devicePixelRatio||1);let BW=0,BH=0;
   const fit=()=>{BW=ov.clientWidth;BH=ov.clientHeight;cv2.width=BW*dpr;cv2.height=BH*dpr;g.setTransform(dpr,0,0,dpr,0,0)};fit();window.addEventListener('resize',fit);
   const IM=k=>ok(k)?IMG[k]:null,R=Math.random;
@@ -1854,7 +1854,7 @@ function playBattle(o){return new Promise(resolve=>{
   const port=(k,x,y,r)=>{const im=IM(HIMG[k]);g.save();g.beginPath();g.arc(x,y-r,r,0,7);g.fillStyle='#3A2410';g.fill();if(im){g.clip();g.drawImage(im,x-r,y-2*r,2*r,2*r)}g.restore();g.strokeStyle='#F0C068';g.lineWidth=3;g.beginPath();g.arc(x,y-r,r,0,7);g.stroke()};
   function end(){ended=true;sfx(o.won?'victory':'defeat');const e=ov.querySelector('.btEnd');e.hidden=false;
     e.innerHTML=`<div class="btBan"><img src="${ART[o.won?'ban_win':'ban_lose']}" alt=""><b>${o.won?'انتصار!':'هزيمة'}</b></div>${o.rw?`<div class="btRw">${rwText(o.rw)}</div>`:''}${o.note?`<p class="sub" style="text-align:center">${o.note}</p>`:''}<div class="row">${o.next?`<button class="btn wide" data-e="next">${o.next}</button>`:''}<button class="btn alt wide" data-e="back">${o.next?'رجوع':'تمام'}</button></div>`;
-    e.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{clearInterval(ov._ac);cancelAnimationFrame(raf);window.removeEventListener('resize',fit);ov.remove();resolve({next:b.dataset.e==='next'})});
+    e.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{clearInterval(ov._ac);cancelAnimationFrame(raf);window.removeEventListener('resize',fit);btpClose();ov.remove();resolve({next:b.dataset.e==='next'})});
     const nb=e.querySelector('[data-e=next]');if(nb&&o.autoNext){let n=5;const lab=nb.textContent;nb.textContent=lab+' ('+n+')';e.querySelector('[data-e=back]').textContent='⏸️ وقّف';ov._ac=setInterval(()=>{if(!ov.isConnected){clearInterval(ov._ac);return}n--;if(n<=0){clearInterval(ov._ac);nb.click()}else nb.textContent=lab+' ('+n+')'},1000)}}
   function frame(now){raf=requestAnimationFrame(frame);const dt=Math.min(.05,(now-last)/1000)*spd*(BTX.slow>0?.35:1);last=now;if(!ended)t+=dt;
     if(t>T1&&!ended){const k=Math.min(1,(t-T1)/D);myHP=Math.max(finMy,Math.min(myHP,1-(1-finMy)*k));enHP=Math.max(finEn,Math.min(enHP,1-(1-finEn)*k-sk));
@@ -1865,7 +1865,7 @@ function playBattle(o){return new Promise(resolve=>{
     const vs=ov.querySelector('.btVs');if(vs)vs.style.opacity=t<T0?Math.min(1,t*3):Math.max(0,1-(t-T0)*4);
     const myAlive=Math.ceil(myHP*myStart),enAlive=Math.ceil(enHP*enStart);
     for(const side of [0,1]){const L=U.filter(u=>u.side===side&&u.alive),want=side?enAlive:myAlive;for(let j=0;j<L.length-want;j++){const v=L[Math.floor(R()*L.length)];if(v.alive){v.alive=0;v.die=1}}}
-    const bg=IM('bt_bg2')||IM('bt_bg');g.fillStyle='#C8914A';g.fillRect(0,0,BW,BH);if(bg){const s=Math.max(BW/bg.naturalWidth,BH/bg.naturalHeight);g.drawImage(bg,(BW-bg.naturalWidth*s)/2,(BH-bg.naturalHeight*s)/2,bg.naturalWidth*s,bg.naturalHeight*s)}
+    const bg=IM('bt_bg2')||IM('bt_bg');if(btpBegin(g,cv2,BW,BH))g.clearRect(0,0,BW,BH);else{g.fillStyle='#C8914A';g.fillRect(0,0,BW,BH)}if(bg){const s=Math.max(BW/bg.naturalWidth,BH/bg.naturalHeight);g.drawImage(bg,(BW-bg.naturalWidth*s)/2,(BH-bg.naturalHeight*s)/2,bg.naturalWidth*s,bg.naturalHeight*s)}
     /* 📱 المعركة بالطول: جيشك تحت والعدو فوق، ومنظور بيصغّر اللي بعيد */
     const VP=(x,y)=>{const sy=.8-(x-.1)/.8*.56,sx=.5+(y-.595)*2.7;return [BW*sx,BH*sy]},PS=sy=>.78+.34*Math.max(0,Math.min(1,(sy/BH-.24)/.56));
     if(BTX.slow>0){BTX.slow-=dt/spd}if(BTX.cz>0)BTX.cz=Math.max(0,BTX.cz-dt*1.4);
@@ -1877,15 +1877,15 @@ function playBattle(o){return new Promise(resolve=>{
       if(Math.abs(u.x-ox)>.0004&&u.alive&&R()<dt*14&&GFX()>0){const [px,py]=VP(u.x,u.y);BTX.dust.push({x:px+(R()-.5)*uh*.3,y:py,vx:(R()-.5)*14,vy:-6-R()*10,l:1,r:uh*(.08+R()*.08)})}
       if(u.cls==='arc'&&t>T1&&!ended&&u.alive&&R()<dt*.9){const tg=U.filter(z=>z.side!==u.side&&z.alive);if(tg.length){const z=tg[Math.floor(R()*tg.length)];ARR.push({x0:u.x,y0:u.y,x1:z.x,y1:z.y,k:0,side:u.side})}}
       if(u.alive||u.die>0){const [X,Y]=VP(u.x,u.y),ps=PS(Y);ents.push({y:Y,f:()=>{const a=u.alive?1:Math.max(0,u.die);if(!u.alive){if(u.die===1){BTX.marks.push({x:u.x,y:u.y,r:uh*.32,l:1,c:'rgba(60,35,10,.9)',f:[0,4,5,6,2][Math.floor(R()*5)]});BTX.sp.push({k:'bt_fx',f:4,x:u.x,y:u.y,s:uh*1.2,l:1,d:1.1,up:.45})}u.die-=dt*1.5}const fight=t>T1&&melee&&!ended;const at=fight&&Math.sin(t*7+u.off)>.3;const bob=Math.sin(t*9+u.off)*uh*.03*ps;const h0=uh*ps;
-        if(u.cls==='boss'){const m=o.monImg||'m_scorpion';g.fillStyle='rgba(40,20,5,.3)';g.beginPath();g.ellipse(X,Y,h0*1.1,h0*.3,0,0,7);g.fill();if(!drawImg(m,X,Y+bob,h0*3.2,false,a)){g.fillStyle='#7A2A1A';g.beginPath();g.arc(X,Y-h0,h0,0,7);g.fill()}if(fight&&R()<dt*2)TXT.push({x:u.x-.08+(R()-.5)*.06,y:u.y+(R()-.5)*.08,s:'-'+fmt(Math.round(o.enP*(.01+R()*.02))),l:1,c:'#FF7A5C'});return}
-        const key=(u.side?'e_':'u_')+u.cls+(at||(u.cls==='arc'&&t>T1&&Math.sin(t*3+u.off)>.6)?'_a':'');g.fillStyle='rgba(50,25,5,.32)';g.beginPath();g.ellipse(X,Y,h0*.3,h0*.085,0,0,7);g.fill();
+        if(u.cls==='boss'){const m=o.monImg||'m_scorpion';btEll(g,X,Y,h0*1.1,h0*.3,'rgba(40,20,5,.3)');if(!drawImg(m,X,Y+bob,h0*3.2,false,a)){g.fillStyle='#7A2A1A';g.beginPath();g.arc(X,Y-h0,h0,0,7);g.fill()}if(fight&&R()<dt*2)TXT.push({x:u.x-.08+(R()-.5)*.06,y:u.y+(R()-.5)*.08,s:'-'+fmt(Math.round(o.enP*(.01+R()*.02))),l:1,c:'#FF7A5C'});return}
+        const key=(u.side?'e_':'u_')+u.cls+(at||(u.cls==='arc'&&t>T1&&Math.sin(t*3+u.off)>.6)?'_a':'');btEll(g,X,Y,h0*.3,h0*.085,'rgba(50,25,5,.32)');
         drawImg(key,X+(at?(u.side?-1:1)*h0*.05:0),Y+bob+(at?(u.side?1:-1)*h0*.05:0),h0*(u.cls==='cav'?1.25:1),!!u.side,a);
         if(u.hit>0){u.hit-=dt*4;if(IM('fx_glow')){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=Math.max(0,u.hit)*.7;g.drawImage(IMG.fx_glow,X-h0*.45,Y-h0*.95,h0*.9,h0*.9);g.restore()}}
         if(fight&&at&&R()<dt*3){const v=U.filter(z=>z.side!==u.side&&z.alive);if(v.length){const z=v[Math.floor(R()*v.length)];z.hit=1;BTX.sp.push({k:'bt_fx',f:[0,1,7][Math.floor(R()*3)],x:z.x,y:z.y,s:uh*(.7+R()*.4),l:1,d:2.6,add:1,up:.5,rot:(R()-.5)*1.2,flip:u.side})}FXB.push({x:.5+(R()-.5)*.06,y:u.y+(R()-.5)*.04,vx:(R()-.5)*.006,vy:-R()*.006,l:.6,c:'255,230,150',r:2+R()*3});if(R()<.5)TXT.push({x:.5+(R()-.5)*.08,y:u.y+(R()-.5)*.06,s:'-'+fmt(Math.round((u.side?o.enP:o.myP)*(.004+R()*.01))),l:.9,c:u.side?'#FF7A5C':'#FFE9A8'})}}})}}
     for(const h of HU){const lx=Math.max(0,h.lunge||0)*.08,[X,Y]=VP(h.hx+lx+.06*adv,h.hy),ps=PS(Y);ents.push({y:Y+.5,f:()=>{if(h.lunge>0)h.lunge-=dt*2;const hh=uh*2*ps,jw=h.k==='jawhar';
       if(jw&&IM('jw_glow')){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.5+.15*Math.sin(t*2.2);const gw=hh*1.5;g.translate(X,Y-hh*.5);g.rotate(t*.15);g.drawImage(IMG.jw_glow,-gw/2,-gw/2,gw,gw);g.restore();
         if(R()<dt*9&&IM('jw_parts'))BTX.jp.push({x:X+(R()-.5)*hh*.7,y:Y-R()*hh*.4,vy:-(18+R()*28),f:Math.floor(R()*8),l:1,s:hh*(.06+R()*.07),rot:R()*6})}
-      g.fillStyle=`rgba(${jw?'200,150,255':'255,210,100'},${.2+.12*Math.sin(t*4+h.i)})`;g.beginPath();g.ellipse(X,Y,hh*.32,hh*.09,0,0,7);g.fill();
+      btEll(g,X,Y,hh*.32,hh*.09,jw?'rgb(200,150,255)':'rgb(255,210,100)',.2+.12*Math.sin(t*4+h.i));
       if(!(BHS[h.k]&&drawImg(BHS[h.k],X,Y+Math.sin(t*3+h.i)*2,hh*(jw?1.05:1),false,myHP<=0&&ended?.4:1)))port(h.k,X,Y,hh*.3)}})}
     ents.sort((a,b)=>a.y-b.y).forEach(e=>e.f());
     g.save();g.globalCompositeOperation='lighter';
@@ -1899,7 +1899,7 @@ function playBattle(o){return new Promise(resolve=>{
     g.restore();
     if(BTX.fl>0){BTX.fl-=dt*2.5;g.fillStyle=`rgba(255,240,210,${Math.max(0,BTX.fl)*.35})`;g.fillRect(0,0,BW,BH)}
     if(IM('bt_fg')){const f=IMG.bt_fg,s=Math.max(BW/f.naturalWidth,BH/f.naturalHeight);g.drawImage(f,(BW-f.naturalWidth*s)/2+Math.sin(t*.4)*3,(BH-f.naturalHeight*s)/2,f.naturalWidth*s,f.naturalHeight*s)}
-    g.textAlign='center';for(let i=TXT.length-1;i>=0;i--){const x=TXT[i];x.l-=dt;if(x.l<=0){TXT.splice(i,1);continue}g.globalAlpha=Math.min(1,x.l*1.5);try{g.direction=x.big?'rtl':'ltr'}catch(_){}g.font=x.big?'900 22px "IBM Plex Sans Arabic",Tahoma':'800 14px Tahoma';g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.7)';const [tX,tY]=VP(x.x,x.y),tYY=tY-uh*1.15-(x.dy=(x.dy||0)+dt*36);g.strokeText(x.s,tX,tYY);g.fillStyle=x.c||'#FFF1D6';g.fillText(x.s,tX,tYY)}g.globalAlpha=1}
+    g.textAlign='center';for(let i=TXT.length-1;i>=0;i--){const x=TXT[i];x.l-=dt;if(x.l<=0){TXT.splice(i,1);continue}g.globalAlpha=Math.min(1,x.l*1.5);try{g.direction=x.big?'rtl':'ltr'}catch(_){}g.font=x.big?'900 22px "IBM Plex Sans Arabic",Tahoma':'800 14px Tahoma';g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.7)';const [tX,tY]=VP(x.x,x.y),tYY=tY-uh*1.15-(x.dy=(x.dy||0)+dt*36);g.strokeText(x.s,tX,tYY);g.fillStyle=x.c||'#FFF1D6';g.fillText(x.s,tX,tYY)}g.globalAlpha=1;btpEnd()}
   raf=requestAnimationFrame(frame)})}
 
 /* 🧭 طريق مراحل الاستكشاف */
@@ -3437,24 +3437,24 @@ window.__PXW=PXW;
 
 /* 🗺️ المرحلة 1: كل صور الخريطة (المدن، الوحوش، العرين، أماكن الجمع، الزينة، النار، العواصف) بتترسم بكارت الشاشة
    + الأسامي والأرقام صور جاهزة محفوظة بدل ما تتكتب كل فريم */
-const PXG={tgt:null,i:0,pool:[],tc:new WeakMap(),clip:[false],d:1,M:null,act:false,lab:{},labN:0,P:{}};
+const PXG={tgt:null,cx:null,i:0,pool:[],tc:new WeakMap(),clip:[false],d:1,M:null,act:false,lab:{},labN:0,P:{}};
 function pxgTex(img,sx,sy,sw,sh){const cvs=img instanceof HTMLCanvasElement&&img._static;if(!(img instanceof HTMLImageElement)&&!cvs)return null;if(!cvs&&(!img.complete||!img.naturalWidth))return 0;
   let m=PXG.tc.get(img);if(!m){m={};PXG.tc.set(img,m)}if(!m._)m._=PIXI.Texture.from(img);if(sx==null)return m._;
   const key=sx+','+sy+','+sw+','+sh;if(m[key])return m[key];const W0=img.naturalWidth||img.width,H0=img.naturalHeight||img.height,x=Math.max(0,sx),y=Math.max(0,sy),w=Math.min(sw,W0-x),h=Math.min(sh,H0-y);if(w<=0||h<=0)return 0;
   return m[key]=new PIXI.Texture({source:m._.source,frame:new PIXI.Rectangle(x,y,w,h)})}
 function pxgSprite(){const G=PXG.tgt;if(G){let s=G.pool[G.i];if(!s){s=new PIXI.Sprite();s.anchor.set(0,0);G.cont.addChild(s);G.pool.push(s)}G.i++;s.visible=true;return s}let s=PXG.pool[PXG.i];if(!s){s=new PIXI.Sprite();s.anchor.set(0,0);PXW.lay.addChild(s);PXG.pool.push(s)}PXG.i++;s.visible=true;s.zIndex=++PXW.z;return s}
 function pxgDraw(img,a1,a2,a3,a4,a5,a6,a7,a8){const P=PXG.P;
-  if(!PXG.act||!(PXG.tgt?VIEW==='city':(PXW.on&&VIEW==='world'))||PXG.clip[PXG.clip.length-1])return P.drawImage.apply(ctx,arguments);
+  const cx=PXG.cx||ctx;if(!PXG.act||!(PXG.tgt?(PXG.tgt.any||VIEW==='city'):(PXW.on&&VIEW==='world'))||PXG.clip[PXG.clip.length-1])return P.drawImage.apply(cx,arguments);
   const n=arguments.length;let sx,sy,sw,sh,dx,dy,dw,dh;
   if(n===3){dx=a1;dy=a2;dw=img.naturalWidth||img.width;dh=img.naturalHeight||img.height}else if(n===5){dx=a1;dy=a2;dw=a3;dh=a4}else{sx=a1;sy=a2;sw=a3;sh=a4;dx=a5;dy=a6;dw=a7;dh=a8}
-  const T=pxgTex(img,sx,sy,sw,sh);if(T===null)return P.drawImage.apply(ctx,arguments);if(!T||!dw||!dh)return;
-  const m=ctx.getTransform(),k=1/PXG.d,a=m.a*k,b=m.b*k,c=m.c*k,d=m.d*k,e=m.e*k,f=m.f*k,scx=dw/T.width,scy=dh/T.height;
+  const T=pxgTex(img,sx,sy,sw,sh);if(T===null)return P.drawImage.apply(cx,arguments);if(!T||!dw||!dh)return;
+  const m=cx.getTransform(),k=1/PXG.d,a=m.a*k,b=m.b*k,c=m.c*k,d=m.d*k,e=m.e*k,f=m.f*k,scx=dw/T.width,scy=dh/T.height;
   const s=pxgSprite();if(s.texture!==T)s.texture=T;PXG.M.set(a*scx,b*scx,c*scy,d*scy,a*dx+c*dy+e,b*dx+d*dy+f);s.setFromMatrix(PXG.M);
-  s.alpha=ctx.globalAlpha;s.blendMode=ctx.globalCompositeOperation==='lighter'?'add':'normal'}
+  s.alpha=cx.globalAlpha;s.blendMode=cx.globalCompositeOperation==='lighter'?'add':'normal'}
 function pxgOn(tgt){if(PXG.act)return;PXG.tgt=tgt||null;if(PXG.tgt)PXG.tgt.i=0;const P=PXG.P;if(!P.drawImage){P.drawImage=CanvasRenderingContext2D.prototype.drawImage;P.save=CanvasRenderingContext2D.prototype.save;P.restore=CanvasRenderingContext2D.prototype.restore;P.clip=CanvasRenderingContext2D.prototype.clip}
-  if(!PXG.M)PXG.M=new PIXI.Matrix();PXG.d=cv.width/(W||1);PXG.i=0;PXG.clip=[false];PXG.act=true;
-  ctx.drawImage=pxgDraw;ctx.save=function(){PXG.clip.push(PXG.clip[PXG.clip.length-1]);return P.save.call(ctx)};ctx.restore=function(){if(PXG.clip.length>1)PXG.clip.pop();return P.restore.call(ctx)};ctx.clip=function(){PXG.clip[PXG.clip.length-1]=true;return P.clip.apply(ctx,arguments)}}
-function pxgOff(){if(!PXG.act)return;PXG.act=false;delete ctx.drawImage;delete ctx.save;delete ctx.restore;delete ctx.clip;const G=PXG.tgt;if(G){for(let i=G.i;i<G.pool.length;i++)G.pool[i].visible=false}else for(let i=PXG.i;i<PXG.pool.length;i++)PXG.pool[i].visible=false;PXG.tgt=null}
+  if(!PXG.M)PXG.M=new PIXI.Matrix();const cx=PXG.cx=(PXG.tgt&&PXG.tgt.cx)||ctx;PXG.d=(PXG.tgt&&PXG.tgt.d)||cv.width/(W||1);PXG.i=0;PXG.clip=[false];PXG.act=true;
+  cx.drawImage=pxgDraw;cx.save=function(){PXG.clip.push(PXG.clip[PXG.clip.length-1]);return P.save.call(cx)};cx.restore=function(){if(PXG.clip.length>1)PXG.clip.pop();return P.restore.call(cx)};cx.clip=function(){PXG.clip[PXG.clip.length-1]=true;return P.clip.apply(cx,arguments)}}
+function pxgOff(){if(!PXG.act)return;PXG.act=false;const cx=PXG.cx||ctx;delete cx.drawImage;delete cx.save;delete cx.restore;delete cx.clip;PXG.cx=null;const G=PXG.tgt;if(G){for(let i=G.i;i<G.pool.length;i++)G.pool[i].visible=false}else for(let i=PXG.i;i<PXG.pool.length;i++)PXG.pool[i].visible=false;PXG.tgt=null}
 
 /* 🏷️ الأسامي والأرقام: صورة جاهزة لكل اسم بتتحفظ */
 function pxgLabTex(id,w,h,draw){if(PXG.lab[id])return PXG.lab[id];if(PXG.labN>700){for(const k in PXG.lab)PXG.lab[k].t.destroy(true);PXG.lab={};PXG.labN=0}
@@ -3503,6 +3503,22 @@ function pxuView(key,app,clear){const root=new PIXI.Container(),st={};
     render(){pxuSync();app.renderer.render({container:root,clear:true,clearColor:clear})},
     destroy(){try{root.destroy({children:true})}catch(e){}}}}
 window.__PXU=PXU;
+
+/* ⚔️ المرحلة 3: شاشة المعركة (الاستكشاف والزعيم) بكارت الشاشة + اللعبة اللي ورا بتقف لحد ما المعركة تخلص */
+const BTP={open:false,on:false,any:1,cont:null,pool:[],i:0,cx:null,d:1,ov:null,w:0,h:0,ell:{}};
+function btEllCv(col){if(BTP.ell[col])return BTP.ell[col];const c=document.createElement('canvas');c.width=64;c.height=20;const q=c.getContext('2d');q.fillStyle=col;q.beginPath();q.ellipse(32,10,31,9,0,0,7);q.fill();c._static=1;return BTP.ell[col]=c}
+function btEll(g,x,y,rx,ry,col,a){const a0=g.globalAlpha;if(a!=null)g.globalAlpha=a0*a;
+  if(BTP.on&&PXG.act&&PXG.tgt===BTP)g.drawImage(btEllCv(col),x-rx,y-ry,rx*2,ry*2);else{g.fillStyle=col;g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.fill()}g.globalAlpha=a0}
+function btpOpen(ov){BTP.open=true;BTP.ov=ov}
+function btpClose(){if(!BTP.open&&!BTP.ov)return;BTP.open=false;BTP.on=false;if(PXG.tgt===BTP)pxgOff();if(BTP.cont)BTP.cont.visible=false;BTP.ov=null;
+  try{if(PXU.app){PXU.app.renderer.resize(W,H);PXC.w=0;PXW.w=0;const c=PXU.app.canvas;if(c.parentNode!==cv.parentNode)cv.parentNode.insertBefore(c,cv);c.style.visibility='hidden';pxuSync()}}catch(e){}}
+function btpBegin(g,c2,BW,BH){pxgOff();BTP.on=false;const A=PXU.app;if(!A||!BTP.ov||!window.PIXI||PXC.dead&&PXW.dead)return false;
+  try{const c=A.canvas;if(c.parentNode!==BTP.ov){BTP.ov.insertBefore(c,c2);c.style.visibility='visible'}
+    if(BTP.w!==BW||BTP.h!==BH||A.renderer.width!==Math.round(BW*A.renderer.resolution)){A.renderer.resize(BW,BH);BTP.w=BW;BTP.h=BH}
+    if(!BTP.cont){BTP.cont=new PIXI.Container()}BTP.cont.visible=true;BTP.cx=g;BTP.d=c2.width/(BW||1);BTP.on=true;pxgOn(BTP);return true}catch(e){BTP.on=false;return false}}
+function btpEnd(){if(!BTP.on)return;if(PXG.tgt===BTP)pxgOff();try{PXU.app.renderer.render({container:BTP.cont,clear:true,clearColor:'#C8914A'})}catch(e){BTP.on=false}}
+{const _s=pxuSync;pxuSync=function(){if(BTP.open){if(BTP.ov&&BTP.ov.isConnected)return;btpClose();return}return _s()}}
+window.__BTP=BTP;
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
