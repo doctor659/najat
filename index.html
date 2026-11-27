@@ -683,7 +683,7 @@ if(!DEMO){
       return {now:new Date().toISOString(),war:{id:1,status:on?'active':'scheduled',starts_at:new Date(T.start).toISOString(),ends_at:new Date(T.start+5*36e5).toISOString(),win_sec:win},last:null,
         sultan:T.sultan?{id:ME.id,name:S.profile.name,since:new Date().toISOString(),alliance:al(1)}:null,holder:!!T.sultan,claimed:T.claimed===today(),my_ally:A?A.id:null,
         my_site:(T.sites.find(x=>x.mine)||{}).site??null,
-        sites:T.sites.map(x=>({site:x.site,x:x.site?[PCX-12,PCX+12,PCX+12,PCX-12][x.site-1]:PCX,y:x.site?[PCX-12,PCX-12,PCX+12,PCX+12][x.site-1]:PCX,name:x.site?'برج '+x.site:'قصر السلطان',alliance:x.al==='me'?al(1):x.al==='en'?{id:-1,tag:'WLF',name:'ذئاب الرمال',emblem:'🐺'}:null,since:x.since,hold_start:x.hold?new Date(x.hold).toISOString():null,defense:x.al?Math.round(x.troops*4*1.2):(x.site?20000:60000),troops:x.troops,mine:x.mine||0,members:x.troops?[{name:x.al==='me'?S.profile.name:'Wolfy',n:x.troops}]:[]})),
+        sites:T.sites.map(x=>({site:x.site,x:x.site?[PCX-8,PCX+8,PCX+8,PCX-8][x.site-1]:PCX,y:x.site?[PCX-8,PCX-8,PCX+8,PCX+8][x.site-1]:PCX,name:x.site?'برج '+x.site:'قصر السلطان',alliance:x.al==='me'?al(1):x.al==='en'?{id:-1,tag:'WLF',name:'ذئاب الرمال',emblem:'🐺'}:null,since:x.since,hold_start:x.hold?new Date(x.hold).toISOString():null,defense:x.al?Math.round(x.troops*4*1.2):(x.site?20000:60000),troops:x.troops,mine:x.mine||0,members:x.troops?[{name:x.al==='me'?S.profile.name:'Wolfy',n:x.troops}]:[]})),
         holds:T.holds.me?[{tag:A?A.tag:'?',name:A?A.name:'',emblem:A?A.emblem:'',total:T.holds.me,best:T.holds.me}]:[],titles:T.titles,log:T.log}},
     async siteAttack(s,comp){const T=S.throne;if(!S.ally)throw new Error('لازم تكون في تحالف 🤝');let base=0,sent=0;comp.forEach(x=>{base+=x.n*x.t*4;sent+=x.n});const st=T.sites[s],def=st.al?st.troops*4.8:(s?20000:60000),won=base*(.85+Math.random()*.3)>def*(.85+Math.random()*.3),la=won?.15:.4,lost=Math.floor(sent*la);
       comp.forEach(x=>{const t=S.troops.find(y=>y.troop_class===x.c&&y.tier===x.t);t.amount-=won?x.n:Math.floor(x.n*la)});if(won){Object.assign(st,{al:'me',troops:sent-lost,mine:sent-lost,hold:Date.now(),since:new Date().toISOString()})}T.log.unshift({site:s,attacker:S.profile.name,tag:S.ally.tag,won,at:new Date().toISOString()});save();return {won,site:s,attacker_power:base,defender_power:Math.round(def),sent,lost}},
@@ -1579,7 +1579,7 @@ const durTxt=s=>{s=Math.max(0,Math.floor(s));const d=Math.floor(s/86400);return 
 async function loadPalace(){if(!api.throne)return;try{PALACE=await api.throne();if(PALACE&&PALACE.now)TOFF=new Date(PALACE.now).getTime()-Date.now()}catch(e){PALACE=null}}
 setInterval(()=>{if(ME&&(VIEW==='world'||warOn()))loadPalace()},warOn()?10000:30000);setTimeout(()=>{if(ME)loadPalace()},6000);
 function drawPalace(sx,sy,ts,t){drawDawn(sx,sy,ts,t);
-  for(let s=0;s<5;s++){const xy=s?[[PCX-12,PCX-12],[PCX+12,PCX-12],[PCX+12,PCX+12],[PCX-12,PCX+12]][s-1]:[PCX,PCX],px=sx(xy[0]+.5),py=sy(xy[1]+.5),pw=s?ts*1.7:ts*4.4,key=s?'turret':'palace';if(px<-pw||px>W+pw||py<-pw||py>H+pw)continue;
+  for(let s=0;s<5;s++){const xy=s?[[PCX-8,PCX-8],[PCX+8,PCX-8],[PCX+8,PCX+8],[PCX-8,PCX+8]][s-1]:[PCX,PCX],px=sx(xy[0]+.5),py=sy(xy[1]+.5),pw=s?ts*1.7:ts*4.4,key=s?'turret':'palace';if(px<-pw||px>W+pw||py<-pw||py>H+pw)continue;
     const st=siteOf(s),own=st&&st.alliance,mine=own&&PALACE.my_ally&&own.id===PALACE.my_ally;
     if(!s){const g=ctx.createRadialGradient(px,py,ts*.5,px,py,ts*2.6);g.addColorStop(0,warOn()?'rgba(255,120,60,.4)':'rgba(255,215,120,.35)');g.addColorStop(1,'rgba(255,215,120,0)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(px,py+ts*.4,ts*2.6,ts*1.5,0,0,7);ctx.fill()}
     if(ok(key)){const im=IMG[key],ph=pw*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,px-pw/2,py+(s?ts*.55:ts*1.5)-ph,pw,ph)}
@@ -1659,7 +1659,7 @@ function stepCam(dt){const cam=VIEW==='city'?camC:camW;
   if(cam.vx||cam.vy){const ox=cam.x,oy=cam.y;cam.x+=cam.vx*dt;cam.y+=cam.vy*dt;clampCam();const f=Math.pow(.92,dt/16);cam.vx=cam.x===ox+cam.vx*dt?cam.vx*f:0;cam.vy=cam.y===oy+cam.vy*dt?cam.vy*f:0;if(Math.abs(cam.vx)<.02)cam.vx=0;if(Math.abs(cam.vy)<.02)cam.vy=0}}
 function flyW(tx,ty,ms){const ts=T*camW.z,x1=W/2-(tx-ty)*ts*IHX,y1=H/2-(tx+ty+1)*ts*IHY;const d=Math.hypot(x1-camW.x,y1-camW.y);FLY={x0:camW.x,y0:camW.y,x1,y1,t0:performance.now(),ms:ms||Math.min(1300,350+d*.35)};camW.vx=camW.vy=0}
 const wTile=(x,y)=>{const [a,b]=wInv(x,y);return [Math.floor(a),Math.floor(b)]};
-function tileWhy1(x,y){if(x<1||y<1||x>MAP-2||y>MAP-2)return 'برة حدود الخريطة';if(inPal(x,y)&&(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=3||[[-12,-12],[12,-12],[12,12],[-12,12]].some(([a,b])=>Math.abs(x-PCX-a)<=1&&Math.abs(y-PCX-b)<=1)))return 'ده مكان القصر والأبراج 👑';if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=20&&!dawnOpen())return '🔒 منطقة الفجر: النقل جواها بيفتح قبل حرب العرش بـ 5 دقايق';
+function tileWhy1(x,y){if(x<1||y<1||x>MAP-2||y>MAP-2)return 'برة حدود الخريطة';if(inPal(x,y)&&(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=10))return 'ده مكان القصر والأبراج 👑';if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=20&&!dawnOpen())return '🔒 منطقة الفجر: النقل جواها بيفتح قبل حرب العرش بـ 5 دقايق';
   if(ME&&x===C.map_x&&y===C.map_y)return 'دي مدينتك أصلاً 🏰';
   if(CITIES.some(c=>c.id!==ME.id&&Math.abs(c.x-x)+Math.abs(c.y-y)<2))return 'جنب مدينة تانية';
   if(NODES.some(n=>n.x===x&&n.y===y))return 'فيه موارد هنا';
@@ -2730,7 +2730,7 @@ function drawDawnIso(t,G){const c=PCX,lo=c-DZ,hi=c+DZ+1,li=c-DZI,hi2=c+DZI+1,ts=
   }const V=isoDia(lo,lo,hi,hi);if(!G){ctx.save();ctx.shadowColor='rgba(255,80,30,.9)';ctx.shadowBlur=18*(.6+.4*pu);ctx.strokeStyle=`rgba(255,90,40,${.55+.3*pu})`;ctx.lineWidth=Math.max(2,ts*.08);ctx.stroke();ctx.restore()}
   if(ok('iso_border')){const im=IMG.iso_border,bh=Math.max(10,ts*.75),bw=bh*im.naturalWidth/im.naturalHeight;for(let e=0;e<4;e++){const a=V[e],b=V[(e+1)%4],L=Math.hypot(b[0]-a[0],b[1]-a[1]),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.save();ctx.translate(a[0],a[1]);ctx.rotate(ang);ctx.globalAlpha=.85+.15*pu;for(let s=0;s<L;s+=bw*.98)ctx.drawImage(im,0,0,im.naturalWidth*Math.min(1,(L-s)/bw),im.naturalHeight,s,-bh/2,Math.min(bw,L-s),bh);ctx.restore()}}
   if(ts>9)ctx.save(),ctx.font=`800 ${Math.max(12,Math.min(22,ts*.55))}px "IBM Plex Sans Arabic",Tahoma`,ctx.textAlign='center',ctx.fillStyle='rgba(255,225,180,.9)',ctx.shadowColor='#000',ctx.shadowBlur=6,ctx.fillText('🏛️ منطقة الفجر',V[0][0],V[0][1]+ts*1.4),ctx.restore()}
-function siteDraw(s,t,list){const c=PCX,xy=s?[[c-12,c-12],[c+12,c-12],[c+12,c+12],[c-12,c+12]][s-1]:[c,c],R=s?1:3,ts=T*camW.z,[bx,by]=wP(xy[0]+R+1,xy[1]+R+1),[mx,my]=wP(xy[0]+.5,xy[1]+.5),k=s?'iso_tower':'iso_palace',w=(2*R+1)*2*IHX*ts*(s?1.05:1.04);
+function siteDraw(s,t,list){const c=PCX,xy=s?[[c-8,c-8],[c+8,c-8],[c+8,c+8],[c-8,c+8]][s-1]:[c,c],R=s?1:3,ts=T*camW.z,[bx,by]=wP(xy[0]+R+1,xy[1]+R+1),[mx,my]=wP(xy[0]+.5,xy[1]+.5),k=s?'iso_tower':'iso_palace',w=(2*R+1)*2*IHX*ts*(s?1.05:1.04);
   list.push({d:xy[0]+xy[1]+R*2,f:()=>{if(mx<-w||mx>W+w||my<-w*1.2||my>H+w)return;const st=siteOf(s),own=st&&st.alliance,mine=own&&PALACE&&PALACE.my_ally&&own.id===PALACE.my_ally;
     ctx.save();ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(mx+ts*.4,my+ts*.25,w*.48,w*.24,0,0,7);ctx.fill();ctx.restore();
     if(ok(k)){const im=IMG[k],h=w*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,mx-w/2,by+ts*(s?.05:.1)-h,w,h)}if(!s)thrShield(mx,by+ts*.1,w,t);
@@ -2835,7 +2835,7 @@ function glGround(t){if(!glInit())return false;const g=GL.gl,u=GL.u,c=GL.cv,d=Ma
 window.__GL={GL,glGround,glWant,lakes:()=>LAKES,cam:camW};
 /* 🌀 النقل على 4 مربعات (2×2): المدينة بتاخد المربع (x,y) واللي جنبه يمين وتحت */
 function tileWhy(x,y){if(x<1||y<1||x+1>MAP-2||y+1>MAP-2)return 'برة حدود الخريطة';const Q=[[0,0],[1,0],[0,1],[1,1]];
-  if(Q.some(([a,b])=>{const X=x+a-PCX,Y=y+b-PCX;return Math.max(Math.abs(X),Math.abs(Y))<=5||[[-12,-12],[12,-12],[12,12],[-12,12]].some(([p,q])=>Math.abs(X-p)<=2&&Math.abs(Y-q)<=2)}))return 'ده جوه حدود القصر أو برج 👑 (الخط الدهبي)';
+  if(Q.some(([a,b])=>{const X=x+a-PCX,Y=y+b-PCX;return Math.max(Math.abs(X),Math.abs(Y))<=10}))return 'ده جوه حدود القصر والأبراج 👑 انقل برّه الخط الدهبي';
   if(Q.some(([a,b])=>Math.max(Math.abs(x+a-PCX),Math.abs(y+b-PCX))<=DZ)&&!dawnOpen())return '🔒 منطقة الفجر: النقل جواها بيفتح قبل حرب العرش بـ 5 دقايق';
   if(ME&&x===C.map_x&&y===C.map_y)return 'دي مدينتك أصلاً 🏰';
   if(CITIES.some(c=>c.id!==ME.id&&Math.abs(c.x-x)<2&&Math.abs(c.y-y)<2))return 'جنب مدينة تانية';
@@ -3125,7 +3125,7 @@ setInterval(()=>{let el=$('ksaC');if(!el){el=document.createElement('div');el.id
   const h=$('hud');if(!ME||!C||!h){el.hidden=true;return}el.hidden=false;const r=h.getBoundingClientRect();el.style.top=(r.bottom+6)+'px';const t='🕐 '+ksaNow()+' · السعودية';if(el._t!==t){el._t=t;el.textContent=t}},1000);
 
 /* 👑 حدود القصر والأبراج: خط دهبي، ولما تختار مكان للنقل الحدود بتنوّر أحمر */
-const KO=[[0,0,5],[-12,-12,2],[12,-12,2],[12,12,2],[-12,12,2]];
+const KO=[[0,0,10]];
 function drawKeepout(t){if(typeof isoDia!=='function')return;const pu=.5+.5*Math.sin(t/500);ctx.save();
   for(const [dx,dy,m] of KO){const cx=PCX+dx,cy=PCX+dy;
     if(SEL){isoDia(cx-m,cy-m,cx+m+1,cy+m+1);ctx.fillStyle=`rgba(255,30,30,${.28+.12*pu})`;ctx.fill()}
