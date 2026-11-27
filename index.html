@@ -1014,7 +1014,7 @@ const cmult=(a,e)=>BEATS[a]===e?1.25:BEATS[e]===a?.8:1;
 const marchCap=()=>10000+C.keep_level*3000;
 const reserved=(c,t)=>MARCHES.reduce((s,m)=>s+(m.comp||[]).filter(x=>x.c===c&&x.t===t).reduce((a,x)=>a+x.n,0),0);
 const avail=x=>Math.max(0,x.amount-reserved(x.troop_class,x.tier));
-const busyHeroes=()=>MARCHES.flatMap(m=>[m.hero,...(m.sup||[])]).filter(Boolean);
+const busyHeroes=()=>[...MARCHES.flatMap(m=>[m.hero,...(m.sup||[])]),...((typeof WM!=='undefined'&&WM.busy)||[]),...((typeof WM!=='undefined'&&WM.garrison)||[]).map(g=>g.hero)].filter(Boolean);
 const monMix=m=>MCLS[m.type]?{[MCLS[m.type]]:1}:{infantry:1,lancer:1,marksman:1};
 function factor(comp,mix){mix=mix||{};const tw=comp.reduce((s,x)=>s+x.n*x.t,0),dw=Object.values(mix).reduce((a,b)=>a+b,0);if(!tw||!dw)return 1;const aw={};comp.forEach(x=>aw[x.c]=(aw[x.c]||0)+x.n*x.t);let f=0;for(const a in aw)for(const e in mix)f+=aw[a]/tw*mix[e]/dw*cmult(a,e);return f}
 function marchPower(comp,hero){return Math.round(marchPower0(comp,hero)*(1+supPct(MP.sup)/100)*(1+chiefPct()/100))}
@@ -1748,7 +1748,7 @@ function mpRows(){const now=Date.now(),tn=performance.now(),R=[];
   for(const r of (RALLIES||[])){if(!r.joined||r.tx==null)continue;if(r.launched&&now-new Date(r.ends_at)>90000)continue;R.push({i:'🚩',n:(r.mine?'حشدك':'حشد '+r.leader)+' ← '+(r.target_name||''),x:r.tx,y:r.ty,t:Math.max(0,(new Date(r.ends_at)-now)/1000),done:r.launched})}
   return R}
 function mpRender(){const el=$('mPanel');if(!el)return;const on=VIEW==='world'&&!!C&&!!ME,R=on?mpRows():[];if(!R.length){el.hidden=true;return}el.hidden=false;
-  el.innerHTML=`<div class="mpH" data-mp="t">🚩 المسيرات ${R.length} <span>${MPOPEN?'▾':'◂'}</span></div>`+(MPOPEN?R.slice(0,8).map(r=>`<div class="mpR" ${r.mq?`data-mq="${r.mq}"`:`data-mpx="${r.x}" data-mpy="${r.y}"`}><span class="mpI">${r.i}</span><div><b>${esc(r.n)}</b><small>X:${r.x} Y:${r.y} · ${r.done?'✓ اتحرك':fmtT(r.t)}</small></div></div>`).join(''):'')}
+  el.innerHTML=`<div class="mpH" data-mp="t">🚩 المسيرات ${R.length} <span>${MPOPEN?'▾':'◂'}</span></div>`+(MPOPEN?R.slice(0,8).map(r=>`<div class="mpR" ${r.mq?`data-mq="${r.mq}"`:`data-mpx="${r.x}" data-mpy="${r.y}"`}><span class="mpI">${r.i}</span><div><b>${esc(r.n)}</b><small>X:${r.x} Y:${r.y} · ${r.lab||(r.done?'✓ اتحرك':fmtT(r.t))}</small></div></div>`).join(''):'')}
 setInterval(mpRender,1000);
 document.addEventListener('click',e=>{if(!e.target.closest)return;if(e.target.closest('[data-mp]')){MPOPEN=!MPOPEN;mpRender();return}const r=e.target.closest('[data-mpx]');if(r&&VIEW==='world')flyW(+r.dataset.mpx,+r.dataset.mpy)});
 
@@ -3290,6 +3290,15 @@ rallyRoster=async function(rid){const r=(RALLIES||[]).find(x=>x.id===rid);let d=
 /* 📜 التقرير: قوة القوات = الجنود اللي حاربت بس */
 {const _wr=panelWarRep;panelWarRep=function(r,back){const atk=r.k==='atk',cp=o=>o?{...o}:null;const r2={...r,a:cp(r.a),d:cp(r.d)};
   if(r.aT&&r2.a)r2.a.troops=r.aT;if(r.dT&&r2.d)r2.d.troops=r.dT;return _wr(r2,back)}}
+
+/* 🛡️ الجنود اللي جوه القصر/الأبراج في لوحة المسيرات + الأبطال المشغولين */
+{const _mr2=mpRows;mpRows=function(){const R=_mr2();for(const g of (WM.garrison||[]))R.unshift({i:'🛡️',n:'جوه '+siteNm(g.site)+(g.hero&&HN[g.hero]?' · '+HN[g.hero].n:''),x:g.x,y:g.y,t:0,lab:'متمركز · '+fmt(g.n)+' جندي',mq:'g'+g.site});return R}}
+{const _ms2=mqSpeed;mqSpeed=function(uid){if(String(uid)[0]==='g')return wmGarrison(+String(uid).slice(1));return _ms2(uid)}}
+function wmGarrison(s){const g=(WM.garrison||[]).find(x=>x.site===s);if(!g){toast('جنودك مش جوه المكان ده');return}
+  openSheet(`<h2>🛡️ جنودك جوه ${siteNm(s)}</h2><div class="card"><div class="kv"><span>🛡️ الجنود</span><b>${fmt(g.n)} / 100,000</b></div><div class="bar"><i style="width:${Math.min(100,g.n/1000)}%"></i></div>${g.hero&&HN[g.hero]?`<div class="kv"><span>🦸 البطل</span><b>${HN[g.hero].n}</b></div>`:''}</div>
+   <p class="sub">البطل والجنود دول مشغولين لحد ما ترجّعهم ويوصلوا مدينتك.</p><div class="row"><button class="btn red wide" id="gR">↩️ رجّع جنودي</button><button class="btn alt wide" id="gF">📍 روح لمكانهم</button></div>`);
+  $('gR').onclick=async()=>{const b=$('gR');if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ متأكد؟';return}b.disabled=true;try{await api.siteRecall();sfx('ui_confirm');toast('↩️ جنودك راجعين لمدينتك على الخريطة');closeSheet();wmPoll()}catch(e){toast('⚠️ '+(e.message||'ماتمش'));b.disabled=false}};
+  $('gF').onclick=()=>{closeSheet();if(VIEW==='world')flyW(g.x+.5,g.y+.5)}}
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
