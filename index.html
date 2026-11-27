@@ -3368,7 +3368,7 @@ function pxwLabTex(txt,st){const id=st+'|'+txt;if(PXW.lab[id])return PXW.lab[id]
 /* عنصر واحد = حاوية فيها صورة (علشان الدوران والتمدد) */
 function pxwItem(key){let it=PXW.items[key];if(!it){it=new PIXI.Container();it.sp=new PIXI.Sprite();it.addChild(it.sp);PXW.lay.addChild(it);PXW.items[key]=it}PXW.used.add(key);it._u=PXW.f;it.zIndex=++PXW.z;return it}
 function pxwSpr(key,tex,x,y,w,h,o){o=o||{};const T=typeof tex==='string'?pxwTex(tex,o.fr,o.n):tex;if(!T)return null;const it=pxwItem(key),sp=it.sp;if(sp.texture!==T)sp.texture=T;
-  it.position.set(x,y);it.scale.set(1,o.sy||1);it.rotation=o.crot||0;sp.anchor.set(o.ax==null?.5:o.ax,o.ay==null?.5:o.ay);sp.width=w;sp.height=h;if(o.fx)sp.scale.x*=-1;if(o.fy)sp.scale.y*=-1;
+  it.position.set(x,y);it.scale.set(1,o.sy||1);it.rotation=o.crot||0;sp.anchor.set(o.ax==null?.5:o.ax,o.ay==null?.5:o.ay);sp.scale.set((w/(T.width||1))*(o.fx?-1:1),(h/(T.height||1))*(o.fy?-1:1));
   sp.rotation=o.rot||0;sp.alpha=o.a==null?1:o.a;sp.blendMode=o.add?'add':'normal';sp.skew.set(o.kx||0,o.ky||0);return it}
 function pxwLab(key,txt,x,y,st){const L=pxwLabTex(txt,st);pxwSpr(key,L.tex,x,y,L.w,L.h,{ax:.5,ay:0})}
 
