@@ -441,6 +441,7 @@ body.storyMode #nav,body.storyMode .lstack,body.storyMode .rstack,body.storyMode
 #enC.enS{transform:translateX(-50%);padding:1px 7px 3px;font-size:10px;line-height:1.25;border-radius:8px;min-width:52px;text-align:center;background:rgba(20,14,8,.88);z-index:7}
 #enC.enS::after{content:'';position:absolute;left:5px;right:5px;bottom:2px;height:2px;border-radius:2px;background:linear-gradient(90deg,#6FCF97 var(--p,100%),rgba(255,255,255,.15) var(--p,100%))}
 #kmS{position:fixed;left:13px;top:calc(env(safe-area-inset-top) + 222px);z-index:7;background:rgba(20,14,8,.85);border:1px solid #E8B85A;color:#FFE7A3;font:800 10px Tahoma,sans-serif;padding:1px 5px;border-radius:6px;pointer-events:none}#kmS[hidden]{display:none}
+#warAnn{position:fixed;left:50%;top:32%;transform:translate(-50%,-50%) scale(.6);z-index:60;opacity:0;pointer-events:none;text-align:center;padding:16px 22px;border-radius:18px;background:radial-gradient(ellipse at 50% 30%,rgba(90,50,10,.95),rgba(25,14,4,.95));border:2px solid #F0C068;box-shadow:0 0 30px rgba(240,192,104,.55);min-width:270px;max-width:92vw}#warAnn b{display:block;font-size:22px;color:#FFE08A;text-shadow:0 2px 6px rgba(0,0,0,.8)}#warAnn small{display:block;margin-top:6px;font-size:13px;color:#FFF1D6}#warAnn.go{border-color:#FF7A4C;box-shadow:0 0 40px rgba(255,100,40,.7)}#warAnn.go b{color:#FFB07A}#warAnn.on{animation:warA 7s ease forwards}@keyframes warA{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}8%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}14%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
 </style>
 </head>
 <body>
@@ -1578,7 +1579,7 @@ function drawPalace(sx,sy,ts,t){drawDawn(sx,sy,ts,t);
     HITS.push({x:px,y:py-(s?ts*.2:0),r:s?ts*.9:ts*1.9,site:s})}}
 function warBar(){const b=$('warBar');if(!b)return;const P=PALACE;if(!ME||!P||!P.war||VIEW!=='world'){b.hidden=true;return}const w=P.war,st=new Date(w.starts_at).getTime(),en=new Date(w.ends_at).getTime(),n=tNow();let h;
   if(w.status==='active'&&n<en){const p=siteOf(0),hs=p&&p.hold_start?(n-new Date(p.hold_start).getTime())/1000:0;h=`🔥 حرب العرش · باقي ${fmtT((en-n)/1000)}<br><small>${p&&p.alliance?'👑 '+sTag(p.alliance)+' ماسك القصر '+fmtT(hs)+' / '+fmtT(w.win_sec):'👑 القصر مع الحراس'}</small>`}
-  else if(st-n<864e5&&st>n)h=`⚔️ حرب العرش بعد ${fmtT((st-n)/1000)}`;else{b.hidden=true;return}
+  else if(st-n<864e5&&st>n)h=`⚔️ حرب العرش بعد ${fmtT((st-n)/1000)}`+(st-n<=3e5?'<br><small>🌀 النقل لمنطقة الفجر مفتوح دلوقتي!</small>':'');else{b.hidden=true;return}
   b.hidden=false;if(b._h!==h){b._h=h;b.innerHTML=h}}
 setInterval(warBar,1000);
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#warBar'))openSite(0)});
@@ -1648,7 +1649,7 @@ function stepCam(dt){const cam=VIEW==='city'?camC:camW;
   if(cam.vx||cam.vy){const ox=cam.x,oy=cam.y;cam.x+=cam.vx*dt;cam.y+=cam.vy*dt;clampCam();const f=Math.pow(.92,dt/16);cam.vx=cam.x===ox+cam.vx*dt?cam.vx*f:0;cam.vy=cam.y===oy+cam.vy*dt?cam.vy*f:0;if(Math.abs(cam.vx)<.02)cam.vx=0;if(Math.abs(cam.vy)<.02)cam.vy=0}}
 function flyW(tx,ty,ms){const ts=T*camW.z,x1=W/2-(tx-ty)*ts*IHX,y1=H/2-(tx+ty+1)*ts*IHY;const d=Math.hypot(x1-camW.x,y1-camW.y);FLY={x0:camW.x,y0:camW.y,x1,y1,t0:performance.now(),ms:ms||Math.min(1300,350+d*.35)};camW.vx=camW.vy=0}
 const wTile=(x,y)=>{const [a,b]=wInv(x,y);return [Math.floor(a),Math.floor(b)]};
-function tileWhy1(x,y){if(x<1||y<1||x>MAP-2||y>MAP-2)return 'برة حدود الخريطة';if(inPal(x,y)&&(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=3||[[-12,-12],[12,-12],[12,12],[-12,12]].some(([a,b])=>Math.abs(x-PCX-a)<=1&&Math.abs(y-PCX-b)<=1)))return 'ده مكان القصر والأبراج 👑';if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=20&&!(typeof warOn==='function'&&warOn()))return '🔒 منطقة الفجر: النقل جواها وقت حرب العرش بس';
+function tileWhy1(x,y){if(x<1||y<1||x>MAP-2||y>MAP-2)return 'برة حدود الخريطة';if(inPal(x,y)&&(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=3||[[-12,-12],[12,-12],[12,12],[-12,12]].some(([a,b])=>Math.abs(x-PCX-a)<=1&&Math.abs(y-PCX-b)<=1)))return 'ده مكان القصر والأبراج 👑';if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=20&&!dawnOpen())return '🔒 منطقة الفجر: النقل جواها بيفتح قبل حرب العرش بـ 5 دقايق';
   if(ME&&x===C.map_x&&y===C.map_y)return 'دي مدينتك أصلاً 🏰';
   if(CITIES.some(c=>c.id!==ME.id&&Math.abs(c.x-x)+Math.abs(c.y-y)<2))return 'جنب مدينة تانية';
   if(NODES.some(n=>n.x===x&&n.y===y))return 'فيه موارد هنا';
@@ -3096,6 +3097,16 @@ setInterval(()=>{const el=$('enC'),av=$('hAv');if(el&&av&&!el.hidden){const r=av
   const b=$('banner');if(b)b.style.display=VIEW==='world'?'none':'';
   const km=$('kmMini');let s1=$('kmS');if(km){if(!s1){s1=document.createElement('div');s1.id='kmS';document.body.appendChild(s1)}s1.hidden=km.hidden;s1.textContent='S'+((PRO&&PRO.server_id)||1)}},250);
 monster=monster2;drawNode=drawNode2;
+
+/* 📣 إعلان على الشاشة لكل اللاعبين: فتح النقل قبل الحرب بـ 5 دقايق، وبداية الحرب */
+function warAnn(t1,t2,cls){let el=$('warAnn');if(!el){el=document.createElement('div');el.id='warAnn';document.body.appendChild(el)}el.className=cls||'';el.innerHTML='<b>'+t1+'</b><small>'+t2+'</small>';el.classList.remove('on');void el.offsetWidth;el.classList.add('on');try{sfx('horse_charge',.8)}catch(e){}clearTimeout(warAnn.t);warAnn.t=setTimeout(()=>el.classList.remove('on'),7000)}
+function warAnnTick(){const w=PALACE&&PALACE.war;if(!ME||!w||!w.id)return;const st=new Date(w.starts_at).getTime(),en=new Date(w.ends_at).getTime(),n=tNow(),k='najat_wa_'+w.id;let seen={};try{seen=JSON.parse(localStorage.getItem(k)||'{}')}catch(e){}
+  const mark=x=>{seen[x]=1;try{localStorage.setItem(k,JSON.stringify(seen))}catch(e){}};
+  if(n>=st&&n<en&&!seen.go){mark('go');mark('open');warAnn('🔥 بدأت معركة العرش!','هاجموا 👑 القصر و🗼 الأبراج دلوقتي','go');return}
+  if(st-n<=300000&&st>n&&!seen.open){mark('open');warAnn('🌀 النقل لمنطقة الفجر اتفتح!','تقدر دلوقتي تنقل مدينتك جوه الأرض الحمراء · الحرب بعد '+fmtT((st-n)/1000))}}
+setInterval(warAnnTick,1000);setInterval(()=>{if(ME&&typeof loadPalace==='function'&&(VIEW!=='world'||!PALACE))loadPalace()},20000);
+/* 🌀 منطقة الفجر بتفتح للنقل قبل حرب العرش بـ 5 دقايق */
+function dawnOpen(){if(typeof warOn==='function'&&warOn())return true;const w=PALACE&&PALACE.war;if(!w||w.status==='done')return false;const d=new Date(w.starts_at).getTime()-tNow();return d<=300000&&d>-60000}
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
