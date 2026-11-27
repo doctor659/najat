@@ -599,7 +599,7 @@ if(!DEMO){
     async marchPackGal(k){return chk(await db.rpc('march_pack_gal',{k}))},
     async gearPack(k,per){return chk(await db.rpc('gear_pack',{k}))},
     async gearPackGal(k,per){return chk(await db.rpc('gear_pack_gal',{k}))},
-    async lmSet(rows,skin){return chk(await db.rpc('lm_set',{p_rows:rows,p_skin:skin}))},async lmList(){return chk(await db.rpc('lm_list'))},async wmList(){return chk(await db.rpc('wm_list'))},async wmSpeed(mid,pct){return chk(await db.rpc('wm_speed',{mid,pct}))},async wmRecall(mid){return chk(await db.rpc('wm_recall',{mid}))},async wmReports(){return chk(await db.rpc('wm_reports'))},async rallyRoster(rid){return chk(await db.rpc('rally_roster',{rid}))},async chiefCard(pid){return chk(await db.rpc('chief_card',{pid}))},
+    async lmSet(rows,skin){return chk(await db.rpc('lm_set',{p_rows:rows,p_skin:skin}))},async lmList(){return chk(await db.rpc('lm_list'))},async hb(cs){return chk(await db.rpc('hb',{cs}))},rtInit(cb){try{const ch=db.channel('war_ping_'+((PRO&&PRO.server_id)||1));ch.on('broadcast',{event:'p'},()=>cb()).subscribe();this._ch=ch}catch(e){}},rtPing(){try{this._ch&&this._ch.send({type:'broadcast',event:'p',payload:{}})}catch(e){}},async wmList(){return chk(await db.rpc('wm_list'))},async wmSpeed(mid,pct){return chk(await db.rpc('wm_speed',{mid,pct}))},async wmRecall(mid){return chk(await db.rpc('wm_recall',{mid}))},async wmReports(){return chk(await db.rpc('wm_reports'))},async rallyRoster(rid){return chk(await db.rpc('rally_roster',{rid}))},async chiefCard(pid){return chk(await db.rpc('chief_card',{pid}))},
     async like(pid){return chk(await db.rpc('profile_like',{pid}))},
     async lb2(kind,scope){return chk(await db.rpc('leaderboard2',{kind,scope}))},
     async dmSend(to_id,body){chk(await db.rpc('dm_send',{to_id,body}))},
@@ -672,7 +672,7 @@ if(!DEMO){
     async gearPackGal(k,per){const u={d1:1,d2:5,d3:10,w1:5,w2:20,w3:50,m1:30}[k];S.pb=S.pb||{};if(S.pb[k]===per)throw new Error('اشتريت الباقة دي خلاص، استنى التجديد');if(Number(S.city.gallons)<u*1000)throw new Error('ينبوع الحياة مش كفاية 💧');S.pb[k]=per;S.city.gallons=Number(S.city.gallons)-u*1000;save();return {ok:true}},
     async gearPack(k,per){S.pb=S.pb||{};if(S.pb[k]===per)throw new Error('اشتريت الباقة دي خلاص، استنى التجديد');S.pb[k]=per;S.buys=S.buys||[];S.buys.unshift({name:S.profile.name,usd:{d1:1,d2:5,d3:10,w1:5,w2:20,w3:50,m1:30}[k],gallons:0,kind:'gear_'+k,created_at:new Date().toISOString()});save();if(this.gDrop)this.gDrop({d1:1,d2:5,d3:10,w1:5,w2:20,w3:50,m1:30}[k]);return {ok:true}},
     chiefBot(i){const b=BOTS[i],L=S.likesOf||{};return {id:'b'+i,num:100101+i,name:b[0],sid:1,likes:(b[1]*7)%40+(L['b'+i]||0),liked:!!(S.lk||{})['b'+i+'|'+today()],keep:b[1],power:b[1]*900,kills:b[1]*350,hpow:b[1]*800,av:AVS[i%AVS.length],chief:'chief_'+(i%5+1),frame:['','bronze','silver','gold'][i%4],gear:{},exp:b[1]*2,life:{monster:b[1]*12,pvp:b[1],train:b[1]*2000,gather:b[1]*3},ally:i<4&&S.ally?{tag:S.ally.tag,name:S.ally.name,emblem:S.ally.emblem}:null,gifts:{1:i,2:i>>1,3:0,4:0}}},
-    async lmSet(){return {ok:true}},async lmList(){const now=Date.now(),sk=['meteor','genie','phoenix',''],o=[];BOTS.slice(0,4).forEach((b,i)=>{const P=40000+i*7000,st=Math.floor((now+i*9000)/P)*P-i*9000,x=b[2]+80,y=b[3]+80,me=S.city;o.push({id:i,pid:'b'+i,name:b[0],skin:sk[i],hero:['hayat','sarab','turbin','fahd'][i],fx:x,fy:y,tx:me.map_x+(i%2?3:-3),ty:me.map_y+(i<2?-4:4),st,dur:P,back:false,n:5000*(i+1)})});return o},async wmList(){const n=Date.now(),P=60000,st=Math.floor(n/P)*P,b=BOTS[1],x=b[2]+80,y=b[3]+80,b2=BOTS[3];return {now:new Date(n).toISOString(),my_ally:S.ally?S.ally.id:null,threats:[],leaders:{},marches:[{id:Math.floor(n/P),kind:'go',site:0,rally:true,leader:b[0],tag:'ACE',aid:-1,skin:'genie',hero:'sarab',fx:x,fy:y,tx:100,ty:100,dep:new Date(st).toISOString(),arr:new Date(st+P).toISOString(),n:42000,members:4},{id:Math.floor(n/P)+1e6,kind:'back',site:3,rally:false,leader:b2[0],tag:'ACE',aid:-1,skin:'',hero:'turbin',fx:112,fy:112,tx:b2[2]+80,ty:b2[3]+80,dep:new Date(st).toISOString(),arr:new Date(st+P).toISOString(),n:8000,members:1}]}},async wmReports(){return S.wreps||[]},async wmSpeed(){throw new Error('في التجربة بس')},async wmRecall(){throw new Error('في التجربة بس')},async rallyRoster(){return null},async chiefCard(id){if(String(id).startsWith('b'))return this.chiefBot(+String(id).slice(1));const g={1:0,2:0,3:0,4:0};(S.gifts||[]).forEach(x=>{if(x.claimed)g[x.tier]++});const p=S.city.progress||{};return {id:'me',num:100100,name:S.profile.name,sid:1,likes:S.myLikes||3,liked:false,keep:S.city.keep_level,power:power(),kills:((p.life||{}).pvp||0)*120,hpow:S.heroes.reduce((s,h)=>s+h.level*160,0),av:p.avatar,chief:p.chief,frame:p.frame||'',gear:p.gear||{},exp:(p.exp||{}).st||1,life:p.life||{},ally:S.ally?{tag:S.ally.tag,name:S.ally.name,emblem:S.ally.emblem}:null,gifts:g}},
+    async lmSet(){return {ok:true}},async lmList(){const now=Date.now(),sk=['meteor','genie','phoenix',''],o=[];BOTS.slice(0,4).forEach((b,i)=>{const P=40000+i*7000,st=Math.floor((now+i*9000)/P)*P-i*9000,x=b[2]+80,y=b[3]+80,me=S.city;o.push({id:i,pid:'b'+i,name:b[0],skin:sk[i],hero:['hayat','sarab','turbin','fahd'][i],fx:x,fy:y,tx:me.map_x+(i%2?3:-3),ty:me.map_y+(i<2?-4:4),st,dur:P,back:false,n:5000*(i+1)})});return o},async wmList(){const n=Date.now(),P=60000,st=Math.floor(n/P)*P,b=BOTS[1],x=b[2]+80,y=b[3]+80,b2=BOTS[3];return {now:new Date(n).toISOString(),my_ally:S.ally?S.ally.id:null,threats:[],leaders:{},marches:[{id:Math.floor(n/P),kind:'go',site:0,rally:true,leader:b[0],tag:'ACE',aid:-1,skin:'genie',hero:'sarab',fx:x,fy:y,tx:100,ty:100,dep:new Date(st).toISOString(),arr:new Date(st+P).toISOString(),n:42000,members:4},{id:Math.floor(n/P)+1e6,kind:'back',site:3,rally:false,leader:b2[0],tag:'ACE',aid:-1,skin:'',hero:'turbin',fx:112,fy:112,tx:b2[2]+80,ty:b2[3]+80,dep:new Date(st).toISOString(),arr:new Date(st+P).toISOString(),n:8000,members:1}]}},async wmReports(){return S.wreps||[]},async hb(){return {now:new Date().toISOString(),throne:await this.throne(),wm:await this.wmList(),lm:await this.lmList(),rallies:await this.rallies(),inc:await this.incoming(),reps:[],chat:(await this.chat()).slice(-2)}},async wmSpeed(){throw new Error('في التجربة بس')},async wmRecall(){throw new Error('في التجربة بس')},async rallyRoster(){return null},async chiefCard(id){if(String(id).startsWith('b'))return this.chiefBot(+String(id).slice(1));const g={1:0,2:0,3:0,4:0};(S.gifts||[]).forEach(x=>{if(x.claimed)g[x.tier]++});const p=S.city.progress||{};return {id:'me',num:100100,name:S.profile.name,sid:1,likes:S.myLikes||3,liked:false,keep:S.city.keep_level,power:power(),kills:((p.life||{}).pvp||0)*120,hpow:S.heroes.reduce((s,h)=>s+h.level*160,0),av:p.avatar,chief:p.chief,frame:p.frame||'',gear:p.gear||{},exp:(p.exp||{}).st||1,life:p.life||{},ally:S.ally?{tag:S.ally.tag,name:S.ally.name,emblem:S.ally.emblem}:null,gifts:g}},
     async like(id){S.lk=S.lk||{};const k=id+'|'+today();if(S.lk[k])throw new Error('عملت لايك للاعب ده النهاردة، تعالى بكرة');S.lk[k]=1;S.likesOf=S.likesOf||{};S.likesOf[id]=(S.likesOf[id]||0)+1;save();return {likes:this.chiefBot(+String(id).slice(1)).likes}},
     async lb2(kind,scope){const me=await this.chiefCard('me'),bots=BOTS.map((b,i)=>this.chiefBot(i)),ext=scope==='all'?[['Desert Fox',14],['Najm',12],['Sultan',11],['Rimal',9]].map(([n,k],i)=>({id:'x'+i,name:n,keep:k,power:k*1100,kills:k*500,hpow:k*900,exp:k*3,sid:2,av:AVS[(i+2)%AVS.length]})):[];
       if(kind.startsWith('ally')){const L=[...(S.ally?[{id:1,name:S.ally.name,tag:S.ally.tag,emblem:S.ally.emblem,leader:S.profile.name,sid:1,v:kind==='ally_power'?me.power+bots.slice(0,4).reduce((s,b)=>s+b.power,0):me.kills+bots.slice(0,4).reduce((s,b)=>s+b.kills,0)}]:[]),{id:91,name:'ذئاب الرمال',tag:'WLF',emblem:'🐺',leader:'Wolfy',sid:1,v:kind==='ally_power'?88000:21000},{id:92,name:'نجوم الواحة',tag:'OAS',emblem:'🌙',leader:'Jack Papi',sid:1,v:kind==='ally_power'?41000:9000},...(scope==='all'?[{id:93,name:'أسود الكثبان',tag:'LYN',emblem:'🦁',leader:'Sultan',sid:2,v:kind==='ally_power'?120000:30000}]:[])].sort((a,b)=>b.v-a.v).map((x,i)=>({...x,rank:i+1}));return {top:L,me:S.ally?L.find(x=>x.id===1):null}}
@@ -890,7 +890,7 @@ function drawWorldOld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14
 
 /* ---------- LOOP & INPUT ---------- */
 let last=performance.now();
-let lastErr=-1e9,lastDraw=0;function loop(t){requestAnimationFrame(loop);if(document.hidden||t-lastDraw<22)return;lastDraw=t;const dt=Math.min(64,Math.max(0,t-last));last=t;try{if(C&&ME){stepCam(dt);VIEW==='city'?(glHide(),drawCity(t,dt)):(pxcHide(),drawWorld(t,dt))}else{glHide();pxcHide();ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}wOverlay()}catch(e){if(t-lastErr>8000){lastErr=t;console.error(e);toast('⚠️ '+(e.message||e))}}}
+let lastErr=-1e9,lastDraw=0;function loop(t){requestAnimationFrame(loop);if(document.hidden||t-lastDraw<(IS_PHONE?31:22))return;lastDraw=t;const dt=Math.min(64,Math.max(0,t-last));last=t;try{if(C&&ME){stepCam(dt);VIEW==='city'?(glHide(),pxwHide(),drawCity(t,dt)):(pxcHide(),(()=>{const a0=performance.now();drawWorld(t,dt);pxwEnd(t);fxMeasure(performance.now()-a0)})())}else{glHide();pxcHide();ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}wOverlay()}catch(e){if(t-lastErr>8000){lastErr=t;console.error(e);toast('⚠️ '+(e.message||e))}}}
 requestAnimationFrame(loop);
 let drag=null;const pts=new Map();
 cv.addEventListener('pointerdown',e=>{if(e.isPrimary)pts.clear();try{cv.setPointerCapture(e.pointerId)}catch(_){}stopCam();pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;drag={lx:e.clientX,ly:e.clientY,lt:performance.now(),vx:0,vy:0,t0:performance.now(),x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false,pinch:pts.size===2?dist():0,z0:cam.z}});
@@ -1247,7 +1247,7 @@ async function rallyTick(list){let changed=false;for(const r of list){if(!r.laun
     if(r.launched&&r.joined&&r.result&&!RSEEN.has(r.id)){RSEEN.add(r.id);try{localStorage.setItem('rseen',JSON.stringify([...RSEEN].slice(-50)))}catch(e){}
       if(r.result.marching){toast('🚩🐪 الحشد اتحرك ناحية '+r.target_name);wmPoll()}else if(r.result.cancelled)toast('🚩 الحشد اتلغى والجنود رجعوا');else{sfx(r.result.won?'victory':'defeat');toast(r.result.won?`🚩🏆 الحشد على ${r.target_name} كسب!`:`🚩💀 الحشد على ${r.target_name} خسر`)}changed=true}}
   if(changed){try{const d=await api.load(ME.id);C=d.city;TROOPS=d.troops;hud()}catch(e){}}return changed}
-async function rallyPoll(){if(!ME||!ALLY||!api.rallies)return;try{RALLIES=await api.rallies()}catch(e){return}await rallyTick(RALLIES);
+async function rallyPoll(){if(hbOn())return hbSoon();if(!ME||!ALLY||!api.rallies)return;try{RALLIES=await api.rallies()}catch(e){return}await rallyTick(RALLIES);
   RBN=RALLIES.filter(r=>!r.launched&&!r.joined&&new Date(r.ends_at)>Date.now()).length;setBadge()}
 setInterval(()=>{if(!$('rlist'))rallyPoll()},10000);
 async function allyWarBody(A,off){
@@ -1592,7 +1592,7 @@ const warOn=()=>!!(PALACE&&PALACE.war&&PALACE.war.status==='active'&&new Date(PA
 const siteOf=s=>PALACE&&PALACE.sites?PALACE.sites[s]:null;
 const sTag=a=>a?`${a.emblem} [${esc(a.tag)}]`:'';
 const durTxt=s=>{s=Math.max(0,Math.floor(s));const d=Math.floor(s/86400);return d?d+' يوم و'+Math.floor(s%86400/3600)+' ساعة':fmtT(s)};
-async function loadPalace(){if(!api.throne)return;try{PALACE=await api.throne();if(PALACE&&PALACE.now)TOFF=new Date(PALACE.now).getTime()-Date.now()}catch(e){PALACE=null}}
+async function loadPalace(){if(hbOn()&&PALACE&&Date.now()-HB.ok<6000)return;if(!api.throne)return;try{PALACE=await api.throne();if(PALACE&&PALACE.now)TOFF=new Date(PALACE.now).getTime()-Date.now()}catch(e){PALACE=null}}
 setInterval(()=>{if(ME&&(VIEW==='world'||warOn()))loadPalace()},warOn()?10000:30000);setTimeout(()=>{if(ME)loadPalace()},6000);
 function drawPalace(sx,sy,ts,t){drawDawn(sx,sy,ts,t);
   for(let s=0;s<5;s++){const xy=s?[[PCX-8,PCX-8],[PCX+8,PCX-8],[PCX+8,PCX+8],[PCX-8,PCX+8]][s-1]:[PCX,PCX],px=sx(xy[0]+.5),py=sy(xy[1]+.5),pw=s?ts*1.7:ts*4.4,key=s?'turret':'palace';if(px<-pw||px>W+pw||py<-pw||py>H+pw)continue;
@@ -1717,7 +1717,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 
 /* 💬 الشات */
 let CHT='world',CHDM=null,CHLAST=[],DMUN=0;
-async function chatStripPoll(){if(!ME||!C||document.hidden)return;try{const d=await api.chat(PRO.server_id,ME.id);CHLAST=d.slice(-2)}catch(e){}if(api.dmUnread){try{DMUN=await api.dmUnread()||0}catch(e){}}renderStrip()}
+async function chatStripPoll(){if(hbOn())return;if(!ME||!C||document.hidden)return;try{const d=await api.chat(PRO.server_id,ME.id);CHLAST=d.slice(-2)}catch(e){}if(api.dmUnread){try{DMUN=await api.dmUnread()||0}catch(e){}}renderStrip()}
 function renderStrip(){const el=$('csL');if(!el)return;el.innerHTML=CHLAST.length?CHLAST.map(m=>`<div><b>${esc(m.name)}:</b> ${esc(m.body)}</div>`).join(''):'<div class="sub">💬 شات العالم · دوس هنا واكتب أول رسالة</div>';const b=$('csB');if(b){b.textContent=DMUN;b.hidden=!DMUN}}
 setInterval(chatStripPoll,7000);setTimeout(chatStripPoll,2500);
 function bindCht(){document.querySelectorAll('[data-cht]').forEach(b=>b.onclick=()=>{CHDM=null;panelChat(b.dataset.cht)})}
@@ -2743,19 +2743,19 @@ function drawDawnIso(t,G){const c=PCX,lo=c-DZ,hi=c+DZ+1,li=c-DZI,hi2=c+DZI+1,ts=
   const pu=.5+.5*Math.sin(t/700);if(!G){isoDia(lo,lo,hi,hi);if(!patFill('tx_dawn',ts/150)){ctx.fillStyle='#6E2418';ctx.fill()}
   isoDia(lo,lo,hi,hi);ctx.fillStyle='rgba(20,4,2,.30)';ctx.fill();isoDia(li,li,hi2,hi2);ctx.fillStyle='rgba(25,3,0,.30)';ctx.fill();
   isoDia(lo,lo,hi,hi);ctx.save();ctx.globalCompositeOperation='lighter';patFill('tx_dawn',ts/150,0,0,.10+.10*pu);ctx.restore();
-  }const V=isoDia(lo,lo,hi,hi);if(!G){ctx.save();ctx.shadowColor='rgba(255,80,30,.9)';ctx.shadowBlur=18*(.6+.4*pu);ctx.strokeStyle=`rgba(255,90,40,${.55+.3*pu})`;ctx.lineWidth=Math.max(2,ts*.08);ctx.stroke();ctx.restore()}
+  }const V=isoDia(lo,lo,hi,hi);if(!G){ctx.save();ctx.strokeStyle=`rgba(255,90,40,${.18+.1*pu})`;ctx.lineWidth=Math.max(6,ts*.3);ctx.stroke();ctx.strokeStyle=`rgba(255,90,40,${.55+.3*pu})`;ctx.lineWidth=Math.max(2,ts*.08);ctx.stroke();ctx.restore()}
   if(ok('iso_border')){const im=IMG.iso_border,bh=Math.max(10,ts*.75),bw=bh*im.naturalWidth/im.naturalHeight;for(let e=0;e<4;e++){const a=V[e],b=V[(e+1)%4],L=Math.hypot(b[0]-a[0],b[1]-a[1]),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.save();ctx.translate(a[0],a[1]);ctx.rotate(ang);ctx.globalAlpha=.85+.15*pu;for(let s=0;s<L;s+=bw*.98)ctx.drawImage(im,0,0,im.naturalWidth*Math.min(1,(L-s)/bw),im.naturalHeight,s,-bh/2,Math.min(bw,L-s),bh);ctx.restore()}}
   if(ts>9)ctx.save(),ctx.font=`800 ${Math.max(12,Math.min(22,ts*.55))}px "IBM Plex Sans Arabic",Tahoma`,ctx.textAlign='center',ctx.fillStyle='rgba(255,225,180,.9)',ctx.shadowColor='#000',ctx.shadowBlur=6,ctx.fillText('🏛️ منطقة الفجر',V[0][0],V[0][1]+ts*1.4),ctx.restore()}
 function siteDraw(s,t,list){const c=PCX,xy=s?[[c-8,c-8],[c+8,c-8],[c+8,c+8],[c-8,c+8]][s-1]:[c,c],R=s?1:3,ts=T*camW.z,[bx,by]=wP(xy[0]+R+1,xy[1]+R+1),[mx,my]=wP(xy[0]+.5,xy[1]+.5),k=s?'iso_tower':'iso_palace',w=(2*R+1)*2*IHX*ts*(s?1.05:1.04);
   list.push({d:xy[0]+xy[1]+R*2,f:()=>{if(mx<-w||mx>W+w||my<-w*1.2||my>H+w)return;const st=siteOf(s),own=st&&st.alliance,mine=own&&PALACE&&PALACE.my_ally&&own.id===PALACE.my_ally;
     ctx.save();ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(mx+ts*.4,my+ts*.25,w*.48,w*.24,0,0,7);ctx.fill();ctx.restore();
-    if(ok(k)){const im=IMG[k],h=w*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,mx-w/2,by+ts*(s?.05:.1)-h,w,h)}if(!s)thrShield(mx,by+ts*.1,w,t);
+    if(ok(k)){const im=IMG[k],h=w*im.naturalHeight/im.naturalWidth;if(PXW.on)pxwSpr('site'+s,k,mx,by+ts*(s?.05:.1),w,h,{ax:.5,ay:1});else ctx.drawImage(im,mx-w/2,by+ts*(s?.05:.1)-h,w,h)}if(!s)thrShield(mx,by+ts*.1,w,t);
     const lab=s?`🗼 ${s}${own?' ['+own.tag+']':''}`:(warOn()?(own?'👑 ['+own.tag+'] ':'👑 ')+'قصر السلطان':(PALACE&&PALACE.sultan?'👑 ['+PALACE.sultan.alliance.tag+'] قصر السلطان':'👑 قصر السلطان'));
     nameTag(mx,by+ts*.25,lab,!!mine);HITS.push({x:mx,y:my-ts*(s?.6:1.4),r:s?ts*1.8:ts*3.6,site:s})}})}
 function fireDraw(t,list){const ts=T*camW.z,n=night(t);DFIRE().forEach(([x,y],i)=>{const [px,py]=wP(x,y);list.push({d:x+y,f:()=>{if(px<-80||px>W+80||py<-80||py>H+80)return;drawFrame('fx_fire',8,Math.floor(t/95+i*3)%8,px,py,ts*.95,.5,.9);
   ctx.save();ctx.globalCompositeOperation='lighter';drawFrame('fx_glow',8,Math.floor(t/140+i)%8,px,py-ts*.5,ts*(2.4+n*1.6),.5,.5,.35+n*.5);ctx.restore()}})})}
 /* 🌍 الرسم الرئيسي */
-function drawWorld(t,dt){HITS=[];if(!camW.isoZ){camW.isoZ=1;camW.z=.8;if(C)homeWorld()}const z=camW.z,ts=T*z;if(!DECO)genDeco();fxStep(t,dt);
+function drawWorld(t,dt){HITS=[];pxwBegin(t);if(!camW.isoZ){camW.isoZ=1;camW.z=.8;if(C)homeWorld()}const z=camW.z,ts=T*z;if(!DECO)genDeco();fxStep(t,dt);
   const G=glGround(t);if(G)ctx.clearRect(0,0,W,H);else{ctx.fillStyle='#2A1C10';ctx.fillRect(0,0,W,H);
   isoDia(0,0,MAP,MAP);if(!patFill('tx_sand',ts/170)){ctx.fillStyle='#E3BE7A';ctx.fill()}}
   isoDia(0,0,MAP,MAP);ctx.save();ctx.strokeStyle='rgba(120,80,30,.8)';ctx.lineWidth=4;ctx.stroke();ctx.restore();
@@ -3037,13 +3037,13 @@ let LM=[],LMT=0,LMPT=null;
 function lmRows(){return MARCHES.filter(m=>!m.done&&m.st&&m.m).map(m=>({fx:m.fx,fy:m.fy,tx:m.m.x,ty:m.m.y,st:m.st,dur:Math.round(m.dur),back:m.back?1:0,n:m.n||0,hero:m.hero||''}))}
 function lmPush(){if(!api.lmSet||!ME)return;clearTimeout(LMPT);LMPT=setTimeout(()=>{api.lmSet(lmRows(),mySkin()).catch(()=>{})},700)}
 {const _mq=mqSave;mqSave=function(){_mq();lmPush()}}
-async function lmPoll(){if(!api.lmList||!ME||!C||document.hidden||VIEW!=='world')return;try{LM=await api.lmList()||[]}catch(e){}}
+async function lmPoll(){if(hbOn())return;if(!api.lmList||!ME||!C||document.hidden||VIEW!=='world')return;try{LM=await api.lmList()||[]}catch(e){}}
 setInterval(lmPoll,10000);setTimeout(()=>{lmPoll();if(MARCHES.length)lmPush()},4000);
 function lmDraw(t){const now=Date.now();for(const o of LM){const k=(now-o.st)/o.dur;if(k<0||k>1)continue;const [ax,ay]=wP(o.fx+.5,o.fy+.5),[bx,by]=wP(o.tx+.5,o.ty+.5),x=ax+(bx-ax)*k,y=ay+(by-ay)*k;
     if(Math.max(ax,bx)<-150||Math.min(ax,bx)>W+150||Math.max(ay,by)<-150||Math.min(ay,by)>H+150)continue;
     const al=TAGS[o.pid]&&TAGS[ME.id]&&TAGS[o.pid].a===TAGS[ME.id].a;ctx.setLineDash([6,6]);ctx.lineDashOffset=-t/50;ctx.strokeStyle=al?'rgba(90,220,130,.7)':'rgba(140,190,255,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);
     if(x<-150||x>W+150||y<-150||y>H+150)continue;
-    drawMarch({other:1,skin:MSK[o.skin]?o.skin:'',hero:o.hero||'hayat',n:o.n,name:(TAGS[o.pid]&&TAGS[o.pid].t?'['+TAGS[o.pid].t+'] ':'')+o.name,_a:Math.atan2(by-ay,bx-ax)},x,y,bx,by,t)}}
+    drawMarch({other:1,k:'l'+o.id,skin:MSK[o.skin]?o.skin:'',hero:o.hero||'hayat',n:o.n,name:(TAGS[o.pid]&&TAGS[o.pid].t?'['+TAGS[o.pid].t+'] ':'')+o.name,_a:Math.atan2(by-ay,bx-ax)},x,y,bx,by,t)}}
 
 /* 🎨 لوحة مظاهر الزحف (البروفايل ← المظاهر) */
 function mskPrev(k){if(k==='meteor')return `<span class="mskV mskMet"><img class="mskTr" src="${ART.mk_meteor_tr}" alt=""><img class="mskRk" src="${ART.mk_meteor}" alt=""></span>`;
@@ -3152,7 +3152,7 @@ function drawKeepout(t){if(typeof isoDia!=='function')return;const pu=.5+.5*Math
 /* 🐪 مسيرات الحرب على الخريطة (كل اللاعبين شايفينها) */
 let WM={marches:[],threats:[],leaders:{},my_ally:null},WMFX={},WREPS=[];
 const siteNm=s=>s?'🗼 برج '+s:'👑 القصر';
-async function wmPoll(){if(!ME||!C||!api.wmList||document.hidden)return;try{const r=await api.wmList();if(r&&r.marches){WM=r;wmAlerts()}}catch(e){}}
+async function wmPoll(){if(hbOn())return hbSoon();if(!ME||!C||!api.wmList||document.hidden)return;try{const r=await api.wmList();if(r&&r.marches){WM=r;wmAlerts()}}catch(e){}}
 setInterval(()=>{if(VIEW==='world'||Date.now()-(wmPoll.t||0)>20000){wmPoll.t=Date.now();wmPoll()}},5000);setTimeout(wmPoll,3000);
 function wmK(o){const d=new Date(o.dep).getTime(),a=new Date(o.arr).getTime();return Math.max(0,Math.min(1,(tNow()-d)/Math.max(1,a-d)))}
 function wmCol(o){if(o.mine)return 'rgba(255,215,110,.95)';if(WM.my_ally&&o.aid===WM.my_ally)return 'rgba(90,225,130,.85)';return o.kind==='back'?'rgba(170,190,220,.6)':'rgba(255,90,70,.9)'}
@@ -3161,7 +3161,7 @@ function wmDraw(t){for(const o of WM.marches||[]){const k=wmK(o),[ax,ay]=wP(o.fx
     ctx.save();ctx.setLineDash(o.kind==='back'?[4,6]:[10,6]);ctx.lineDashOffset=-t/40;ctx.strokeStyle=wmCol(o);ctx.lineWidth=o.kind==='back'?2:3;ctx.beginPath();ctx.moveTo(ax+(bx-ax)*k,ay+(by-ay)*k);ctx.lineTo(bx,by);ctx.stroke();ctx.restore();
     if(k>=1){if(o.kind==='go'&&o.mode!=='reinf'&&!WMFX[o.id]){WMFX[o.id]=1;wmBoom(bx,by)}continue}
     const x=ax+(bx-ax)*k,y=ay+(by-ay)*k,lab=(o.kind==='back'?'↩️ ':o.mode==='reinf'?'🛡️ ':o.rally?'🚩 ':'⚔️ ')+(o.tag?'['+o.tag+'] ':'')+o.leader;
-    drawMarch({other:1,skin:o.kind==='back'?'':(MSK[o.skin]?o.skin:''),hero:o.hero||'hayat',n:o.n,name:lab,_a:Math.atan2(by-ay,bx-ax)},x,y,bx,by,t);
+    drawMarch({other:1,k:'w'+o.id+o.kind,skin:o.kind==='back'?'':(MSK[o.skin]?o.skin:''),hero:o.hero||'hayat',n:o.n,name:lab,_a:Math.atan2(by-ay,bx-ax)},x,y,bx,by,t);
     HITS.push({x,y:y-10,r:34,wm:o})}}
 function wmBoom(x,y){for(let j=0;j<44;j++){const a=Math.random()*7,v=2+Math.random()*5;FX.push({x,y:y-20,vx:Math.cos(a)*v,vy:Math.sin(a)*v*.6-1,l:1})}
   for(let j=0;j<16;j++)skPart({x:x+(Math.random()-.5)*60,y:y-10+(Math.random()-.5)*20,vx:(Math.random()-.5)*1.5,vy:-.6-Math.random(),l:1,d:1.2,r:6,c:'200,170,120',dust:1});
@@ -3193,7 +3193,7 @@ function wmBoxDraw(){if(!ME||!C)return;const el=wmBox(),L=wmThreatList(),n=tNow(
   const wb=$('warBar');el.style.top=((wb&&!wb.hidden&&VIEW==='world')?wb.offsetTop+wb.offsetHeight+6:58)+'px';
   if(el._h!==h){el._h=h;el.innerHTML=h}el.hidden=!h}
 setInterval(()=>wmBoxDraw(),500);
-setInterval(async()=>{if(!ME||!C||!api.incoming||document.hidden)return;try{window.INCR=await api.incoming()||[]}catch(e){}},10000);
+setInterval(async()=>{if(!ME||!C||!api.incoming||document.hidden||hbOn())return;try{window.INCR=await api.incoming()||[]}catch(e){}},10000);
 function panelThreats(){const L=wmThreatList(),n=tNow();
   openSheet(`${artImg('watchtower')}<h2>🗼 برج المراقبة · الهجمات الجاية</h2>${L.length?L.map(x=>{const r=x.r,o=x.o,st=o&&WM.leaders?WM.leaders[o.id]:null;
     return `<div class="card"><div class="kv"><span>${x.t}</span><b data-wcd2="${x.end}">${fmtT(Math.max(0,(x.end-n)/1000))}</b></div>
@@ -3212,7 +3212,7 @@ async function rallyRoster(rid){const r=(RALLIES||[]).find(x=>x.id===rid);let d=
   const iv=setInterval(()=>{const e=document.querySelectorAll('[data-wcd2]');if(!e.length){clearInterval(iv);return}e.forEach(z=>{const L=(+z.dataset.wcd2-tNow())/1000;z.textContent=L>0?fmtT(L):'🐪 بيتحرك'})},500)}
 
 /* 📜 تقارير الحرب الكاملة (برّه في التقارير والبريد) + نتيجة على الشاشة */
-async function wrPoll(){if(!ME||!C||!api.wmReports||document.hidden)return;let L;try{L=await api.wmReports()}catch(e){return}if(!Array.isArray(L))return;
+async function wrPoll(){if(hbOn())return;if(!ME||!C||!api.wmReports||document.hidden)return;let L;try{L=await api.wmReports()}catch(e){return}if(!Array.isArray(L))return;
   const k='najat_wrs_'+ME.id;let seen=0;try{seen=+localStorage.getItem(k)||0}catch(e){}const first=!WREPS.length&&!wrPoll.done;wrPoll.done=1;WREPS=L;
   const nw=L.filter(r=>r.id>seen&&Date.now()-new Date(r.at).getTime()<15*60000);const mx=Math.max(seen,...L.map(r=>r.id),0);try{localStorage.setItem(k,mx)}catch(e){}
   if(nw.length&&!(first&&seen===0&&nw.length>3))wrPop(nw[0])}
@@ -3299,6 +3299,147 @@ function wmGarrison(s){const g=(WM.garrison||[]).find(x=>x.site===s);if(!g){toas
    <p class="sub">البطل والجنود دول مشغولين لحد ما ترجّعهم ويوصلوا مدينتك.</p><div class="row"><button class="btn red wide" id="gR">↩️ رجّع جنودي</button><button class="btn alt wide" id="gF">📍 روح لمكانهم</button></div>`);
   $('gR').onclick=async()=>{const b=$('gR');if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ متأكد؟';return}b.disabled=true;try{await api.siteRecall();sfx('ui_confirm');toast('↩️ جنودك راجعين لمدينتك على الخريطة');closeSheet();wmPoll()}catch(e){toast('⚠️ '+(e.message||'ماتمش'));b.disabled=false}};
   $('gF').onclick=()=>{closeSheet();if(VIEW==='world')flyW(g.x+.5,g.y+.5)}}
+
+/* 💓 طلب واحد مجمّع كل 5 ثواني + تنبيه لحظي بين اللاعبين */
+const HB={ok:0,t:0,cs:0,busy:0,tap:0,nx:null,pop:0};
+document.addEventListener('pointerdown',()=>{HB.tap=Date.now()},true);
+function hbOn(){return !!api.hb&&HB.ok&&Date.now()-HB.ok<20000}
+function hbSoon(){if(Date.now()-HB.tap<3000&&Date.now()-HB.t>800)hbRun()}
+async function hbRun(){if(!ME||!C||!api.hb||HB.busy||document.hidden)return;HB.busy=1;HB.t=Date.now();let r=null;
+  try{r=await api.hb(HB.cs)}catch(e){}HB.busy=0;if(!r||!r.now){HB.ok=0;return}HB.ok=Date.now();
+  try{if(r.throne&&r.throne.war){PALACE=r.throne;if(r.throne.now)TOFF=new Date(r.throne.now).getTime()-Date.now();window.PLT=Date.now()}}catch(e){}
+  try{if(r.wm&&r.wm.marches){WM=r.wm;wmAlerts()}}catch(e){}
+  try{if(Array.isArray(r.lm))LM=r.lm}catch(e){}
+  try{if(Array.isArray(r.inc))window.INCR=r.inc}catch(e){}
+  try{if(Array.isArray(r.rallies)&&ALLY){RALLIES=r.rallies;await rallyTick(RALLIES);RBN=RALLIES.filter(x=>!x.launched&&!x.joined&&new Date(x.ends_at)>Date.now()).length;setBadge()}}catch(e){}
+  try{if(Array.isArray(r.chat)){CHLAST=r.chat;if(r.dm!=null)DMUN=+r.dm||0;renderStrip()}}catch(e){}
+  try{if(Array.isArray(r.reps))hbReps(r.reps)}catch(e){}
+  try{const n=tNow(),A=(WM.marches||[]).map(o=>new Date(o.arr).getTime()).filter(a=>a>n&&a-n<60000).sort((a,b)=>a-b)[0];clearTimeout(HB.nx);if(A)HB.nx=setTimeout(hbRun,A-n+900)}catch(e){}}
+function hbReps(L){const k='najat_wrs_'+ME.id;let seen=0;try{seen=+localStorage.getItem(k)||0}catch(e){}const first=!HB.pop;HB.pop=1;
+  if(L.length){const ids=new Set(L.map(x=>x.id));WREPS=[...L,...WREPS.filter(x=>!ids.has(x.id))].sort((a,b)=>b.id-a.id).slice(0,30);HB.cs=Math.max(HB.cs,...L.map(x=>x.id))}
+  const nw=L.filter(x=>x.id>seen&&Date.now()-new Date(x.at).getTime()<15*60000);const mx=Math.max(seen,...L.map(x=>x.id),0);try{localStorage.setItem(k,mx)}catch(e){}
+  if(nw.length&&!(first&&seen===0&&nw.length>3))wrPop(nw[0])}
+setInterval(()=>{if(VIEW==='world'||Date.now()-HB.t>15000)hbRun()},5000);setTimeout(hbRun,2000);
+/* بعد أي حركة حرب: اللعبة تبلّغ الباقيين لحظياً فيتحدّثوا على طول */
+['siteAttack','siteReinforce','rallyStartSite','rallyStart','rallyJoin','rallyLaunch','siteRecall','wmRecall','wmSpeed','rallyCancel','teleport'].forEach(n=>{const o=api[n];if(typeof o!=='function')return;api[n]=async function(){const r=await o.apply(api,arguments);setTimeout(()=>{try{api.rtPing&&api.rtPing()}catch(e){}hbRun()},350);return r}});
+setTimeout(()=>{try{api.rtInit&&api.rtInit(()=>{if(Date.now()-HB.t>900)setTimeout(hbRun,300+Math.random()*700)})}catch(e){}},3000);
+
+/* 📱 الموبايل: 30 فريم + وضع خفيف أوتوماتيك لو الجهاز بطيء */
+const LOWFX={on:false,s:0,n:0};
+const IS_PHONE=(()=>{try{return matchMedia('(pointer:coarse)').matches}catch(e){return false}})();
+function fxMeasure(ms){LOWFX.s+=ms;LOWFX.n++;if(LOWFX.n>=90){const a=LOWFX.s/LOWFX.n;if(!LOWFX.on&&a>24)LOWFX.on=true;else if(LOWFX.on&&a<10)LOWFX.on=false;LOWFX.s=0;LOWFX.n=0}}
+{const _sp=skPart;skPart=function(o){if(LOWFX.on&&Math.random()<.65)return;return _sp(o)}}
+
+/* 🎮 الحرب على محرك PixiJS: القصر والأبراج والحدود والدرع والمسيرات والمظاهر والإفكتات بكارت الشاشة */
+const PXW={f:0,app:null,on:false,busy:false,dead:false,items:{},used:new Set(),z:0,tx:{},lab:{},labN:0,pool:[],w:0,h:0,show:false};
+function pxwReady(){if(PXW.dead||!glWant()||PX.st===-1)return false;if(PXW.app)return true;if(!PXW.busy){PXW.busy=true;pxLoad(pxwInit)}return false}
+async function pxwInit(){try{const app=new PIXI.Application();
+  await app.init({width:W,height:H,resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true,backgroundAlpha:0,antialias:true,preference:'webgl',powerPreference:'low-power',autoStart:false});
+  const c=app.canvas;c.id='pxw';c.style.cssText='position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;visibility:hidden';cv.parentNode.insertBefore(c,cv.nextSibling);
+  c.addEventListener('webglcontextlost',e=>{e.preventDefault();pxwKill()});
+  const root=new PIXI.Container();app.stage.addChild(root);const gK=new PIXI.Graphics();root.addChild(gK);const lay=new PIXI.Container();lay.sortableChildren=true;root.addChild(lay);const pc=new PIXI.Container();root.addChild(pc);
+  Object.assign(PXW,{app,root,gK,lay,pc,w:0})}catch(e){console.warn('PXW',e);PXW.dead=true;PXW.app=null}}
+function pxwKill(){try{if(PXW.app){PXW.app.canvas.remove();PXW.app.destroy(true)}}catch(e){}PXW.app=null;PXW.on=false;PXW.dead=true;PXW.items={};PXW.tx={};PXW.lab={};PXW.pool=[]}
+function pxwHide(){if(PXW.app&&PXW.show){PXW.app.canvas.style.visibility='hidden';PXW.show=false}PXW.on=false}
+function pxwBegin(t){PXW.on=pxwReady();if(!PXW.on)return;PXW.used.clear();PXW.z=0;PXW.gK.clear()}
+function pxwEnd(t){if(!PXW.on)return;const a=PXW.app;
+  if(PXW.w!==W||PXW.h!==H){a.renderer.resize(W,H);PXW.w=W;PXW.h=H}
+  PXW.f++;const gc=PXW.f%300===0;for(const k in PXW.items){const it=PXW.items[k];it.visible=PXW.used.has(k);if(gc&&PXW.f-(it._u||0)>300){it.destroy({children:true});delete PXW.items[k]}}
+  pxwParts(t);
+  try{const nt=typeof night==='function'?night(t):0,f=1-nt*.35,r=Math.round(255*f),g=Math.round(255*f),b=Math.round(255*(1-nt*.15));PXW.root.tint=(r<<16)|(g<<8)|b}catch(e){}
+  try{a.render()}catch(e){console.warn('PXW render',e);pxwKill();return}
+  if(!PXW.show){a.canvas.style.visibility='visible';PXW.show=true}}
+
+/* أدوات: صور، كادرات، نصوص، صورة البطل في دايرة */
+function pxwTex(k,fr,n){const id=k+'#'+(fr==null?'':fr+'/'+n);if(PXW.tx[id])return PXW.tx[id];if(!ok(k))return null;const base=PXW.tx[k]||(PXW.tx[k]=pxTex(k));if(fr==null)return base;
+  const im=IMG[k],fw=im.naturalWidth/n;return PXW.tx[id]=new PIXI.Texture({source:base.source,frame:new PIXI.Rectangle(Math.round(fr*fw),0,Math.floor(fw),im.naturalHeight)})}
+function pxwCanvasTex(id,w,h,draw){if(PXW.tx[id])return PXW.tx[id];const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);return PXW.tx[id]=PIXI.Texture.from(c)}
+const pxwDot=()=>pxwCanvasTex('_dot',32,32,(g,w)=>{const r=g.createRadialGradient(16,16,0,16,16,16);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.5,'rgba(255,255,255,.55)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,32,32)});
+const pxwGlow=(id,c0,c1)=>pxwCanvasTex(id,128,128,g=>{const r=g.createRadialGradient(64,64,0,64,64,64);r.addColorStop(0,c0);r.addColorStop(1,c1);g.fillStyle=r;g.fillRect(0,0,128,128)});
+const pxwShadow=()=>pxwCanvasTex('_shd',64,20,g=>{g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(32,10,31,9,0,0,7);g.fill()});
+const pxwFlag=()=>pxwCanvasTex('_flag',60,120,g=>{const px=6,top=6;g.strokeStyle='#5A3D22';g.lineWidth=5;g.beginPath();g.moveTo(px,118);g.lineTo(px,top);g.stroke();g.fillStyle='#A3241A';g.beginPath();g.moveTo(px,top);g.quadraticCurveTo(px+20,top+4,px+42,top+8);g.lineTo(px+38,top+34);g.quadraticCurveTo(px+18,top+30,px,top+26);g.closePath();g.fill();g.fillStyle='#F0C068';g.beginPath();g.arc(px+18,top+16,5,0,7);g.fill()});
+function pxwHeroTex(h){const k=HIMG[h]||HIMG.hayat;if(!ok(k))return null;return pxwCanvasTex('_h_'+h,108,108,g=>{const R=48,c=54;g.save();g.beginPath();g.arc(c,c,R,0,7);g.fillStyle='#3A2B1B';g.fill();g.clip();const im=IMG[k],s=R*2.4;g.drawImage(im,c-s/2,c-R*1.1,s,s*im.naturalHeight/im.naturalWidth);g.restore();
+  const gr=g.createLinearGradient(0,c-R,0,c+R);gr.addColorStop(0,'#FFE7A3');gr.addColorStop(1,'#B7791F');g.strokeStyle=gr;g.lineWidth=9;g.beginPath();g.arc(c,c,R,0,7);g.stroke()})}
+function pxwLabTex(txt,st){const id=st+'|'+txt;if(PXW.lab[id])return PXW.lab[id];if(PXW.labN>300){for(const k in PXW.lab)PXW.lab[k].destroy(true);PXW.lab={};PXW.labN=0}
+  const c=document.createElement('canvas'),g=c.getContext('2d'),S=3;g.font=`800 ${11*S}px Tahoma`;const tw=g.measureText(txt).width+12*S;c.width=Math.ceil(tw)+4;c.height=16*S+4;
+  const R=8*S,x=2,y=2,w=tw,h=16*S;g.fillStyle=st==='b'?'rgba(20,40,80,.92)':'rgba(122,26,16,.92)';g.beginPath();g.moveTo(x+R,y);g.arcTo(x+w,y,x+w,y+h,R);g.arcTo(x+w,y+h,x,y+h,R);g.arcTo(x,y+h,x,y,R);g.arcTo(x,y,x+w,y,R);g.closePath();g.fill();g.strokeStyle='#F0C068';g.lineWidth=S;g.stroke();
+  g.font=`800 ${11*S}px Tahoma`;g.fillStyle='#FFF3D6';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,x+w/2,y+h/2+S);PXW.labN++;return PXW.lab[id]={tex:PIXI.Texture.from(c),w:c.width/S,h:c.height/S}}
+
+/* عنصر واحد = حاوية فيها صورة (علشان الدوران والتمدد) */
+function pxwItem(key){let it=PXW.items[key];if(!it){it=new PIXI.Container();it.sp=new PIXI.Sprite();it.addChild(it.sp);PXW.lay.addChild(it);PXW.items[key]=it}PXW.used.add(key);it._u=PXW.f;it.zIndex=++PXW.z;return it}
+function pxwSpr(key,tex,x,y,w,h,o){o=o||{};const T=typeof tex==='string'?pxwTex(tex,o.fr,o.n):tex;if(!T)return null;const it=pxwItem(key),sp=it.sp;if(sp.texture!==T)sp.texture=T;
+  it.position.set(x,y);it.scale.set(1,o.sy||1);it.rotation=o.crot||0;sp.anchor.set(o.ax==null?.5:o.ax,o.ay==null?.5:o.ay);sp.width=w;sp.height=h;if(o.fx)sp.scale.x*=-1;if(o.fy)sp.scale.y*=-1;
+  sp.rotation=o.rot||0;sp.alpha=o.a==null?1:o.a;sp.blendMode=o.add?'add':'normal';sp.skew.set(o.kx||0,o.ky||0);return it}
+function pxwLab(key,txt,x,y,st){const L=pxwLabTex(txt,st);pxwSpr(key,L.tex,x,y,L.w,L.h,{ax:.5,ay:0})}
+
+/* 👑 حدود القصر والأبراج (خط دهبي متقطع بيتحرك) */
+function pxwKeepout(t){const g=PXW.gK,pu=.5+.5*Math.sin(t/500);
+  for(const [dx,dy,m] of KO){const cx=PCX+dx,cy=PCX+dy,P=[wP(cx-m,cy-m),wP(cx+m+1,cy-m),wP(cx+m+1,cy+m+1),wP(cx-m,cy+m+1)];
+    if(SEL){g.poly(P.flat()).fill({color:0xff1e1e,alpha:.28+.12*pu})}
+    g.poly(P.flat()).stroke({width:7,color:0x280f05,alpha:.55});
+    const D=14,Gp=8,off=((t/60)%(D+Gp)+(D+Gp))%(D+Gp);let acc=-off;
+    for(let e=0;e<4;e++){const a=P[e],b=P[(e+1)%4],L=Math.hypot(b[0]-a[0],b[1]-a[1]),ux=(b[0]-a[0])/L,uy=(b[1]-a[1])/L;
+      let s=acc;while(s<L){const s0=Math.max(0,s),s1=Math.min(L,s+D);if(s1>s0){g.moveTo(a[0]+ux*s0,a[1]+uy*s0).lineTo(a[0]+ux*s1,a[1]+uy*s1)}s+=D+Gp}acc=s-L}
+    g.stroke({width:3.6,color:SEL?0xff5a46:0xffde78,alpha:.75+.25*pu})}}
+
+/* 🛡️ درع العرش */
+function pxwShield(cx,baseY,w,t){const on=!warOn();if(THS.on===null)THS.on=on;
+  if(on!==THS.on){THS.on=on;THS.t0=t;for(let i=0;i<70;i++){const a=Math.random()*Math.PI,r=w*.5*(.4+Math.random()*.6);skPart({x:cx+Math.cos(a)*r,y:baseY-Math.sin(a)*r*.85,vx:Math.cos(a)*(on?-.6:2.4)*Math.random(),vy:-Math.sin(a)*(on?-.4:2)*Math.random()-.3,l:1,d:.8+Math.random()*.9,r:2+Math.random()*3,c:Math.random()<.5?'110,230,230':'255,210,100'})}}
+  const e=Math.min(1,(t-THS.t0)/1300);if(!on&&e>=1)return;if(!ok('throne_shield'))return;
+  const im=IMG.throne_shield,sw=w*1.08,sh=sw*im.naturalHeight/im.naturalWidth;let sy=1,sx=1,al=1;
+  if(on){const k=1-Math.pow(1-e,3);sy=k;al=Math.min(1,e*1.6)}else{sx=sy=1+e*.22;al=1-e}
+  const pu=.5+.5*Math.sin(t/520),y0=baseY+sw*.05;
+  pxwSpr('shA','throne_shield',cx,y0,sw*sx,sh*sy,{ax:.5,ay:1,a:al*(.3+.08*pu)});
+  pxwSpr('shB','throne_shield',cx,y0,sw*sx,sh*sy,{ax:.5,ay:1,a:al*(.1+.18*pu),add:1});
+  if(on&&Math.random()<.12){const a=Math.random()*Math.PI,r=sw*.47;skPart({x:cx+Math.cos(a)*r,y:y0-Math.sin(a)*sh*.9,vx:0,vy:-.3,l:1,d:1,r:1.5+Math.random()*1.5,c:'140,240,230'})}}
+
+/* 🐪 المسيرات والمظاهر */
+function pxwMarch(mr,x,y,bx,by,t){const k=mr.k||('m'+muid(mr));if(Math.hypot(bx-x,by-y)>2)mr._a=Math.atan2(by-y,bx-x);const ang=mr._a||0,sk=mr.other?mr.skin:mySkin();
+  if(!mr.other){const pr=.5+.5*Math.sin(t/200);ctx.strokeStyle=`rgba(224,99,74,${.45+.45*pr})`;ctx.lineWidth=2.5;ctx.beginPath();ctx.ellipse(bx,by+8,26+pr*6,11+pr*3,0,0,7);ctx.stroke()}
+  if(sk&&MSK[sk]){const S=pxwSkin(k,sk,x,y,ang,t);pxwLab(k+'L',mr.other?(mr.name||'؟'):'⚔️ '+fmt(mr.n||0),x,y+S*.2,mr.other?'b':'r');return}
+  if(!LOWFX.on&&Math.random()<.45)FX.push({x:x+(Math.random()-.5)*16,y:y+12,vx:(Math.random()-.5)*.5,vy:-.15,l:.7,dust:1});
+  const bob=Math.sin(t/110)*1.5,cy=y-6+bob,R=17,px=x+R-1;
+  pxwSpr(k+'s',pxwShadow(),x,y+16,44,14);
+  pxwSpr(k+'f',pxwFlag(),px-3,cy+R-2,30,60,{ax:.1,ay:1,ky:Math.sin(t/160)*.06});
+  const ht=pxwHeroTex(mr.hero||'hayat');if(ht)pxwSpr(k+'h',ht,x,cy,R*2*108/96,R*2*108/96);
+  pxwLab(k+'L',mr.other?(mr.name||'؟'):'⚔️ '+fmt(mr.n||0),x,cy+R+3,mr.other?'b':'r')}
+function pxwSkin(k,sk,x,y,ang,t){const ts=T*camW.z,S=Math.max(46,Math.min(120,ts*1.3)),flip=Math.cos(ang)<0,ca=Math.cos(ang),sa=Math.sin(ang);
+  pxwSpr(k+'s',pxwShadow(),x,y+S*.12,S*.84,S*.26);
+  if(sk==='meteor'){const hy=y-S*.42,f=1+.09*Math.sin(t/55);
+    const im=IMG.mk_meteor_tr;if(ok('mk_meteor_tr')){const L=S*3,h=L*im.naturalHeight/im.naturalWidth;pxwSpr(k+'t1','mk_meteor_tr',x,hy,L,h*f,{ax:(L-S*.22)/L,ay:.5,rot:ang,a:.95,add:1});const L2=L*.7;pxwSpr(k+'t2','mk_meteor_tr',x,hy,L2,h*.64,{ax:(L2-S*.2)/L2,ay:.5,rot:ang,a:.45+.2*Math.sin(t/37),add:1})}
+    pxwSpr(k+'g',pxwGlow('_gM','rgba(255,170,60,1)','rgba(255,90,20,0)'),x,hy,S*1.5,S*1.5,{a:.5+.15*Math.sin(t/70),add:1});
+    if(ok('mk_meteor')){const r=IMG.mk_meteor,w=S*.95,h=w*r.naturalHeight/r.naturalWidth,ro=ang+Math.sin(t/260)*.07;pxwSpr(k+'b','mk_meteor',x,hy,w,h,{rot:ro});pxwSpr(k+'b2','mk_meteor',x,hy,w,h,{rot:ro,a:.18+.22*(.5+.5*Math.sin(t/160)),add:1})}
+    if(Math.random()<.7){const b=S*(.35+Math.random()*.3),q=(Math.random()-.5)*S*.35;skPart({x:x-ca*b-sa*q,y:hy-sa*b+ca*q,vx:-ca*(.6+Math.random())+(Math.random()-.5)*.6,vy:-sa*(.6+Math.random())+(Math.random()-.5)*.6-.15,l:1,d:.9+Math.random()*.6,r:1.5+Math.random()*2.5,c:Math.random()<.5?'255,190,80':'255,110,40'})}
+    if(Math.random()<.25)skPart({x:x+(Math.random()-.5)*S*.3,y:y+S*.05,vx:-ca*.4,vy:-.25,l:1,d:1.4,r:5,c:'225,195,140',dust:1})}
+  else if(sk==='genie'){const hy=y-S*.35+Math.sin(t/330)*S*.06,gh=S*1.35;
+    if(ok('mk_genie_sw'))pxwSpr(k+'w','mk_genie_sw',x,y+S*.06,S*1.25,S*1.25,{sy:.42,rot:t/480,a:.8,add:1});
+    if(ok('mk_genie_tr')){const im=IMG.mk_genie_tr,L=S*2.4,h=L*im.naturalHeight/im.naturalWidth;pxwSpr(k+'t','mk_genie_tr',x,hy+S*.18,L,h,{ax:(L-S*.1)/L,ay:.5,rot:ang,a:.75+.15*Math.sin(t/90),add:1})}
+    pxwSpr(k+'g',pxwGlow('_gG','rgba(90,210,255,.9)','rgba(40,120,255,0)'),x,hy-gh*.2,gh*.9,gh*.9,{a:.35+.1*Math.sin(t/200),add:1});
+    if(ok('mk_genie')){const im=IMG.mk_genie,fw=im.naturalWidth/4,fh=im.naturalHeight,gw=gh*fw/fh;pxwSpr(k+'b','mk_genie',x,hy,gw,gh,{fr:Math.floor(t/170)%4,n:4,ax:.5,ay:.62,fx:flip})}
+    if(Math.random()<.5){const a=Math.random()*7;skPart({x:x+Math.cos(a)*S*.45,y:hy+S*.1+Math.sin(a)*S*.2,vx:(Math.random()-.5)*.4,vy:-.5-Math.random()*.6,l:1,d:1+Math.random(),r:1.2+Math.random()*2,c:Math.random()<.6?'120,220,255':'255,215,110'})}}
+  else if(sk==='phoenix'){const hy=y-S*.6+Math.sin(t/240)*S*.05,f=1+.07*Math.sin(t/60);
+    if(ok('mk_falcon_tr')){const im=IMG.mk_falcon_tr,L=S*2.7,h=L*im.naturalHeight/im.naturalWidth;pxwSpr(k+'t','mk_falcon_tr',x,hy,L,h*f,{ax:(L-S*.05)/L,ay:.5,rot:ang,a:.9,add:1})}
+    pxwSpr(k+'g',pxwGlow('_gP','rgba(255,200,90,1)','rgba(255,140,40,0)'),x,hy,S*1.6,S*1.6,{a:.35+.12*Math.sin(t/90),add:1});
+    if(ok('mk_falcon')){const im=IMG.mk_falcon,fw=im.naturalWidth/4,fh=im.naturalHeight,bw=S*1.15,bh=bw*fh/fw;pxwSpr(k+'b','mk_falcon',x,hy,bw,bh,{fr:Math.floor(t/95)%4,n:4,ax:.55,ay:.5,rot:ang,fy:flip})}
+    if(Math.random()<.45){const b=S*(.3+Math.random()*.4),q=(Math.random()-.5)*S*.6;skPart({x:x-ca*b-sa*q,y:hy-sa*b+ca*q,vx:-ca*.5+(Math.random()-.5)*.5,vy:-sa*.5+.25,l:1,d:1.2+Math.random(),r:2+Math.random()*2.5,c:Math.random()<.5?'255,205,90':'255,140,50',fe:1,rot:Math.random()*7,vr:(Math.random()-.5)*.2})}}
+  return S}
+
+/* ✨ الجسيمات (شرار، غبار، ريش) */
+function pxwParts(t){const dt=Math.min(50,t-(SKT||t));SKT=t;const P=PXW.pool,dot=pxwDot();let n=0;
+  for(let i=SKP.length-1;i>=0;i--){const p=SKP[i];p.x+=p.vx*dt/16;p.y+=p.vy*dt/16;p.l-=dt/1000/p.d;if(p.l<=0){SKP.splice(i,1);continue}
+    let s=P[n];if(!s){s=new PIXI.Sprite(dot);s.anchor.set(.5);PXW.pc.addChild(s);P.push(s)}n++;s.visible=true;
+    if(!p._t){const c=p.c.split(',').map(Number);p._t=(c[0]<<16)|(c[1]<<8)|c[2]}s.tint=p._t;s.position.set(p.x,p.y);
+    if(p.dust){s.blendMode='normal';const r=(1-p.l)*12+p.r;s.width=s.height=r*2.6;s.alpha=p.l*.35;s.rotation=0}
+    else{s.blendMode='add';if(p.fe){p.rot+=p.vr*dt/16;s.width=p.r*4.2;s.height=p.r*1.4;s.rotation=p.rot}else{const r=p.r*(.4+.6*p.l);s.width=s.height=r*3;s.rotation=0}s.alpha=Math.min(1,p.l*1.4)}}
+  for(let i=n;i<P.length;i++)P[i].visible=false}
+
+/* التوصيل مع الرسم القديم: لو المحرك شغال يرسم هو، غير كده الرسم العادي */
+{const _dk=drawKeepout;drawKeepout=function(t){if(PXW.on)return pxwKeepout(t);return _dk(t)}}
+{const _ts=thrShield;thrShield=function(cx,baseY,w,t){if(PXW.on)return pxwShield(cx,baseY,w,t);return _ts(cx,baseY,w,t)}}
+{const _dm=drawMarch;drawMarch=function(mr,x,y,bx,by,t){if(PXW.on)return pxwMarch(mr,x,y,bx,by,t);return _dm(mr,x,y,bx,by,t)}}
+{const _sf=skFx;skFx=function(t){if(PXW.on)return;return _sf(t)}}
+setInterval(()=>{if(VIEW!=='world'||!C||!ME)pxwHide()},500);
+window.__PXW=PXW;
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
