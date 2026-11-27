@@ -3441,6 +3441,46 @@ function pxwParts(t){const dt=Math.min(50,t-(SKT||t));SKT=t;const P=PXW.pool,dot
 setInterval(()=>{if(VIEW!=='world'||!C||!ME)pxwHide()},500);
 window.__PXW=PXW;
 
+/* 🗺️ المرحلة 1: كل صور الخريطة (المدن، الوحوش، العرين، أماكن الجمع، الزينة، النار، العواصف) بتترسم بكارت الشاشة
+   + الأسامي والأرقام صور جاهزة محفوظة بدل ما تتكتب كل فريم */
+const PXG={i:0,pool:[],tc:new WeakMap(),clip:[false],d:1,M:null,act:false,lab:{},labN:0,P:{}};
+function pxgTex(img,sx,sy,sw,sh){if(!(img instanceof HTMLImageElement))return null;if(!img.complete||!img.naturalWidth)return 0;
+  let m=PXG.tc.get(img);if(!m){m={};PXG.tc.set(img,m)}if(!m._)m._=PIXI.Texture.from(img);if(sx==null)return m._;
+  const key=sx+','+sy+','+sw+','+sh;if(m[key])return m[key];const W0=img.naturalWidth,H0=img.naturalHeight,x=Math.max(0,sx),y=Math.max(0,sy),w=Math.min(sw,W0-x),h=Math.min(sh,H0-y);if(w<=0||h<=0)return 0;
+  return m[key]=new PIXI.Texture({source:m._.source,frame:new PIXI.Rectangle(x,y,w,h)})}
+function pxgSprite(){let s=PXG.pool[PXG.i];if(!s){s=new PIXI.Sprite();s.anchor.set(0,0);PXW.lay.addChild(s);PXG.pool.push(s)}PXG.i++;s.visible=true;s.zIndex=++PXW.z;return s}
+function pxgDraw(img,a1,a2,a3,a4,a5,a6,a7,a8){const P=PXG.P;
+  if(!PXG.act||!PXW.on||VIEW!=='world'||PXG.clip[PXG.clip.length-1])return P.drawImage.apply(ctx,arguments);
+  const n=arguments.length;let sx,sy,sw,sh,dx,dy,dw,dh;
+  if(n===3){dx=a1;dy=a2;dw=img.naturalWidth||img.width;dh=img.naturalHeight||img.height}else if(n===5){dx=a1;dy=a2;dw=a3;dh=a4}else{sx=a1;sy=a2;sw=a3;sh=a4;dx=a5;dy=a6;dw=a7;dh=a8}
+  const T=pxgTex(img,sx,sy,sw,sh);if(T===null)return P.drawImage.apply(ctx,arguments);if(!T||!dw||!dh)return;
+  const m=ctx.getTransform(),k=1/PXG.d,a=m.a*k,b=m.b*k,c=m.c*k,d=m.d*k,e=m.e*k,f=m.f*k,scx=dw/T.width,scy=dh/T.height;
+  const s=pxgSprite();if(s.texture!==T)s.texture=T;PXG.M.set(a*scx,b*scx,c*scy,d*scy,a*dx+c*dy+e,b*dx+d*dy+f);s.setFromMatrix(PXG.M);
+  s.alpha=ctx.globalAlpha;s.blendMode=ctx.globalCompositeOperation==='lighter'?'add':'normal'}
+function pxgOn(){if(PXG.act)return;const P=PXG.P;if(!P.drawImage){P.drawImage=CanvasRenderingContext2D.prototype.drawImage;P.save=CanvasRenderingContext2D.prototype.save;P.restore=CanvasRenderingContext2D.prototype.restore;P.clip=CanvasRenderingContext2D.prototype.clip}
+  if(!PXG.M)PXG.M=new PIXI.Matrix();PXG.d=cv.width/(W||1);PXG.i=0;PXG.clip=[false];PXG.act=true;
+  ctx.drawImage=pxgDraw;ctx.save=function(){PXG.clip.push(PXG.clip[PXG.clip.length-1]);return P.save.call(ctx)};ctx.restore=function(){if(PXG.clip.length>1)PXG.clip.pop();return P.restore.call(ctx)};ctx.clip=function(){PXG.clip[PXG.clip.length-1]=true;return P.clip.apply(ctx,arguments)}}
+function pxgOff(){if(!PXG.act)return;PXG.act=false;delete ctx.drawImage;delete ctx.save;delete ctx.restore;delete ctx.clip;for(let i=PXG.i;i<PXG.pool.length;i++)PXG.pool[i].visible=false}
+
+/* 🏷️ الأسامي والأرقام: صورة جاهزة لكل اسم بتتحفظ */
+function pxgLabTex(id,w,h,draw){if(PXG.lab[id])return PXG.lab[id];if(PXG.labN>700){for(const k in PXG.lab)PXG.lab[k].t.destroy(true);PXG.lab={};PXG.labN=0}
+  const S=3,c=document.createElement('canvas');c.width=Math.ceil(w*S);c.height=Math.ceil(h*S);const g=c.getContext('2d');g.scale(S,S);draw(g);PXG.labN++;return PXG.lab[id]={t:PIXI.Texture.from(c),w,h}}
+const PXG_M=document.createElement('canvas').getContext('2d');
+function pxgPut(L,x,y){const s=pxgSprite();if(s.texture!==L.t)s.texture=L.t;s.setFromMatrix(PXG.M.set(L.w/L.t.width,0,0,L.h/L.t.height,x,y));s.alpha=1;s.blendMode='normal'}
+{const _nt=nameTag;nameTag=function(x,y,txt,me){if(!PXG.act)return _nt(x,y,txt,me);const F='700 11.5px "IBM Plex Sans Arabic",Tahoma';PXG_M.font=F;const w=PXG_M.measureText(txt).width+14;
+  const L=pxgLabTex('n'+(me?1:0)+txt,w+2,20,g=>{g.translate(1,1);g.fillStyle=me?'rgba(120,70,10,.9)':'rgba(20,30,50,.8)';const r=9;g.beginPath();g.moveTo(r,0);g.arcTo(w,0,w,18,r);g.arcTo(w,18,0,18,r);g.arcTo(0,18,0,0,r);g.arcTo(0,0,w,0,r);g.closePath();g.fill();g.font=F;g.textAlign='center';g.fillStyle=me?'#FFE6A8':'#E3EEFF';g.fillText(txt,w/2,13)});
+  pxgPut(L,x-w/2-1,y-1)}}
+{const _bg=badge;badge=function(x,y,txt,col){if(!PXG.act)return _bg(x,y,txt,col);
+  const L=pxgLabTex('b'+(col||'')+txt,22,22,g=>{g.fillStyle=col||'#2B1A08';g.beginPath();g.arc(11,11,9,0,7);g.fill();g.strokeStyle='#F0C068';g.lineWidth=1.5;g.stroke();g.font='800 11px Tahoma';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#FFF3D6';g.fillText(txt,11,12)});
+  pxgPut(L,x-11,y-11)}}
+try{document.fonts&&document.fonts.ready.then(()=>{for(const k in PXG.lab)PXG.lab[k].t.destroy(true);PXG.lab={};PXG.labN=0})}catch(e){}
+
+/* التوصيل: بداية ونهاية كل فريم */
+{const _b=pxwBegin;pxwBegin=function(t){pxgOff();_b(t);if(PXW.on)pxgOn()}}
+{const _e=pxwEnd;pxwEnd=function(t){pxgOff();_e(t)}}
+{const _h=pxwHide;pxwHide=function(){pxgOff();_h()}}
+window.__PXG=PXG;
+
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
   try{ALLY=await api.allyInfo()}catch(e){openSheet('<h2>🤝 التحالف</h2><div class="card sub">⚠️ شغّل SQL المرحلة 6 (التحالفات) في Supabase الأول.</div><div class="row"><button class="btn alt wide" id="srvChat">💬 شات السيرفر</button></div>');$('srvChat').onclick=panelChat;return}
