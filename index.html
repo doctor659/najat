@@ -851,14 +851,14 @@ function oasisSprite(R,r){const S=Math.ceil(r*3.7),c=document.createElement('can
 function buildTerrain(){const R=rng(99),A=ok('world_ground');OASES.length=0;OSPR.length=0;
   TERR={art:A?1:0,pat:A?ctx.createPattern(IMG.world_ground,'repeat'):null,k:A?720/IMG.world_ground.naturalWidth:1};
   for(let v=0;v<4;v++)OSPR.push(oasisSprite(R,T*1.5));
-  for(let i=0;OASES.length<150&&i<3000;i++){const x=3+R()*(MAP-6),y=3+R()*(MAP-6),r=1.1+R()*.8;if(Math.abs(x-PCX)<9&&Math.abs(y-PCX)<9)continue;if(OASES.some(o=>Math.hypot(o[0]-x,o[1]-y)<7))continue;OASES.push([x,y,r,i%4])}}
+  for(let i=0;OASES.length<150&&i<3000;i++){const x=3+R()*(MAP-6),y=3+R()*(MAP-6),r=1.1+R()*.8;if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<CLR)continue;if(OASES.some(o=>Math.hypot(o[0]-x,o[1]-y)<7))continue;OASES.push([x,y,r,i%4])}}
 const MT={scorpion:{n:'عقرب الرمال',c:'#B5562E'},wolf:{n:'ذئب الصحراء',c:'#8C8F99'},bandit:{n:'قطّاع الطرق',c:'#7A4E2A'},worm:{n:'دودة الرمال العملاقة',c:'#7B4F8E'}};
 const mPow=l=>Math.round(350*Math.pow(l,1.75));
 function genMonsters(){const R=rng(1234+(PRO?PRO.server_id:1)),occ=new Set(CITIES.map(c=>c.x+','+c.y).concat(NODES.map(n=>n.x+','+n.y)));MONSTERS=[];
-  for(let i=0;MONSTERS.length<1500&&i<6000;i++){const x=1+Math.floor(R()*(MAP-2)),y=1+Math.floor(R()*(MAP-2)),l=1+Math.floor(Math.pow(R(),1.6)*30);
-    if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=21||occ.has(x+','+y)||CITIES.some(c=>Math.abs(c.x-x)+Math.abs(c.y-y)<2)||OASES.some(o=>Math.hypot(o[0]-x-.5,o[1]-y-.5)<1.6))continue;for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)occ.add((x+a)+','+(y+b));
+  for(let i=0;MONSTERS.length<150&&i<6000;i++){const x=1+Math.floor(R()*(MAP-2)),y=1+Math.floor(R()*(MAP-2)),l=1+Math.floor(Math.pow(R(),1.6)*30);
+    if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=CLR||occ.has(x+','+y)||CITIES.some(c=>Math.abs(c.x-x)+Math.abs(c.y-y)<2)||OASES.some(o=>Math.hypot(o[0]-x-.5,o[1]-y-.5)<1.6))continue;for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)occ.add((x+a)+','+(y+b));
     MONSTERS.push({id:'m'+i,x,y,lvl:l,type:l<=6?'scorpion':l<=13?'wolf':l<=20?'bandit':'worm'})}}
-async function refreshWorld(){const n0=CITIES.length;try{CITIES=await api.cities(PRO.server_id)}catch(e){if(!CITIES.length)CITIES=[{id:ME.id,lvl:C.keep_level,x:C.map_x,y:C.map_y,name:PRO.name}]}if(!TERR)buildTerrain();if(!NODES.length&&api.nodes){try{NODES=await api.nodes(PRO.server_id)||[];if(NODES.length)MONSTERS=[]}catch(e){}}if(api.shields)api.shields(PRO.server_id).then(r=>{SHIELDS={};(r||[]).forEach(x=>SHIELDS[x.player_id]=new Date(x.shield_until).getTime())}).catch(()=>{});loadPalace();loadGathers();if(!MONSTERS.length||CITIES.length!==n0)genMonsters();if(api.allyTags)api.allyTags().then(t=>TAGS=t||{}).catch(()=>{})}
+async function refreshWorld(){const n0=CITIES.length;try{CITIES=await api.cities(PRO.server_id)}catch(e){if(!CITIES.length)CITIES=[{id:ME.id,lvl:C.keep_level,x:C.map_x,y:C.map_y,name:PRO.name}]}if(!TERR)buildTerrain();if(!NODES.length&&api.nodes){try{NODES=thinNodes(await api.nodes(PRO.server_id)||[]);if(NODES.length)MONSTERS=[]}catch(e){}}if(api.shields)api.shields(PRO.server_id).then(r=>{SHIELDS={};(r||[]).forEach(x=>SHIELDS[x.player_id]=new Date(x.shield_until).getTime())}).catch(()=>{});loadPalace();loadGathers();if(!MONSTERS.length||CITIES.length!==n0)genMonsters();if(api.allyTags)api.allyTags().then(t=>TAGS=t||{}).catch(()=>{})}
 const alive=m=>!KILLED[m.id]||KILLED[m.id]<Date.now();
 function fort(x,y,s,me,lvl,t){ctx.fillStyle=me?'rgba(255,200,80,.32)':'rgba(80,150,255,.28)';ctx.beginPath();ctx.ellipse(x,y+s*.6,s*1.9,s*.75,0,0,7);ctx.fill();ctx.strokeStyle=me?'#F0C068':'#7FB2FF';ctx.lineWidth=2;ctx.stroke();
   if(ok('keep')){const im=IMG.keep,w=s*(3.1+Math.min(lvl,30)*.03),h=w*im.naturalHeight/im.naturalWidth;ctx.drawImage(im,x-w/2,y+s*.95-h,w,h);fort._cy=y+s*.95-h*.45;fort._r=w*.55}}
@@ -1524,7 +1524,7 @@ function panelTeleport(){openSheet(`<h2>🌀 نقل المدينة</h2><p class=
 const TPOOL=[{gems:30},{gems:60},{wood:60000,meat:60000},{coal:15000},{iron:8000},{items:{spd60:1}},{items:{spd5:3}},{items:{sh8:1}},{items:{bw:2,bm:2}},{xp:2000}];
 let TRE=[],TREday='',TREn=-1;
 function genTreasure(){const d=today();if(TREday===d&&TREn===CITIES.length&&TRE.length)return;TREday=d;TREn=CITIES.length;const R=rng(+d.replace(/-/g,'')*13+7),occ=new Set([...CITIES.map(c=>c.x+','+c.y),...NODES.map(n=>n.x+','+n.y),...MONSTERS.map(m=>m.x+','+m.y)]);TRE=[];
-  for(let i=0;TRE.length<30&&i<3000;i++){const x=1+Math.floor(R()*(MAP-2)),y=1+Math.floor(R()*(MAP-2)),rw=TPOOL[Math.floor(R()*TPOOL.length)];if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=21||occ.has(x+','+y)||CITIES.some(c=>Math.abs(c.x-x)+Math.abs(c.y-y)<2))continue;occ.add(x+','+y);TRE.push({i:TRE.length,x,y,rw})}}
+  for(let i=0;TRE.length<30&&i<3000;i++){const x=1+Math.floor(R()*(MAP-2)),y=1+Math.floor(R()*(MAP-2)),rw=TPOOL[Math.floor(R()*TPOOL.length)];if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=CLR||occ.has(x+','+y)||CITIES.some(c=>Math.abs(c.x-x)+Math.abs(c.y-y)<2))continue;occ.add(x+','+y);TRE.push({i:TRE.length,x,y,rw})}}
 const treGot=()=>{const p=C.progress||{};return p.tre&&p.tre.day===today()?p.tre.got:[]};
 function drawChest(x,y,ts,t){ts=Math.max(46,ts);const b=Math.sin(t/300+x)*ts*.04,g=ctx.createRadialGradient(x,y,2,x,y,ts*.5);g.addColorStop(0,'rgba(255,230,140,.75)');g.addColorStop(1,'rgba(255,230,140,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,ts*.5,0,7);ctx.fill();ctx.font=`${Math.round(ts*.55)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🎁',x,y+b);ctx.textBaseline='alphabetic'}
 function openChest(c){if(!P3())return;openSheet(`<div class="bossBox"><div style="font-size:84px">🎁</div><h3>🏝️ كنز الصحراء</h3></div><p class="sub" style="text-align:center">لقيت كنز! فيه 5 كنوز على الخريطة كل يوم، وبيتغيروا الساعة 12 بالليل. فاضل النهاردة: ${5-treGot().length}</p><div class="row"><button class="btn wide" id="chO">🔓 افتح الكنز</button></div>`);
@@ -1549,7 +1549,7 @@ function panelOffers(){if(!P3())return;const o=prog().off||{},paid=life('topup')
 /* ===== عرش السلطان + المباني الجديدة ===== */
 const winPct=r=>{if(!(r>0))return 1;let s=0;const N=60;for(let i=0;i<N;i++){const u=.85+.3*(i+.5)/N;s+=Math.min(1,Math.max(0,(r*u-.85)/.3))}return Math.max(1,Math.min(99,Math.round(s/N*100)))};
 let PALACE=null,INC=[],INCSEEN=new Set();
-const inPal=(x,y)=>Math.abs(x-PCX)<=15&&Math.abs(y-PCX)<=15;
+const inPal=(x,y)=>Math.abs(x-PCX)<=18&&Math.abs(y-PCX)<=18;
 const MV={wood:1,meat:1,coal:5,iron:10},mFee=L=>Math.max(5,30-L)/(myTitle()==='merchant'?2:1),mLim=L=>200000*L;
 let MXF='wood',MXT='iron',MXA=100000;
 function panelMarket(){if(!P3())return;const L=C.market_level||1,p=prog(),m=(p.mk&&p.mk.day===today())?p.mk:{day:today(),used:0},left=Math.max(0,mLim(L)-m.used);
@@ -1675,7 +1675,7 @@ function stepCam(dt){const cam=VIEW==='city'?camC:camW;
   if(cam.vx||cam.vy){const ox=cam.x,oy=cam.y;cam.x+=cam.vx*dt;cam.y+=cam.vy*dt;clampCam();const f=Math.pow(.92,dt/16);cam.vx=cam.x===ox+cam.vx*dt?cam.vx*f:0;cam.vy=cam.y===oy+cam.vy*dt?cam.vy*f:0;if(Math.abs(cam.vx)<.02)cam.vx=0;if(Math.abs(cam.vy)<.02)cam.vy=0}}
 function flyW(tx,ty,ms){const ts=T*camW.z,x1=W/2-(tx-ty)*ts*IHX,y1=H/2-(tx+ty+1)*ts*IHY;const d=Math.hypot(x1-camW.x,y1-camW.y);FLY={x0:camW.x,y0:camW.y,x1,y1,t0:performance.now(),ms:ms||Math.min(1300,350+d*.35)};camW.vx=camW.vy=0}
 const wTile=(x,y)=>{const [a,b]=wInv(x,y);return [Math.floor(a),Math.floor(b)]};
-function tileWhy1(x,y){if(x<1||y<1||x>MAP-2||y>MAP-2)return 'برة حدود الخريطة';if(inPal(x,y)&&(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=14))return 'ده مكان القصر والأبراج 👑';if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=20&&!dawnOpen())return '🔒 منطقة الفجر: النقل جواها بيفتح قبل حرب العرش بـ 5 دقايق';
+function tileWhy1(x,y){if(x<1||y<1||x>MAP-2||y>MAP-2)return 'برة حدود الخريطة';if(inPal(x,y)&&(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=17))return 'ده مكان القصر والأبراج 👑';if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=20&&!dawnOpen())return '🔒 منطقة الفجر: النقل جواها بيفتح قبل حرب العرش بـ 5 دقايق';
   if(ME&&x===C.map_x&&y===C.map_y)return 'دي مدينتك أصلاً 🏰';
   if(CITIES.some(c=>c.id!==ME.id&&Math.abs(c.x-x)+Math.abs(c.y-y)<2))return 'جنب مدينة تانية';
   if(NODES.some(n=>n.x===x&&n.y===y))return 'فيه موارد هنا';
@@ -2714,7 +2714,7 @@ const DKEYS=['dc_oasis','dc_rocks','dc_dune','dc_bush','dc_arch','dc_palms'],DSZ
 function genDeco(){const R=rng(4242);DECO=[];LAKES=[];const far=(x,y,d,L)=>L.every(o=>Math.hypot(o[0]-x,o[1]-y)>=d);
   for(let i=0;LAKES.length<12&&i<2000;i++){const x=8+R()*(MAP-16),y=8+R()*(MAP-16),r=1.6+R()*1.8;if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<DZ+8)continue;if(!far(x,y,22,LAKES))continue;LAKES.push([x,y,r])}
   const tot=DW.reduce((a,b)=>a+b,0);
-  for(let i=0;DECO.length<420&&i<9000;i++){const x=2+Math.floor(R()*(MAP-4)),y=2+Math.floor(R()*(MAP-4));if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=DZ+2)continue;if(!far(x,y,3.2,DECO)||!far(x,y,5,LAKES))continue;let r=R()*tot,t=0;while(r>DW[t]){r-=DW[t];t++}DECO.push([x,y,t,.85+R()*.35,R()<.5])}}
+  for(let i=0;DECO.length<420&&i<9000;i++){const x=2+Math.floor(R()*(MAP-4)),y=2+Math.floor(R()*(MAP-4));if(Math.max(Math.abs(x-PCX),Math.abs(y-PCX))<=CLR)continue;if(!far(x,y,3.2,DECO)||!far(x,y,5,LAKES))continue;let r=R()*tot,t=0;while(r>DW[t]){r-=DW[t];t++}DECO.push([x,y,t,.85+R()*.35,R()<.5])}}
 function occSet(){const k=CITIES.length+'|'+NODES.length+'|'+MONSTERS.length;if(OCC&&OCCk===k)return OCC;OCCk=k;OCC=new Set();const cs=new Set(CITIES);[...CITIES,...NODES,...MONSTERS].forEach(o=>{const e=cs.has(o)?2:1;for(let dx=-1;dx<=e;dx++)for(let dy=-1;dy<=e;dy++)OCC.add((o.x+dx)+','+(o.y+dy))});return OCC}
 /* مؤثرات */
 const WX={streaks:[],devils:[],clouds:[],drift:[0,0],storm:null,nextStorm:performance.now()+90000+Math.random()*120000};
@@ -2745,7 +2745,7 @@ function drawDawnIso(t,G){const c=PCX,lo=c-DZ,hi=c+DZ+1,li=c-DZI,hi2=c+DZI+1,ts=
   isoDia(lo,lo,hi,hi);ctx.save();ctx.globalCompositeOperation='lighter';patFill('tx_dawn',ts/150,0,0,.10+.10*pu);ctx.restore();
   }const V=isoDia(lo,lo,hi,hi);if(!G){ctx.save();ctx.strokeStyle=`rgba(255,90,40,${.18+.1*pu})`;ctx.lineWidth=Math.max(6,ts*.3);ctx.stroke();ctx.strokeStyle=`rgba(255,90,40,${.55+.3*pu})`;ctx.lineWidth=Math.max(2,ts*.08);ctx.stroke();ctx.restore()}
   if(ok('iso_border')){const im=IMG.iso_border,bh=Math.max(10,ts*.75),bw=bh*im.naturalWidth/im.naturalHeight;for(let e=0;e<4;e++){const a=V[e],b=V[(e+1)%4],L=Math.hypot(b[0]-a[0],b[1]-a[1]),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.save();ctx.translate(a[0],a[1]);ctx.rotate(ang);ctx.globalAlpha=.85+.15*pu;for(let s=0;s<L;s+=bw*.98)ctx.drawImage(im,0,0,im.naturalWidth*Math.min(1,(L-s)/bw),im.naturalHeight,s,-bh/2,Math.min(bw,L-s),bh);ctx.restore()}}
-  if(ts>9&&WLOD<2&&typeof PXG!=='undefined'&&PXG.act&&!PXG.tgt)dzLabel(V[0][0],V[0][1]+ts*1.4,Math.round(Math.max(12,Math.min(22,ts*.55))));else if(ts>9&&WLOD<2)ctx.save(),ctx.font=`800 ${Math.max(12,Math.min(22,ts*.55))}px "IBM Plex Sans Arabic",Tahoma`,ctx.textAlign='center',ctx.fillStyle='rgba(255,225,180,.9)',ctx.shadowColor='#000',ctx.shadowBlur=6,ctx.fillText('🏛️ منطقة الفجر',V[0][0],V[0][1]+ts*1.4),ctx.restore()}
+  if(ts>9&&WLOD<2&&typeof PXG!=='undefined'&&PXG.act&&!PXG.tgt)dzLabel(V[0][0],V[0][1]-ts*.7,Math.round(Math.max(12,Math.min(22,ts*.55))));else if(ts>9&&WLOD<2)ctx.save(),ctx.font=`800 ${Math.max(12,Math.min(22,ts*.55))}px "IBM Plex Sans Arabic",Tahoma`,ctx.textAlign='center',ctx.fillStyle='rgba(255,225,180,.9)',ctx.shadowColor='#000',ctx.shadowBlur=6,ctx.fillText('🏛️ منطقة الفجر',V[0][0],V[0][1]-ts*.7),ctx.restore()}
 function siteDraw(s,t,list){const c=PCX,xy=s?[[c-11,c-11],[c+11,c-11],[c+11,c+11],[c-11,c+11]][s-1]:[c,c],R=s?1:3,ts=T*camW.z,[bx,by]=wP(xy[0]+R+1,xy[1]+R+1),[mx,my]=wP(xy[0]+.5,xy[1]+.5),k=s?'iso_tower':'iso_palace',w=(2*R+1)*2*IHX*ts*(s?1.05:.92);
   list.push({d:xy[0]+xy[1]+R*2,f:()=>{const by2=s?by:my+(by-my)*.885;if(mx<-w||mx>W+w||my<-w*1.2||my>H+w)return;const st=siteOf(s),own=st&&st.alliance,mine=own&&PALACE&&PALACE.my_ally&&own.id===PALACE.my_ally;
     ctx.save();ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(mx+ts*.4,my+ts*.25,w*.48,w*.24,0,0,7);ctx.fill();ctx.restore();
@@ -2801,7 +2801,7 @@ void main(){
   if(d>=0.){vec4 A=uHas>.5?pat(vec2(0),uSc):vec4(uCol,1);vec3 r=A.rgb;
    r=r*.7+vec3(20.,4.,2.)/255.*.3;
    if(w.x>=uLi&&w.x<=uHi2&&w.y>=uLi&&w.y<=uHi2)r=r*.7+vec3(25.,3.,0.)/255.*.3;
-   r+=A.rgb*(.10+.10*uPu);r=mix(r,vec3(dot(r,vec3(.3,.59,.11))),.28)*.8;c=vec4(r,1);}
+   r+=A.rgb*(.10+.10*uPu);r=mix(r,vec3(dot(r,vec3(.3,.59,.11))),.28)*.8;{float cc=(uLo+uHi)*.5;float ch=max(abs(w.x-cc),abs(w.y-cc));float g=smoothstep(14.5,20.5,ch);r*=mix(.62,1.18,g);r*=mix(.7,1.,smoothstep(14.6,16.2,ch));float v=abs(sin(w.x*1.37+sin(w.y*.83)*2.1)*sin(w.y*1.21+sin(w.x*.71)*2.3));float ck=(1.-smoothstep(.0,.07,v))*step(15.,ch)*(1.-g*.6);r+=vec3(1.,.38,.08)*ck*(.32+.22*uPu);}c=vec4(r,1);}
   float lw=max(2.,uTs*.08)*.5,ad=abs(px);
   float ln=(1.-smoothstep(lw-.7,lw+.7,ad))*(.55+.3*uPu);
   float gs=9.*(.6+.4*uPu),gl=exp(-ad*ad/(2.*gs*gs))*.9*(d<0.?1.:.6);
@@ -2851,7 +2851,7 @@ function glGround(t){if(!glInit())return false;const g=GL.gl,u=GL.u,c=GL.cv,d=Ma
 window.__GL={GL,glGround,glWant,lakes:()=>LAKES,cam:camW};
 /* 🌀 النقل على 4 مربعات (2×2): المدينة بتاخد المربع (x,y) واللي جنبه يمين وتحت */
 function tileWhy(x,y){if(x<1||y<1||x+1>MAP-2||y+1>MAP-2)return 'برة حدود الخريطة';const Q=[[0,0],[1,0],[0,1],[1,1]];
-  if(Q.some(([a,b])=>{const X=x+a-PCX,Y=y+b-PCX;return Math.max(Math.abs(X),Math.abs(Y))<=14}))return 'ده جوه حدود القصر والأبراج 👑 انقل برّه الخط الدهبي';
+  if(Q.some(([a,b])=>{const X=x+a-PCX,Y=y+b-PCX;return Math.max(Math.abs(X),Math.abs(Y))<=17}))return 'ده جوه حدود القصر والأبراج 👑 انقل برّه الخط الدهبي';
   if(Q.some(([a,b])=>Math.max(Math.abs(x+a-PCX),Math.abs(y+b-PCX))<=DZ)&&!dawnOpen())return '🔒 منطقة الفجر: النقل جواها بيفتح قبل حرب العرش بـ 5 دقايق';
   if(ME&&x===C.map_x&&y===C.map_y)return 'دي مدينتك أصلاً 🏰';
   if(CITIES.some(c=>c.id!==ME.id&&Math.abs(c.x-x)<2&&Math.abs(c.y-y)<2))return 'جنب مدينة تانية';
@@ -3649,6 +3649,16 @@ function pxsOn2(){const P=PXS.P,base={beginPath:ctx.beginPath,ellipse:ctx.ellips
       if(c){const a0=ctx.globalAlpha;ctx.globalAlpha=a0*c[1];try{pxgDraw(pxsTex(c[0]),r[0]-r[2],r[1]-r[3],r[2]*2,r[3]*2)}finally{ctx.globalAlpha=a0}return}}return base.fill.apply(ctx,arguments)}}
 {const _b=pxwBegin;pxwBegin=function(t){if(PXW.gL)PXW.gL.clear();_b(t)}}
 window.__THB=THB;
+
+/* 🧹 تنضيف حوالين القلعة + خريطة أخف: 10% بس من الموارد والوحوش، ومفيش حاجة قريبة من القلعة */
+const CLR=26;
+function thinNodes(L){return (L||[]).filter(n=>Math.max(Math.abs(n.x-PCX),Math.abs(n.y-PCX))>CLR&&(+n.id||0)%10===0)}
+/* أطراف صور السحاب والغبار بتتلاشى بالراحة (كانت بتعمل مربعات باهتة على الأرض الغامقة) */
+function fxFadeEdges(k,n){const im=IMG[k];if(!im||im._faded)return;const go=()=>{if(!im.naturalWidth)return;try{const W0=im.naturalWidth,H0=im.naturalHeight,c=document.createElement('canvas');c.width=W0;c.height=H0;const g=c.getContext('2d');g.drawImage(im,0,0);
+    const d=g.getImageData(0,0,W0,H0),p=d.data,fw=W0/n,ex=fw*.16,ey=H0*.16;
+    for(let y=0;y<H0;y++){const vy=Math.min(1,Math.min(y,H0-1-y)/ey);for(let x=0;x<W0;x++){const lx=x%fw,vx=Math.min(1,Math.min(lx,fw-1-lx)/ex),f=vx*vy,s=f*f*(3-2*f),i=(y*W0+x)*4+3;let a=p[i]*s;if(a<10)a=0;p[i]=a}}
+    g.putImageData(d,0,0);c._static=1;c._faded=1;c.complete=true;c.naturalWidth=W0;c.naturalHeight=H0;IMG[k]=c}catch(e){}};if(im.complete&&im.naturalWidth)go();else im.addEventListener('load',go,{once:true})}
+[['fx_cloud',8],['fx_dust',8],['fx_storm',8],['fx_drift',1],['fx_wind0',1],['fx_wind1',1],['fx_wind2',1],['fx_wind3',1],['fx_wind4',1],['fx_wind5',1]].forEach(([k,n])=>{try{fxFadeEdges(k,n)}catch(e){}});
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
