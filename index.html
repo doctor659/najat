@@ -452,6 +452,22 @@ body.storyMode #nav,body.storyMode .lstack,body.storyMode .rstack,body.storyMode
 #wrPop{position:fixed;left:50%;top:22%;transform:translate(-50%,-50%) scale(.7);z-index:61;opacity:0;pointer-events:none;text-align:center;padding:14px 22px;border-radius:18px;background:radial-gradient(ellipse at 50% 30%,rgba(30,70,40,.96),rgba(10,25,14,.96));border:2px solid #6FCF97;min-width:260px;max-width:92vw;cursor:pointer;transition:opacity .3s,transform .3s}
 #wrPop.l{background:radial-gradient(ellipse at 50% 30%,rgba(90,20,12,.96),rgba(30,8,4,.96));border-color:#FF7A5C}#wrPop.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
 #wrPop b{display:block;font-size:24px;color:#FFE08A}#wrPop small{display:block;font-size:13px;color:#FFF1D6;margin-top:4px}#wrPop span{display:inline-block;margin-top:8px;font-size:12px;color:#F0C068;border:1px solid #F0C068;border-radius:8px;padding:2px 10px}
+#wmBox{position:fixed!important;left:8px!important;transform:none!important;width:auto!important;z-index:6;display:flex;flex-direction:column;gap:6px}
+.wmI{position:relative;width:44px;height:44px;border-radius:50%;border:2px solid #F0C068;background:radial-gradient(circle at 35% 30%,#5A3A18,#24160A);color:#FFF1D6;font:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.6)}
+.wmI span{font-size:20px;line-height:1}.wmI small{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);background:rgba(20,10,4,.92);border-radius:6px;padding:0 4px;font-size:9.5px;font-weight:800;white-space:nowrap}
+.wmI.red{border-color:#FF6A4C;background:radial-gradient(circle at 35% 30%,#C0301E,#5A0C06);animation:wmP 1.4s ease-in-out infinite}.wmI.red small{color:#FFB8A0}
+.wmI.org{border-color:#FFA040;background:radial-gradient(circle at 35% 30%,#C86A10,#4A2204)}.wmI.gold small{color:#FFE08A}
+.wmI i{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#6FCF97;color:#06220F;font-style:normal;font-weight:900;font-size:12px;line-height:16px}.wmI i.n{background:#E8553F;color:#fff}
+.wmI.tw{width:38px;height:38px;margin-left:3px}
+.twC .twG{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.twC .twG span{background:rgba(255,255,255,.06);border-radius:8px;padding:2px 8px;font-size:12px}
+.rlH{display:flex;gap:10px;background:linear-gradient(180deg,#8E2A1C,#5A140C);border:1.5px solid #FF8A6A;border-radius:14px;padding:10px;color:#FFF1D6}
+.rlT{width:96px;flex:none;text-align:center}.rlT img{width:96px;height:80px;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(0,0,0,.6))}.rlT small{display:block;font-size:11px}
+.rlI{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.rlI b{font-size:14px}.rlI small{font-size:12px}
+.rlL{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.rlM{display:flex;align-items:center;gap:8px;background:rgba(40,70,120,.35);border:1.5px solid rgba(120,170,255,.35);border-radius:12px;padding:6px}.rlM.ld{background:rgba(60,140,70,.35);border-color:#6FCF97}
+.rlA{position:relative;width:46px;height:46px;border-radius:10px;background:#333 center/cover;flex:none;border:1.5px solid #F0C068}.rlA i{position:absolute;bottom:-2px;left:0;right:0;text-align:center;font-style:normal;font-size:9px;background:rgba(0,0,0,.7);border-radius:0 0 8px 8px}
+.rlM b{display:block;font-size:13px}.rlM small{font-size:11px;opacity:.85}.rlN{font-size:14px;color:#FFE08A}
+.rlE{display:flex;align-items:center;justify-content:space-between;background:rgba(80,140,220,.18);border:1.5px dashed rgba(140,190,255,.5);border-radius:12px;padding:10px;color:#CFE3FF;font:inherit;cursor:pointer}.rlE i{font-style:normal;width:30px;height:30px;border-radius:8px;background:#3FA34D;color:#fff;font-size:20px;line-height:30px}
 </style>
 </head>
 <body>
@@ -3176,7 +3192,7 @@ function wmBoxDraw(){if(!ME||!C)return;const el=wmBox(),L=wmThreatList(),n=tNow(
   h+=R.slice(0,2).map(r=>{const L2=(new Date(r.ends_at)-Date.now())/1000,tot=(r.members||[]).reduce((s,m)=>s+m.n,0);return `<div class="wmR"><div><b>🚩 ${esc(r.leader)} ← ${esc(r.target_name)}</b><small>⏳ ${fmtT(Math.max(0,L2))} · 👥 ${(r.members||[]).length} · ${fmt(tot)} جندي</small></div><button class="btn alt sm" data-wa="rl${r.id}">👥</button>${r.joined?'<span class="wmOk">✅</span>':`<button class="btn sm" data-wa="rj${r.id}">➕ انضم</button>`}</div>`}).join('');
   const wb=$('warBar');el.style.top=((wb&&!wb.hidden&&VIEW==='world')?wb.offsetTop+wb.offsetHeight+6:58)+'px';
   if(el._h!==h){el._h=h;el.innerHTML=h}el.hidden=!h}
-setInterval(wmBoxDraw,500);
+setInterval(()=>wmBoxDraw(),500);
 setInterval(async()=>{if(!ME||!C||!api.incoming||document.hidden)return;try{window.INCR=await api.incoming()||[]}catch(e){}},10000);
 function panelThreats(){const L=wmThreatList(),n=tNow();
   openSheet(`${artImg('watchtower')}<h2>🗼 برج المراقبة · الهجمات الجاية</h2>${L.length?L.map(x=>{const r=x.r,o=x.o,st=o&&WM.leaders?WM.leaders[o.id]:null;
@@ -3231,6 +3247,49 @@ function wmCtl(id){const o=(WM.marches||[]).find(x=>x.id===id);if(!o){toast('ا�
   $$('[data-wsp]').forEach(b=>b.onclick=()=>{b.disabled=true;go(b.dataset.wsp,false)});$$('[data-wspg]').forEach(b=>b.onclick=()=>{b.disabled=true;go(b.dataset.wspg,true)});
   if($('wsR'))$('wsR').onclick=async()=>{const b=$('wsR');if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ متأكد؟ رجّعها';return}b.disabled=true;try{await api.wmRecall(o.id);sfx('ui_confirm');toast('↩️ المسيرة راجعة لمدينتك');closeSheet();wmPoll()}catch(e){toast('⚠️ '+(e.message||'ماتمش'));b.disabled=false}};
   $('wsF').onclick=()=>{closeSheet();if(VIEW==='world'){const k=wmK(o);flyW(o.fx+(o.tx-o.fx)*k,o.fy+(o.ty-o.fy)*k)}}}
+
+/* 🚨 الإنذارات والحشود: أيقونات صغيرة على الجنب (زي WOS) */
+wmBoxDraw=function(){if(!ME||!C)return;const el=wmBox();if(VIEW!=='world'){el.hidden=true;return}el.hidden=false;const L=wmThreatList(),n=tNow();
+  const R=(typeof RALLIES!=='undefined'?RALLIES:[]).filter(r=>!r.launched&&new Date(r.ends_at).getTime()>Date.now()).sort((a,b)=>new Date(a.ends_at)-new Date(b.ends_at));
+  const war=typeof warOn==='function'&&warOn();
+  let h=L.slice(0,3).map(x=>`<button class="wmI red" data-wa="th" title="${x.t.replace(/"/g,'')}"><span>🚨</span><small>${fmtT(Math.max(0,(x.end-n)/1000))}</small></button>`).join('');
+  h+=R.slice(0,3).map(r=>{const L2=(new Date(r.ends_at)-Date.now())/1000;return `<button class="wmI ${r.joined?'gold':'org'}" data-wa="rl${r.id}"><span>🚩</span><small>${fmtT(Math.max(0,L2))}</small>${r.joined?'':'<i>+</i>'}</button>`}).join('');
+  if(war||L.length||R.length)h=`<button class="wmI tw" data-wa="th"><span>🗼</span>${L.length?`<i class="n">${L.length}</i>`:''}</button>`+h;
+  const km=$('kmMini'),r0=km&&!km.hidden?km.getBoundingClientRect():null;el.style.top=(r0?r0.bottom+(($('kmS')&&!$('kmS').hidden)?18:8):210)+'px';
+  if(el._h!==h){el._h=h;el.innerHTML=h}el.hidden=!h};
+
+/* 🗼 المنارة: كل الهجمات الجاية + حشود التحالف، وتعزيز لو المكان بتاعنا */
+panelThreats=function(){const L=wmThreatList(),n=tNow(),my=WM.my_ally,held=s=>{const t=PALACE&&PALACE.sites&&siteOf(s);return t&&t.alliance&&my&&t.alliance.id===my};
+  const R=(typeof RALLIES!=='undefined'?RALLIES:[]).filter(r=>!r.launched&&new Date(r.ends_at).getTime()>Date.now());
+  openSheet(`${artImg('watchtower')}<h2>🗼 المنارة</h2>
+   <div class="rsec">🚨 هجمات جاية علينا (${L.length})</div>${L.length?L.map(x=>{const r=x.r,o=x.o,st=o&&WM.leaders?WM.leaders[o.id]:null,s=r?r.site:o?o.site:null;
+    return `<div class="card twC"><div class="kv"><span>${x.t}</span><b class="lose" data-wcd2="${x.end}">${fmtT(Math.max(0,(x.end-n)/1000))}</b></div>
+    ${r?`<div class="twG"><span>🏰 ${r.keep}</span><span>⚡ ${fmt(r.power)}</span><span>🦸 ${r.hero&&HN[r.hero]?HN[r.hero].n:'—'}</span><span>👥 ${r.members}</span><span>🛡️ ${fmt(r.troops)}</span></div>`:''}
+    ${st?`<div class="twG"><span>🏰 ${st.keep}</span><span>⚡ ${fmt(st.power)}</span><span>🛡️ ${fmt(o.n)}</span>${o.rally?`<span>👥 ${o.members}</span>`:''}</div>`:''}
+    ${s!=null&&held(s)?`<button class="btn wide" data-twr="${s}">🛡️ عزّز ${siteNm(s)}</button>`:''}</div>`}).join(''):'<div class="card sub">مفيش هجمات جاية دلوقتي 🛡️</div>'}
+   <div class="rsec">🚩 حشود تحالفنا (${R.length})</div>${R.length?R.map(r=>{const tot=(r.members||[]).reduce((s,m)=>s+m.n,0);return `<div class="card twC"><div class="kv"><span>🚩 ${esc(r.leader)} ← ${esc(r.target_name)}</span><b data-wcd2="${new Date(r.ends_at).getTime()}">${fmtT(Math.max(0,(new Date(r.ends_at)-Date.now())/1000))}</b></div><div class="twG"><span>👥 ${(r.members||[]).length}</span><span>🛡️ ${fmt(tot)}</span></div><div class="row"><button class="btn alt wide" data-twe="${r.id}">👁 التفاصيل</button>${r.joined?'<span class="sub" style="align-self:center">✅ منضم</span>':`<button class="btn wide" data-twj="${r.id}">➕ انضم</button>`}</div></div>`}).join(''):'<div class="card sub">مفيش حشد شغال في التحالف.</div>'}`);
+  $$('[data-twr]').forEach(b=>b.onclick=()=>{const s=+b.dataset.twr;openMarch({kind:'pr',site:s,name:siteNm(s)+' (تعزيز)'})});
+  $$('[data-twe]').forEach(b=>b.onclick=()=>rallyRoster(+b.dataset.twe));
+  $$('[data-twj]').forEach(b=>b.onclick=()=>{const r=RALLIES.find(x=>x.id===+b.dataset.twj);if(r)openMarch({kind:'rj',rid:r.id,name:'حشد '+r.leader+' على '+r.target_name})});
+  const iv=setInterval(()=>{const e=document.querySelectorAll('[data-wcd2]');if(!e.length){clearInterval(iv);return}e.forEach(z=>z.textContent=fmtT(Math.max(0,(+z.dataset.wcd2-tNow())/1000)))},500)};
+
+/* 👁 صفحة الحشد (زي WOS) */
+rallyRoster=async function(rid){const r=(RALLIES||[]).find(x=>x.id===rid);let d=null;try{d=api.rallyRoster?await api.rallyRoster(rid):null}catch(e){}
+  if(!d){if(!r){toast('الحشد خلص');return}d={id:r.id,site:r.site,ends_at:r.ends_at,launched:r.launched,leader:r.leader,mine:r.mine,cap:r.cap||1000000,total:(r.members||[]).reduce((s,m)=>s+m.n,0),size:(r.members||[]).length,joined:(r.members||[]).map((m,i)=>({name:m.name,n:m.n,leader:i===0})),not_joined:[]}}
+  const joined=d.joined.some(m=>m.me)||(r&&r.joined),tn=r?r.target_name:siteNm(d.site),key=d.site==null?'keep':d.site?'turret':'palace',free=Math.max(0,Math.min(4,(d.size||0)-d.joined.length));
+  openSheet(`<div class="rlH"><div class="rlT">${ART[key]?`<img src="${ART[key]}" alt="">`:''}<small>🎯 ${esc(tn||'')}</small></div><div class="rlI"><b>👑 ${esc(d.leader)}</b><small>👥 الفريق: <b>${d.joined.length}/${d.size||d.joined.length}</b></small><small>🛡️ ${fmt(d.total)} / ${fmt(d.cap)}</small><div class="bar"><i style="width:${Math.min(100,d.total/d.cap*100)}%"></i></div><small>${d.launched?'🐪 اتحرك':'⏳ بيتحرك بعد <b data-wcd2="'+new Date(d.ends_at).getTime()+'"></b>'}</small></div></div>
+   <div class="rlL">${d.joined.map(m=>`<div class="rlM ${m.leader?'ld':''}"><div class="rlA" style="background-image:url('${m.hero&&HIMG[m.hero]?ART[HIMG[m.hero]]:''}')">${m.hl?`<i>Lv${m.hl}</i>`:''}</div><div style="flex:1;min-width:0"><b>${m.leader?'👑 ':''}${esc(m.name)}${m.me?' (انت)':''}</b><small>${m.hero&&HN[m.hero]?HN[m.hero].n+' · ':''}✅ جاهز</small></div><b class="rlN">${fmt(m.n)}</b></div>`).join('')}
+   ${!joined&&!d.launched?Array.from({length:Math.max(1,free)}).map(()=>`<button class="rlE" data-rlj="1"><span>اضغط علشان تنضم للحشد</span><i>➕</i></button>`).join(''):''}</div>
+   ${d.not_joined&&d.not_joined.length?`<div class="rsec">⏳ لسه ما انضموش (${d.not_joined.length})</div><div class="card">${d.not_joined.map(n=>`<span class="rrN">${esc(n)}</span>`).join('')}</div>`:''}
+   <div class="row">${d.mine&&!d.launched?'<button class="btn red wide" id="rlX">✖ حل الحشد</button>':''}${!d.launched?'<button class="btn alt wide" id="rlI">📣 دعوة الحلفاء</button>':''}</div>`);
+  $$('[data-rlj]').forEach(b=>b.onclick=()=>{if(r)openMarch({kind:'rj',rid:r.id,name:'حشد '+r.leader+' على '+tn});else toast('افتح التحالف ← الحرب وانضم من هناك')});
+  if($('rlI'))$('rlI').onclick=async()=>{try{await api.allySend(ALLY.id,ME.id,`🚩 انضموا لحشد ${d.leader} على ${tn}! باقي ${fmtT(Math.max(0,(new Date(d.ends_at)-tNow())/1000))} 🔥`);sfx('ui_confirm');toast('📣 الدعوة اتبعتت في شات التحالف')}catch(e){toast('⚠️ '+(e.message||'ماتمش'))}};
+  if($('rlX'))$('rlX').onclick=async()=>{const b=$('rlX');if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='✓ متأكد؟';return}b.disabled=true;try{await api.rallyCancel(d.id);toast('✖ الحشد اتحل والجنود رجعوا');closeSheet();rallyPoll()}catch(e){toast('⚠️ '+(e.message||'ماتمش'));b.disabled=false}};
+  const iv=setInterval(()=>{const e=document.querySelectorAll('[data-wcd2]');if(!e.length){clearInterval(iv);return}e.forEach(z=>{const L=(+z.dataset.wcd2-tNow())/1000;z.textContent=L>0?fmtT(L):'🐪 بيتحرك'})},500)};
+
+/* 📜 التقرير: قوة القوات = الجنود اللي حاربت بس */
+{const _wr=panelWarRep;panelWarRep=function(r,back){const atk=r.k==='atk',cp=o=>o?{...o}:null;const r2={...r,a:cp(r.a),d:cp(r.d)};
+  if(r.aT&&r2.a)r2.a.troops=r.aT;if(r.dT&&r2.d)r2.d.troops=r.dT;return _wr(r2,back)}}
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
