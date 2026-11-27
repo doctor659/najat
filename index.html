@@ -2900,10 +2900,7 @@ function pxCity(t,nt,ox,oy,Z){if(SCITY.ruin||!glWant())return false;
   const g=PXC.sh.resources.cu,u=g.uniforms;u.uRes[0]=W;u.uRes[1]=H;u.uO[0]=ox;u.uO[1]=oy;u.uZ=Z;u.uT=(t/1000)%3600;u.uN=nt;g.update&&g.update();PXC.mesh.scale.set(W,H);
   if(!(typeof PXCY!=='undefined'&&PXCY.want)){try{a.render()}catch(e){pxcKill();return false}}
   if(!PXC.on){a.canvas.style.visibility='visible';PXC.on=true}return true}
-async function pxCityInit(){try{const app=new PIXI.Application();
-  await app.init({width:W,height:H,resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true,background:'#2A1C10',antialias:false,preference:'webgl',powerPreference:'low-power',autoStart:false});
-  const c=app.canvas;c.id='pxc';c.style.cssText='position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;visibility:hidden';cv.parentNode.insertBefore(c,cv);
-  c.addEventListener('webglcontextlost',e=>{e.preventDefault();pxcKill()});
+async function pxCityInit(){try{const app=pxuView('c',await pxuGet(),'#2A1C10');
   const im=IMG.city_bg3,u={uRes:new Float32Array(2),uO:new Float32Array(2),uBg:new Float32Array([-880.6,-796.6,1755.6,1755.6*im.naturalHeight/im.naturalWidth])};
   const sh=PIXI.Shader.from({gl:{vertex:PXV,fragment:PXCF},resources:{uDay:pxTex('city_bg3').source,uNgt:pxTex('city_night').source,uLit:pxTex('city_lights').source,uWat:pxTex('city_water').source,uGrd:pxTex('city_ground').source,
     cu:{uRes:{value:u.uRes,type:'vec2<f32>'},uO:{value:u.uO,type:'vec2<f32>'},uZ:{value:1,type:'f32'},uBg:{value:u.uBg,type:'vec4<f32>'},uT:{value:0,type:'f32'},uN:{value:0,type:'f32'}}}});
@@ -3333,10 +3330,7 @@ function fxMeasure(ms){LOWFX.s+=ms;LOWFX.n++;if(LOWFX.n>=90){const a=LOWFX.s/LOW
 /* 🎮 الحرب على محرك PixiJS: القصر والأبراج والحدود والدرع والمسيرات والمظاهر والإفكتات بكارت الشاشة */
 const PXW={f:0,app:null,on:false,busy:false,dead:false,items:{},used:new Set(),z:0,tx:{},lab:{},labN:0,pool:[],w:0,h:0,show:false};
 function pxwReady(){if(PXW.dead||!glWant()||PX.st===-1)return false;if(PXW.app)return true;if(!PXW.busy){PXW.busy=true;pxLoad(pxwInit)}return false}
-async function pxwInit(){try{const app=new PIXI.Application();
-  await app.init({width:W,height:H,resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true,backgroundAlpha:0,antialias:true,preference:'webgl',powerPreference:'low-power',autoStart:false});
-  const c=app.canvas;c.id='pxw';c.style.cssText='position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;visibility:hidden';cv.parentNode.insertBefore(c,cv.nextSibling);
-  c.addEventListener('webglcontextlost',e=>{e.preventDefault();pxwKill()});
+async function pxwInit(){try{const app=pxuView('w',await pxuGet(),[0,0,0,0]);
   const root=new PIXI.Container();app.stage.addChild(root);const gK=new PIXI.Graphics();root.addChild(gK);const lay=new PIXI.Container();lay.sortableChildren=true;root.addChild(lay);const pc=new PIXI.Container();root.addChild(pc);
   Object.assign(PXW,{app,root,gK,lay,pc,w:0})}catch(e){console.warn('PXW',e);PXW.dead=true;PXW.app=null}}
 function pxwKill(){try{if(PXW.app){PXW.app.canvas.remove();PXW.app.destroy(true)}}catch(e){}PXW.app=null;PXW.on=false;PXW.dead=true;PXW.items={};PXW.tx={};PXW.lab={};PXW.pool=[]}
@@ -3492,6 +3486,23 @@ function pxcyFrame(t,dt){PXCY.want=!!(window.PIXI&&PXC.app&&!PXC.dead);PXCY.used
     if(w&&PXC.app){if(!PXCY.used&&PXCY.cont)PXCY.cont.visible=false;if(PXC.on){try{PXC.app.render()}catch(e){pxcKill()}}}}}
 function pxcyShadow(x,y,rx,ry){if(PXG.act&&PXG.tgt===PXCY){ctx.drawImage(CSHF,x-rx,y-ry,rx*2,ry*2);return true}return false}
 window.__PXCY=PXCY;
+
+/* 🔗 توحيد المحرك: المدينة والخريطة على محرك واحد وشاشة واحدة (ذاكرة أقل على الموبايل والصور مش بتتحمّل مرتين) */
+const PXU={app:null,p:null,vis:{c:false,w:false}};
+function pxuGet(){if(PXU.p)return PXU.p;PXU.p=(async()=>{const app=new PIXI.Application();
+  await app.init({width:W,height:H,resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true,backgroundAlpha:0,antialias:!IS_PHONE,preference:'webgl',powerPreference:'low-power',autoStart:false});
+  const c=app.canvas;c.id='pxu';c.style.cssText='position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;visibility:hidden';cv.parentNode.insertBefore(c,cv);
+  c.addEventListener('webglcontextlost',e=>{e.preventDefault();try{pxcKill()}catch(x){}try{pxwKill()}catch(x){}c.remove()});
+  PXU.app=app;return app})();return PXU.p}
+function pxuSync(){const c=PXU.app&&PXU.app.canvas;if(!c||!c.parentNode)return;const w=VIEW==='world';
+  if(w){if(c.previousSibling!==cv)cv.parentNode.insertBefore(c,cv.nextSibling)}else if(c.nextSibling!==cv)cv.parentNode.insertBefore(c,cv);
+  const on=w?PXU.vis.w:PXU.vis.c,v=on?'visible':'hidden';if(c.style.visibility!==v)c.style.visibility=v}
+function pxuView(key,app,clear){const root=new PIXI.Container(),st={};
+  Object.defineProperty(st,'visibility',{get(){return PXU.vis[key]?'visible':'hidden'},set(v){PXU.vis[key]=v==='visible';pxuSync()}});
+  return {canvas:{style:st,remove(){PXU.vis[key]=false;pxuSync()}},renderer:app.renderer,stage:root,
+    render(){pxuSync();app.renderer.render({container:root,clear:true,clearColor:clear})},
+    destroy(){try{root.destroy({children:true})}catch(e){}}}}
+window.__PXU=PXU;
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
