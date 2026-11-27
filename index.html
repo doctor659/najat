@@ -2740,7 +2740,7 @@ function fxAir(t){const ts=T*camW.z,hi=GFX();
 /* 🏛️ منطقة الفجر + القصر */
 const DFIRE=()=>{const c=PCX+.5,r=DZ+.5;return [[c-r,c-r],[c+r,c-r],[c+r,c+r],[c-r,c+r],[c,c-r],[c+r,c],[c,c+r],[c-r,c]]};
 function drawDawnIso(t,G){const c=PCX,lo=c-DZ,hi=c+DZ+1,li=c-DZI,hi2=c+DZI+1,ts=T*camW.z;
-  const pu=.5+.5*Math.sin(t/700);if(!G){isoDia(lo,lo,hi,hi);if(!patFill('tx_dawn',ts/150)){ctx.fillStyle='#6E2418';ctx.fill()}
+  const pu=.5+.5*Math.sin(t/700);if(!G){isoDia(lo,lo,hi,hi);ctx.fillStyle='rgba(150,55,18,.12)';ctx.fill()}if(false){isoDia(lo,lo,hi,hi);if(!patFill('tx_dawn',ts/150)){ctx.fillStyle='#6E2418';ctx.fill()}
   isoDia(lo,lo,hi,hi);ctx.fillStyle='rgba(20,4,2,.46)';ctx.fill();isoDia(li,li,hi2,hi2);ctx.fillStyle='rgba(25,3,0,.30)';ctx.fill();
   isoDia(lo,lo,hi,hi);ctx.save();ctx.globalCompositeOperation='lighter';patFill('tx_dawn',ts/150,0,0,.10+.10*pu);ctx.restore();
   }const V=isoDia(lo,lo,hi,hi);if(!G){ctx.save();ctx.strokeStyle=`rgba(255,90,40,${.18+.1*pu})`;ctx.lineWidth=Math.max(6,ts*.3);ctx.stroke();ctx.strokeStyle=`rgba(255,90,40,${.55+.3*pu})`;ctx.lineWidth=Math.max(2,ts*.08);ctx.stroke();ctx.restore()}
@@ -2798,10 +2798,7 @@ void main(){
  if(uMode<1.5){ /* منطقة الفجر */
   vec2 w=vW;float dx=min(w.x-uLo,uHi-w.x),dy=min(w.y-uLo,uHi-w.y),d=min(dx,dy);
   float px=d*uTs*.56;vec4 c=vec4(0);
-  if(d>=0.){vec4 A=uHas>.5?pat(vec2(0),uSc):vec4(uCol,1);vec3 r=A.rgb;
-   r=r*.7+vec3(20.,4.,2.)/255.*.3;
-   if(w.x>=uLi&&w.x<=uHi2&&w.y>=uLi&&w.y<=uHi2)r=r*.7+vec3(25.,3.,0.)/255.*.3;
-   r+=A.rgb*(.10+.10*uPu);r=mix(r,vec3(dot(r,vec3(.3,.59,.11))),.28)*.8;{float cc=(uLo+uHi)*.5;float ch=max(abs(w.x-cc),abs(w.y-cc));float g=smoothstep(14.5,20.5,ch);r*=mix(.62,1.18,g);r*=mix(.7,1.,smoothstep(14.6,16.2,ch));float v=abs(sin(w.x*1.37+sin(w.y*.83)*2.1)*sin(w.y*1.21+sin(w.x*.71)*2.3));float ck=(1.-smoothstep(.0,.07,v))*step(15.,ch)*(1.-g*.6);r+=vec3(1.,.38,.08)*ck*(.32+.22*uPu);}c=vec4(r,1);}
+  if(d>=0.){float cc=(uLo+uHi)*.5;float ch=max(abs(w.x-cc),abs(w.y-cc));float tn=.06+.07*smoothstep(15.,20.5,ch)*(.8+.2*uPu);c=vec4(vec3(.62,.22,.06)*tn,tn);float sh=(1.-smoothstep(14.2,17.8,ch))*.42;c=vec4(vec3(.13,.05,.02)*sh,sh)+c*(1.-sh);}
   float lw=max(2.,uTs*.08)*.5,ad=abs(px);
   float ln=(1.-smoothstep(lw-.7,lw+.7,ad))*(.55+.3*uPu);
   float gs=9.*(.6+.4*uPu),gl=exp(-ad*ad/(2.*gs*gs))*.9*(d<0.?1.:.6);
