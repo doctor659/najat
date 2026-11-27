@@ -1611,7 +1611,7 @@ setInterval(warBar,1000);
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#warBar'))openSite(0)});
 async function openPalace(){return openSite(0)}
 async function openSite(s){const key=s?'turret':'palace',title=s?'🗼 برج '+s:'👑 قصر السلطان';openSheet(`${artImg(key)}<h2>${title}</h2><div class="card sub" style="text-align:center">⏳</div>`);
-  if(!api.throne)return;const hk=()=>JSON.stringify(((typeof siteOf==='function'&&PALACE&&PALACE.sites&&siteOf(s))||{}).alliance||null);if(!(PALACE&&PALACE.sites&&Date.now()-(window.PLT||0)<20000)){try{await loadPalace()}catch(e){}window.PLT=Date.now()}else{const h0=hk();setTimeout(async()=>{try{await loadPalace();window.PLT=Date.now()}catch(e){}if(($('plA')||$('plR'))&&hk()!==h0)openSite(s)},10)}clearInterval(window.PLIV);window.PLIV=setInterval(async()=>{if(!$('plA')&&!$('plR')&&!$('plB')){clearInterval(window.PLIV);return}const h1=hk();try{await loadPalace();window.PLT=Date.now()}catch(e){}if(hk()!==h1){toast(siteOf(s)&&siteOf(s).alliance&&PALACE.my_ally===siteOf(s).alliance.id?'🛡️ المكان بقى بتاع تحالفك! الزرار اتحول تعزيز':'⚠️ المكان اتاخد!');openSite(s)}},5000);const P=PALACE;
+  if(!api.throne)return;const hk=()=>JSON.stringify(((typeof siteOf==='function'&&PALACE&&PALACE.sites&&siteOf(s))||{}).alliance||null);if(!(PALACE&&PALACE.sites&&Date.now()-(window.PLT||0)<20000)){try{await loadPalace()}catch(e){}window.PLT=Date.now()}else{const h0=hk();setTimeout(async()=>{try{await loadPalace();window.PLT=Date.now()}catch(e){}if(($('plA')||$('plR'))&&hk()!==h0)openSite(s)},10)}clearInterval(window.PLIV);window.PLIV=setInterval(async()=>{if(!$('plA')&&!$('plR')&&!$('plB')){clearInterval(window.PLIV);return}const h1=hk();try{await loadPalace();window.PLT=Date.now()}catch(e){}if(hk()!==h1){toast(siteOf(s)&&siteOf(s).alliance&&PALACE.my_ally===siteOf(s).alliance.id?'🛡️ المكان بقى بتاع تحالفك! الزرار اتحول تعزيز':'⚠️ المكان اتاخد!');openSite(s)}},10000);const P=PALACE;
   if(!P||!P.sites){openSheet(`${artImg(key)}<h2>${title}</h2><div class="card sub">⚠️ شغّل SQL حرب العرش في Supabase الأول.</div>`);return}
   const w=P.war,st=siteOf(s),on=warOn(),n=tNow(),en=new Date(w.ends_at).getTime(),sa=new Date(w.starts_at).getTime(),own=st.alliance,isMine=own&&own.id===P.my_ally,p0=siteOf(0);
   const left=(en-n)/1000,directDL=en-w.win_sec*1000;
@@ -3013,7 +3013,7 @@ function drawSkin(sk,mr,x,y,ang,t){const ts=T*camW.z,S=Math.max(46,Math.min(120,
     if(ok('mk_genie_sw')){const im=IMG.mk_genie_sw,w=S*1.25;ctx.save();ctx.translate(x,y+S*.06);ctx.scale(1,.42);ctx.rotate(t/480);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.8;ctx.drawImage(im,-w/2,-w/2,w,w);ctx.restore()}
     if(ok('mk_genie_tr')){const im=IMG.mk_genie_tr,L=S*2.4,h=L*im.naturalHeight/im.naturalWidth;ctx.save();ctx.translate(x,hy+S*.18);ctx.rotate(ang);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.75+.15*Math.sin(t/90);ctx.drawImage(im,-L+S*.1,-h/2,L,h);ctx.restore()}
     if(ok('mk_genie')){const im=IMG.mk_genie,fw=im.naturalWidth/4,fh=im.naturalHeight,gw=gh*fw/fh,fr=Math.floor(t/170)%4;ctx.save();ctx.translate(x,hy);if(flip)ctx.scale(-1,1);
-      ctx.shadowColor='rgba(80,200,255,.8)';ctx.shadowBlur=14+6*Math.sin(t/200);skDrawSprite('mk_genie',-gw/2,-gh*.62,gw,gh,fr,4);ctx.restore()}
+      skDrawSprite('mk_genie',-gw/2,-gh*.62,gw,gh,fr,4);ctx.restore()}
     if(Math.random()<.5){const a=Math.random()*7;skPart({x:x+Math.cos(a)*S*.45,y:hy+S*.1+Math.sin(a)*S*.2,vx:(Math.random()-.5)*.4,vy:-.5-Math.random()*.6,l:1,d:1+Math.random(),r:1.2+Math.random()*2,c:Math.random()<.6?'120,220,255':'255,215,110'})}}
   else if(sk==='phoenix'){const hy=y-S*.6+Math.sin(t/240)*S*.05,fr=Math.floor(t/95)%4;topY=hy-S*.55;
     if(ok('mk_falcon_tr')){const im=IMG.mk_falcon_tr,L=S*2.7,h=L*im.naturalHeight/im.naturalWidth;ctx.save();ctx.translate(x,hy);ctx.rotate(ang);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.9;ctx.drawImage(im,-L+S*.05,-h/2*(1+.07*Math.sin(t/60)),L,h*(1+.07*Math.sin(t/60)));ctx.restore()}
@@ -3038,7 +3038,7 @@ function lmRows(){return MARCHES.filter(m=>!m.done&&m.st&&m.m).map(m=>({fx:m.fx,
 function lmPush(){if(!api.lmSet||!ME)return;clearTimeout(LMPT);LMPT=setTimeout(()=>{api.lmSet(lmRows(),mySkin()).catch(()=>{})},700)}
 {const _mq=mqSave;mqSave=function(){_mq();lmPush()}}
 async function lmPoll(){if(!api.lmList||!ME||!C||document.hidden||VIEW!=='world')return;try{LM=await api.lmList()||[]}catch(e){}}
-setInterval(lmPoll,6000);setTimeout(()=>{lmPoll();if(MARCHES.length)lmPush()},4000);
+setInterval(lmPoll,10000);setTimeout(()=>{lmPoll();if(MARCHES.length)lmPush()},4000);
 function lmDraw(t){const now=Date.now();for(const o of LM){const k=(now-o.st)/o.dur;if(k<0||k>1)continue;const [ax,ay]=wP(o.fx+.5,o.fy+.5),[bx,by]=wP(o.tx+.5,o.ty+.5),x=ax+(bx-ax)*k,y=ay+(by-ay)*k;
     if(Math.max(ax,bx)<-150||Math.min(ax,bx)>W+150||Math.max(ay,by)<-150||Math.min(ay,by)>H+150)continue;
     const al=TAGS[o.pid]&&TAGS[ME.id]&&TAGS[o.pid].a===TAGS[ME.id].a;ctx.setLineDash([6,6]);ctx.lineDashOffset=-t/50;ctx.strokeStyle=al?'rgba(90,220,130,.7)':'rgba(140,190,255,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);
@@ -3146,14 +3146,14 @@ function drawKeepout(t){if(typeof isoDia!=='function')return;const pu=.5+.5*Math
   for(const [dx,dy,m] of KO){const cx=PCX+dx,cy=PCX+dy;
     if(SEL){isoDia(cx-m,cy-m,cx+m+1,cy+m+1);ctx.fillStyle=`rgba(255,30,30,${.28+.12*pu})`;ctx.fill()}
     isoDia(cx-m,cy-m,cx+m+1,cy+m+1);ctx.setLineDash([]);ctx.lineWidth=7;ctx.strokeStyle='rgba(40,15,5,.55)';ctx.shadowBlur=0;ctx.stroke();
-    ctx.setLineDash([14,8]);ctx.lineDashOffset=-t/60;ctx.lineWidth=3.6;ctx.strokeStyle=SEL?`rgba(255,90,70,${.8+.2*pu})`:`rgba(255,222,120,${.75+.25*pu})`;ctx.shadowColor=SEL?'rgba(255,60,40,1)':'rgba(255,210,90,1)';ctx.shadowBlur=12;ctx.stroke()}
+    ctx.setLineDash([14,8]);ctx.lineDashOffset=-t/60;ctx.lineWidth=3.6;ctx.strokeStyle=SEL?`rgba(255,90,70,${.8+.2*pu})`:`rgba(255,222,120,${.75+.25*pu})`;ctx.stroke()}
   ctx.restore()}
 
 /* 🐪 مسيرات الحرب على الخريطة (كل اللاعبين شايفينها) */
 let WM={marches:[],threats:[],leaders:{},my_ally:null},WMFX={},WREPS=[];
 const siteNm=s=>s?'🗼 برج '+s:'👑 القصر';
 async function wmPoll(){if(!ME||!C||!api.wmList||document.hidden)return;try{const r=await api.wmList();if(r&&r.marches){WM=r;wmAlerts()}}catch(e){}}
-setInterval(wmPoll,5000);setTimeout(wmPoll,3000);
+setInterval(()=>{if(VIEW==='world'||Date.now()-(wmPoll.t||0)>20000){wmPoll.t=Date.now();wmPoll()}},5000);setTimeout(wmPoll,3000);
 function wmK(o){const d=new Date(o.dep).getTime(),a=new Date(o.arr).getTime();return Math.max(0,Math.min(1,(tNow()-d)/Math.max(1,a-d)))}
 function wmCol(o){if(o.mine)return 'rgba(255,215,110,.95)';if(WM.my_ally&&o.aid===WM.my_ally)return 'rgba(90,225,130,.85)';return o.kind==='back'?'rgba(170,190,220,.6)':'rgba(255,90,70,.9)'}
 function wmDraw(t){for(const o of WM.marches||[]){const k=wmK(o),[ax,ay]=wP(o.fx+.5,o.fy+.5),[bx,by]=wP(o.tx+.5,o.ty+.5);
@@ -3216,7 +3216,7 @@ async function wrPoll(){if(!ME||!C||!api.wmReports||document.hidden)return;let L
   const k='najat_wrs_'+ME.id;let seen=0;try{seen=+localStorage.getItem(k)||0}catch(e){}const first=!WREPS.length&&!wrPoll.done;wrPoll.done=1;WREPS=L;
   const nw=L.filter(r=>r.id>seen&&Date.now()-new Date(r.at).getTime()<15*60000);const mx=Math.max(seen,...L.map(r=>r.id),0);try{localStorage.setItem(k,mx)}catch(e){}
   if(nw.length&&!(first&&seen===0&&nw.length>3))wrPop(nw[0])}
-setInterval(wrPoll,6000);setTimeout(wrPoll,4000);
+setInterval(wrPoll,15000);setTimeout(wrPoll,4000);
 function wrTitle(r){return r.k==='atk'?(r.rally?'🚩 حشد على ':'⚔️ هجوم على ')+r.sname:'🛡️ دفاع عن '+r.sname}
 function wrPop(r){let el=$('wrPop');if(!el){el=document.createElement('div');el.id='wrPop';document.body.appendChild(el)}
   el.className=r.won?'w':'l';el.innerHTML=`<b>${r.won?'🏆 كسبت!':'💀 خسرت'}</b><small>${wrTitle(r)}${r.k==='atk'&&r.rally?' · قائد الحشد '+esc(r.leader):''}${r.k==='def'?' · ضد ['+esc(r.tag||'')+'] '+esc(r.leader):''}</small><span>📜 شوف التقرير</span>`;
