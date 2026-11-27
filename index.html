@@ -802,18 +802,18 @@ const cityBase=()=>Math.min(W/600,H/900);
 let VG=null;
 let BGC=null;
 function drawCity(t,dt){HITS=[];const nt=window.__NTF!=null?window.__NTF:night(t),Z=cityBase()*camC.z;CZ=Z;const ox=W/2+camC.x,oy=H/2+camC.y,S=(x,y)=>[ox+x*Z,oy+y*Z];
-  const PXON=pxCity(t,nt,ox,oy,Z);if(PXON)ctx.clearRect(0,0,W,H);else if(ok('city_ground')){if(!GROUND)GROUND=ctx.createPattern(IMG.city_ground,'repeat');const k=560*Z/IMG.city_ground.naturalWidth;ctx.save();ctx.translate(ox,oy);ctx.scale(k,k);ctx.fillStyle=GROUND;ctx.fillRect(-ox/k-2,-oy/k-2,W/k+4,H/k+4);ctx.restore()}else{ctx.fillStyle='#D9A55A';ctx.fillRect(0,0,W,H)}
+  const PXON=pxCity(t,nt,ox,oy,Z);if(typeof PXCY!=='undefined'&&PXCY.want&&!PXON&&PXCY.cont)PXCY.cont.visible=false;if(PXON)ctx.clearRect(0,0,W,H);else if(ok('city_ground')){if(!GROUND)GROUND=ctx.createPattern(IMG.city_ground,'repeat');const k=560*Z/IMG.city_ground.naturalWidth;ctx.save();ctx.translate(ox,oy);ctx.scale(k,k);ctx.fillStyle=GROUND;ctx.fillRect(-ox/k-2,-oy/k-2,W/k+4,H/k+4);ctx.restore()}else{ctx.fillStyle='#D9A55A';ctx.fillRect(0,0,W,H)}
   if(!PXON){const ru=SCITY.ruin,[bx,by]=S(-880.6,-796.6),dw=1755.6*Z;if(ru!==1&&ok('city_bg3')){const c=bgFade('city_bg3');ctx.drawImage(c,bx,by,dw,dw*c.height/c.width)}if(ru&&ok('city_ruin')){const c=bgFade('city_ruin');ctx.globalAlpha=Math.min(1,ru);ctx.drawImage(c,bx,by,dw,dw*c.height/c.width);ctx.globalAlpha=1}}
-  cloudShadows(S,Z,t,nt);cityLifeUnder(S,Z,t,dt);
+  cloudShadows(S,Z,t,nt);if(typeof PXCY!=='undefined')pxcyStart(PXON);cityLifeUnder(S,Z,t,dt);
   const L=[...BLD].sort((a,c)=>a.y-c.y);
-  for(const b of L){if(b.zone||!ok(b.img)||(SCITY.hideB&&SCITY.hideB(b)))continue;const [x,y]=S(b.x,b.y),w=b.w*Z;const g=ctx.createRadialGradient(x,y-w*.18,w*.1,x,y-w*.18,w*.55);g.addColorStop(0,'rgba(70,35,5,.35)');g.addColorStop(1,'rgba(70,35,5,0)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y-w*.18,w*.58,w*.24,0,0,7);ctx.fill()}
+  for(const b of L){if(b.zone||!ok(b.img)||(SCITY.hideB&&SCITY.hideB(b)))continue;const [x,y]=S(b.x,b.y),w=b.w*Z;if(PXG.act&&PXG.tgt===PXCY){ctx.drawImage(CSHD,x-w*.58,y-w*.42,w*1.16,w*.48);continue}const g=ctx.createRadialGradient(x,y-w*.18,w*.1,x,y-w*.18,w*.55);g.addColorStop(0,'rgba(70,35,5,.35)');g.addColorStop(1,'rgba(70,35,5,0)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y-w*.18,w*.58,w*.24,0,0,7);ctx.fill()}
   for(const b of L){citDrawUpTo(S,Z,t,b.y);if(SCITY.hideB&&SCITY.hideB(b)){b._x=null;continue}if(b.zone){const [x,y]=S(b.x,b.y),w=b.zone[0]*Z,h=b.zone[1]*Z;b._x=x;b._y=y;b._w=w;b._h=h;HITS.push({x,y:y-h*.5,r:w*.45,b});continue}const im=IMG[b.img];if(!ok(b.img))continue;const [x,y]=S(b.x,b.y),w=b.w*Z*(1+STG(+b.lvl()||0)*.04),h=w*im.naturalHeight/im.naturalWidth;
     let sx=1,sy=1;const tp=TAPPED[b.id];if(tp){const k=(t-tp)/420;if(k<1){const e=Math.sin(k*Math.PI)*Math.exp(-k*2);sx=1+e*.08;sy=1-e*.05}else delete TAPPED[b.id]}
     ctx.save();ctx.translate(x,y);ctx.scale(sx,sy);ctx.drawImage(im,-w/2,-h,w,h);ctx.restore();drawStage(b,x,y,w,h,t);if(b.id==='tower'&&INC.some(r=>new Date(r.ends_at)>Date.now())){ctx.font='28px sans-serif';ctx.textAlign='center';ctx.fillText('🚨',x,y-h-4-Math.abs(Math.sin(t/150))*10)}b._x=x;b._y=y;b._w=w;b._h=h;HITS.push({x,y:y-h*.45,r:w*.45,b});
     if(b.smoke&&Math.random()<dt/120)PART.push({x:x-w/2+b.smoke[0]*w,y:y-h+b.smoke[1]*h,vx:(Math.random()-.2)*.25,vy:-.4-Math.random()*.2,l:1,s:Z,c:'130,120,110'});
     if(b.sparkle&&Math.random()<dt/110)PART.push({x:x+(Math.random()-.5)*w*.35,y:y-h*.45+(Math.random()-.5)*h*.1,vx:0,vy:-.2,l:1,s:Z,c:'200,248,255',sp:1});
     if(C.build_target===b.id&&Math.random()<dt/50)PART.push({x:x+(Math.random()-.5)*w*.75,y:y-h*.15,vx:(Math.random()-.5)*.7,vy:-.35,l:1,s:Z,c:'235,205,150'})}
-  citDrawUpTo(S,Z,t,1e9);
+  citDrawUpTo(S,Z,t,1e9);if(typeof PXCY!=='undefined')pxcyStop();
   for(let i=PART.length-1;i>=0;i--){const p=PART[i];p.x+=p.vx*dt/16;p.y+=p.vy*dt/16;p.l-=dt/(p.sp?900:2600);if(p.l<=0){PART.splice(i,1);continue}
     if(p.sp){const r=(1.5+2.5*p.l)*Math.max(.8,p.s*1.6);ctx.fillStyle=`rgba(${p.c},${p.l})`;ctx.beginPath();ctx.moveTo(p.x,p.y-r*2);ctx.lineTo(p.x+r*.45,p.y);ctx.lineTo(p.x,p.y+r*2);ctx.lineTo(p.x-r*.45,p.y);ctx.closePath();ctx.moveTo(p.x-r*2,p.y);ctx.lineTo(p.x,p.y+r*.45);ctx.lineTo(p.x+r*2,p.y);ctx.lineTo(p.x,p.y-r*.45);ctx.fill()}
     else{ctx.fillStyle=`rgba(${p.c},${p.l*.32})`;ctx.beginPath();ctx.arc(p.x,p.y,((1-p.l)*22+5)*p.s*1.7,0,7);ctx.fill()}}
@@ -890,7 +890,7 @@ function drawWorldOld(t,dt){HITS=[];const z=camW.z,ts=T*z;ctx.fillStyle='#2A1F14
 
 /* ---------- LOOP & INPUT ---------- */
 let last=performance.now();
-let lastErr=-1e9,lastDraw=0;function loop(t){requestAnimationFrame(loop);if(document.hidden||t-lastDraw<(IS_PHONE?31:22))return;lastDraw=t;const dt=Math.min(64,Math.max(0,t-last));last=t;try{if(C&&ME){stepCam(dt);VIEW==='city'?(glHide(),pxwHide(),drawCity(t,dt)):(pxcHide(),(()=>{const a0=performance.now();drawWorld(t,dt);pxwEnd(t);fxMeasure(performance.now()-a0)})())}else{glHide();pxcHide();ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}wOverlay()}catch(e){if(t-lastErr>8000){lastErr=t;console.error(e);toast('⚠️ '+(e.message||e))}}}
+let lastErr=-1e9,lastDraw=0;function loop(t){requestAnimationFrame(loop);if(document.hidden||t-lastDraw<(IS_PHONE?31:22))return;lastDraw=t;const dt=Math.min(64,Math.max(0,t-last));last=t;try{if(C&&ME){stepCam(dt);VIEW==='city'?(glHide(),pxwHide(),pxcyFrame(t,dt)):(pxcHide(),(()=>{const a0=performance.now();drawWorld(t,dt);pxwEnd(t);fxMeasure(performance.now()-a0)})())}else{glHide();pxcHide();ctx.fillStyle='#1B140C';ctx.fillRect(0,0,W,H)}wOverlay()}catch(e){if(t-lastErr>8000){lastErr=t;console.error(e);toast('⚠️ '+(e.message||e))}}}
 requestAnimationFrame(loop);
 let drag=null;const pts=new Map();
 cv.addEventListener('pointerdown',e=>{if(e.isPrimary)pts.clear();try{cv.setPointerCapture(e.pointerId)}catch(_){}stopCam();pts.set(e.pointerId,[e.clientX,e.clientY]);const cam=VIEW==='city'?camC:camW;drag={lx:e.clientX,ly:e.clientY,lt:performance.now(),vx:0,vy:0,t0:performance.now(),x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false,pinch:pts.size===2?dist():0,z0:cam.z}});
@@ -1953,10 +1953,10 @@ function cityLifeUnder(S,Z,t,dt){if(SCITY.ruin)return storyCityDraw(S,Z,t,dt);ci
   if(Math.random()<dt/70){const p=WATERPTS[Math.floor(Math.random()*WATERPTS.length)],[x,y]=S(p[0],p[1]);if(x>-20&&x<W+20&&y>-20&&y<H+20)PART.push({x,y,vx:0,vy:-.05,l:1,s:Z,c:'230,255,255',sp:1})}
   ctx.font=`800 ${Math.max(10,12*Z*1.3)}px "IBM Plex Sans Arabic",Tahoma`;ctx.textAlign='center';ctx.textBaseline='middle';
   for(const p of EMPTYP){const [x,y]=S(p[0],p[1]);if(x<-60||x>W+60||y<-40||y>H+40)continue;const w=ctx.measureText('🔒 قريباً').width+14,h=20;ctx.fillStyle='rgba(30,20,10,.6)';rr(x-w/2,y-h/2,w,h,10);ctx.fill();ctx.fillStyle='#F3DDB0';ctx.fillText('🔒 قريباً',x,y+1);HITS.push({x,y,r:Math.max(26,50*Z),plot:1})}ctx.textBaseline='alphabetic';
-  for(const w of WORKERS){const [x,y]=S(w.p[0],w.p[1]);if(x<-60||x>W+60||y<-60||y>H+60)continue;const fr=Math.floor(t/420+w.ph)%2+1;ctx.fillStyle='rgba(50,25,5,.25)';ctx.beginPath();ctx.ellipse(x,y,12*Z*1.4,4*Z*1.4,0,0,7);ctx.fill();drawSprite(w.k+fr,x,y,w.h*Z*1.4,!!w.fl);w._x=x;w._y=y-w.h*Z*.7;HITS.push({x,y:w._y,r:Math.max(18,w.h*Z*.8),cit:w})}}
+  for(const w of WORKERS){const [x,y]=S(w.p[0],w.p[1]);if(x<-60||x>W+60||y<-60||y>H+60)continue;const fr=Math.floor(t/420+w.ph)%2+1;if(!pxcyShadow(x,y,12*Z*1.4,4*Z*1.4)){ctx.fillStyle='rgba(50,25,5,.25)';ctx.beginPath();ctx.ellipse(x,y,12*Z*1.4,4*Z*1.4,0,0,7);ctx.fill()}drawSprite(w.k+fr,x,y,w.h*Z*1.4,!!w.fl);w._x=x;w._y=y-w.h*Z*.7;HITS.push({x,y:w._y,r:Math.max(18,w.h*Z*.8),cit:w})}}
 function citDrawUpTo(S,Z,t,maxY){if(SCITY.ruin)return;for(const c of CITS){if(c._dn===t||c.y>maxY)continue;c._dn=t;const T=CTYPE[c.type],[x,y]=S(c.x,c.y);if(x<-60||x>W+60||y<-80||y>H+60)continue;
     const front=(c.dy||0)>=0,fl=front?(c.dx||0)<0:(c.dx||0)>0,moving=!(c.wait>0),fr=moving?Math.floor(t/170+c.ph)%3+1:2,k=(front?T.f:T.b)+fr,h=T.h*Z*1.4,bob=moving?Math.abs(Math.sin(t/170*Math.PI/1.5+c.ph))*1.2*Z:0;
-    ctx.fillStyle='rgba(50,25,5,.22)';ctx.beginPath();ctx.ellipse(x,y,h*.22,h*.07,0,0,7);ctx.fill();drawSprite(k,x,y-bob,h,fl);c._x=x;c._y=y-h*.6;HITS.push({x,y:c._y,r:Math.max(18,h*.45),cit:c})}}
+    if(!pxcyShadow(x,y,h*.22,h*.07)){ctx.fillStyle='rgba(50,25,5,.22)';ctx.beginPath();ctx.ellipse(x,y,h*.22,h*.07,0,0,7);ctx.fill()}drawSprite(k,x,y-bob,h,fl);c._x=x;c._y=y-h*.6;HITS.push({x,y:c._y,r:Math.max(18,h*.45),cit:c})}}
 function cityLifeOver(S,Z,t){if(SCITY.ruin)return;for(const b of BIRDS){const [x,y]=S(b.x,b.y+Math.sin(t/900+b.ph)*20);if(x<-50||x>W+50||y<-50||y>H+50)continue;if(ok('dove_sheet')){drawDove(x,y,30*Z*1.4*1.15,t,b.ph,b.d<0);continue}const fr=Math.floor(t/160+b.ph)%2?'bd_1':'bd_3',fl=Math.sin(t/160+b.ph);ctx.save();ctx.translate(x,y);ctx.scale(b.d<0?-1:1,.8+.2*fl);drawSprite(fr,0,0,30*Z*1.4,false);ctx.restore()}
   if(t-lastSay>3800){lastSay=t;const vis=[...CITS,...WORKERS].filter(c=>c._x>30&&c._x<W-30&&c._y>90&&c._y<H-120);if(vis.length)sayNew(t,vis[Math.floor(Math.random()*vis.length)])}
   SAY=SAY.filter(s=>t-s.t0<3600);for(const s of SAY){const c=s.who;if(c._x==null)continue;const k=Math.min(1,(t-s.t0)/200),fade=Math.min(1,(3600-(t-s.t0))/400);ctx.globalAlpha=fade;ctx.font='700 12px "IBM Plex Sans Arabic",Tahoma';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -2898,7 +2898,7 @@ function pxCity(t,nt,ox,oy,Z){if(SCITY.ruin||!glWant())return false;
   if(!PXC.app){if(!PXC.busy&&PX.st!==-1&&['city_bg3','city_night','city_lights','city_water','city_ground'].every(ok)){PXC.busy=true;pxLoad(pxCityInit)}return false}
   const a=PXC.app;if(PXC.w!==W||PXC.h!==H){a.renderer.resize(W,H);PXC.w=W;PXC.h=H}
   const g=PXC.sh.resources.cu,u=g.uniforms;u.uRes[0]=W;u.uRes[1]=H;u.uO[0]=ox;u.uO[1]=oy;u.uZ=Z;u.uT=(t/1000)%3600;u.uN=nt;g.update&&g.update();PXC.mesh.scale.set(W,H);
-  try{a.render()}catch(e){pxcKill();return false}
+  if(!(typeof PXCY!=='undefined'&&PXCY.want)){try{a.render()}catch(e){pxcKill();return false}}
   if(!PXC.on){a.canvas.style.visibility='visible';PXC.on=true}return true}
 async function pxCityInit(){try{const app=new PIXI.Application();
   await app.init({width:W,height:H,resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true,background:'#2A1C10',antialias:false,preference:'webgl',powerPreference:'low-power',autoStart:false});
@@ -3443,24 +3443,24 @@ window.__PXW=PXW;
 
 /* 🗺️ المرحلة 1: كل صور الخريطة (المدن، الوحوش، العرين، أماكن الجمع، الزينة، النار، العواصف) بتترسم بكارت الشاشة
    + الأسامي والأرقام صور جاهزة محفوظة بدل ما تتكتب كل فريم */
-const PXG={i:0,pool:[],tc:new WeakMap(),clip:[false],d:1,M:null,act:false,lab:{},labN:0,P:{}};
-function pxgTex(img,sx,sy,sw,sh){if(!(img instanceof HTMLImageElement))return null;if(!img.complete||!img.naturalWidth)return 0;
+const PXG={tgt:null,i:0,pool:[],tc:new WeakMap(),clip:[false],d:1,M:null,act:false,lab:{},labN:0,P:{}};
+function pxgTex(img,sx,sy,sw,sh){const cvs=img instanceof HTMLCanvasElement&&img._static;if(!(img instanceof HTMLImageElement)&&!cvs)return null;if(!cvs&&(!img.complete||!img.naturalWidth))return 0;
   let m=PXG.tc.get(img);if(!m){m={};PXG.tc.set(img,m)}if(!m._)m._=PIXI.Texture.from(img);if(sx==null)return m._;
-  const key=sx+','+sy+','+sw+','+sh;if(m[key])return m[key];const W0=img.naturalWidth,H0=img.naturalHeight,x=Math.max(0,sx),y=Math.max(0,sy),w=Math.min(sw,W0-x),h=Math.min(sh,H0-y);if(w<=0||h<=0)return 0;
+  const key=sx+','+sy+','+sw+','+sh;if(m[key])return m[key];const W0=img.naturalWidth||img.width,H0=img.naturalHeight||img.height,x=Math.max(0,sx),y=Math.max(0,sy),w=Math.min(sw,W0-x),h=Math.min(sh,H0-y);if(w<=0||h<=0)return 0;
   return m[key]=new PIXI.Texture({source:m._.source,frame:new PIXI.Rectangle(x,y,w,h)})}
-function pxgSprite(){let s=PXG.pool[PXG.i];if(!s){s=new PIXI.Sprite();s.anchor.set(0,0);PXW.lay.addChild(s);PXG.pool.push(s)}PXG.i++;s.visible=true;s.zIndex=++PXW.z;return s}
+function pxgSprite(){const G=PXG.tgt;if(G){let s=G.pool[G.i];if(!s){s=new PIXI.Sprite();s.anchor.set(0,0);G.cont.addChild(s);G.pool.push(s)}G.i++;s.visible=true;return s}let s=PXG.pool[PXG.i];if(!s){s=new PIXI.Sprite();s.anchor.set(0,0);PXW.lay.addChild(s);PXG.pool.push(s)}PXG.i++;s.visible=true;s.zIndex=++PXW.z;return s}
 function pxgDraw(img,a1,a2,a3,a4,a5,a6,a7,a8){const P=PXG.P;
-  if(!PXG.act||!PXW.on||VIEW!=='world'||PXG.clip[PXG.clip.length-1])return P.drawImage.apply(ctx,arguments);
+  if(!PXG.act||!(PXG.tgt?VIEW==='city':(PXW.on&&VIEW==='world'))||PXG.clip[PXG.clip.length-1])return P.drawImage.apply(ctx,arguments);
   const n=arguments.length;let sx,sy,sw,sh,dx,dy,dw,dh;
   if(n===3){dx=a1;dy=a2;dw=img.naturalWidth||img.width;dh=img.naturalHeight||img.height}else if(n===5){dx=a1;dy=a2;dw=a3;dh=a4}else{sx=a1;sy=a2;sw=a3;sh=a4;dx=a5;dy=a6;dw=a7;dh=a8}
   const T=pxgTex(img,sx,sy,sw,sh);if(T===null)return P.drawImage.apply(ctx,arguments);if(!T||!dw||!dh)return;
   const m=ctx.getTransform(),k=1/PXG.d,a=m.a*k,b=m.b*k,c=m.c*k,d=m.d*k,e=m.e*k,f=m.f*k,scx=dw/T.width,scy=dh/T.height;
   const s=pxgSprite();if(s.texture!==T)s.texture=T;PXG.M.set(a*scx,b*scx,c*scy,d*scy,a*dx+c*dy+e,b*dx+d*dy+f);s.setFromMatrix(PXG.M);
   s.alpha=ctx.globalAlpha;s.blendMode=ctx.globalCompositeOperation==='lighter'?'add':'normal'}
-function pxgOn(){if(PXG.act)return;const P=PXG.P;if(!P.drawImage){P.drawImage=CanvasRenderingContext2D.prototype.drawImage;P.save=CanvasRenderingContext2D.prototype.save;P.restore=CanvasRenderingContext2D.prototype.restore;P.clip=CanvasRenderingContext2D.prototype.clip}
+function pxgOn(tgt){if(PXG.act)return;PXG.tgt=tgt||null;if(PXG.tgt)PXG.tgt.i=0;const P=PXG.P;if(!P.drawImage){P.drawImage=CanvasRenderingContext2D.prototype.drawImage;P.save=CanvasRenderingContext2D.prototype.save;P.restore=CanvasRenderingContext2D.prototype.restore;P.clip=CanvasRenderingContext2D.prototype.clip}
   if(!PXG.M)PXG.M=new PIXI.Matrix();PXG.d=cv.width/(W||1);PXG.i=0;PXG.clip=[false];PXG.act=true;
   ctx.drawImage=pxgDraw;ctx.save=function(){PXG.clip.push(PXG.clip[PXG.clip.length-1]);return P.save.call(ctx)};ctx.restore=function(){if(PXG.clip.length>1)PXG.clip.pop();return P.restore.call(ctx)};ctx.clip=function(){PXG.clip[PXG.clip.length-1]=true;return P.clip.apply(ctx,arguments)}}
-function pxgOff(){if(!PXG.act)return;PXG.act=false;delete ctx.drawImage;delete ctx.save;delete ctx.restore;delete ctx.clip;for(let i=PXG.i;i<PXG.pool.length;i++)PXG.pool[i].visible=false}
+function pxgOff(){if(!PXG.act)return;PXG.act=false;delete ctx.drawImage;delete ctx.save;delete ctx.restore;delete ctx.clip;const G=PXG.tgt;if(G){for(let i=G.i;i<G.pool.length;i++)G.pool[i].visible=false}else for(let i=PXG.i;i<PXG.pool.length;i++)PXG.pool[i].visible=false;PXG.tgt=null}
 
 /* 🏷️ الأسامي والأرقام: صورة جاهزة لكل اسم بتتحفظ */
 function pxgLabTex(id,w,h,draw){if(PXG.lab[id])return PXG.lab[id];if(PXG.labN>700){for(const k in PXG.lab)PXG.lab[k].t.destroy(true);PXG.lab={};PXG.labN=0}
@@ -3480,6 +3480,18 @@ try{document.fonts&&document.fonts.ready.then(()=>{for(const k in PXG.lab)PXG.la
 {const _e=pxwEnd;pxwEnd=function(t){pxgOff();_e(t)}}
 {const _h=pxwHide;pxwHide=function(){pxgOff();_h()}}
 window.__PXG=PXG;
+
+/* 🏙️ المرحلة 2: صور المدينة (المباني والناس والعمال) بكارت الشاشة — الأسامي والأرقام والليل فوقهم زي ما هي */
+const PXCY={want:false,used:false,cont:null,pool:[],i:0};
+const CSHD=(()=>{const c=document.createElement('canvas');c.width=128;c.height=56;const g=c.getContext('2d'),r=g.createRadialGradient(64,64,13,64,64,70);r.addColorStop(0,'rgba(70,35,5,.35)');r.addColorStop(1,'rgba(70,35,5,0)');g.save();g.scale(1,56/128);g.fillStyle=r;g.beginPath();g.arc(64,64,64,0,7);g.fill();g.restore();c._static=1;return c})();
+const CSHF=(()=>{const c=document.createElement('canvas');c.width=64;c.height=20;const g=c.getContext('2d');g.fillStyle='rgba(50,25,5,.24)';g.beginPath();g.ellipse(32,10,31,9,0,0,7);g.fill();c._static=1;return c})();
+function pxcyStart(on){if(!on||!PXCY.want||!window.PIXI||!PXC.app)return;if(!PXCY.cont){PXCY.cont=new PIXI.Container();PXC.app.stage.addChild(PXCY.cont)}PXCY.cont.visible=true;PXCY.used=true;pxgOn(PXCY)}
+function pxcyStop(){if(PXCY.used&&PXG.tgt===PXCY)pxgOff()}
+function pxcyFrame(t,dt){PXCY.want=!!(window.PIXI&&PXC.app&&!PXC.dead);PXCY.used=false;
+  try{drawCity(t,dt)}finally{pxcyStop();const w=PXCY.want;PXCY.want=false;
+    if(w&&PXC.app){if(!PXCY.used&&PXCY.cont)PXCY.cont.visible=false;if(PXC.on){try{PXC.app.render()}catch(e){pxcKill()}}}}}
+function pxcyShadow(x,y,rx,ry){if(PXG.act&&PXG.tgt===PXCY){ctx.drawImage(CSHF,x-rx,y-ry,rx*2,ry*2);return true}return false}
+window.__PXCY=PXCY;
 
 async function panelAlly(tab){if(tab)ATB=tab;clearInterval(allyChatT);
   openSheet('<h2>🤝 التحالف</h2><div class="card sub" style="text-align:center">⏳ جاري التحميل…</div>');
