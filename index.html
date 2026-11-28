@@ -3718,7 +3718,7 @@ setInterval(vpSync,250);try{if(window.visualViewport){visualViewport.addEventLis
 window.addEventListener('pointerdown',vpSync,true);window.addEventListener('orientationchange',()=>setTimeout(vpSync,350));
 
 /* 3) الأماكن الممنوعة */
-const KOP=15;
+const KOP=18;
 function inCastle(x,y){return x<=PCX+KOP&&x+1>=PCX-KOP&&y<=PCX+KOP&&y+1>=PCX-KOP}
 let BLK=null;
 function blkBuild(){if(!DECO)genDeco();BLK=new Map();
